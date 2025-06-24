@@ -1,6 +1,11 @@
+# 첫 번째 서버 (15.164.151.83)
 [[redirects]]
   from = "/api/*"
   to = "http://15.164.151.83/:splat"
   status = 200
-  force = true
-  headers = {X-From = "Netlify"}
+
+# 두 번째 서버 (ail.k-iacf.kr:84)
+[[redirects]]
+  from = "/api2/*"
+  to = "http://ail.k-iacf.kr:84/:splat"
+  status = 200
