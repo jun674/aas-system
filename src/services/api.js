@@ -5,7 +5,7 @@ import axios from 'axios'
 
 // 프록시를 통한 API 베이스 URL
 //const BASE_URL = '/api'
-const BASE_URL = 'https://corsproxy.io/?' + encodeURIComponent('http://15.164.151.83')
+const BASE_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('http://15.164.151.83')
 // axios 인스턴스 생성
 const apiClient = axios.create({
   baseURL: BASE_URL,
