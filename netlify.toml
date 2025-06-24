@@ -1,3 +1,4 @@
+# (기존 프록시 규칙들은 그대로 둡니다)
 # 첫 번째 서버 (15.164.151.83)
 [[redirects]]
   from = "/api/*"
@@ -8,4 +9,12 @@
 [[redirects]]
   from = "/api2/*"
   to = "http://ail.k-iacf.kr:84/:splat"
+  status = 200
+
+# (★★★★★ 가장 아래에 이 규칙을 추가하세요 ★★★★★)
+# 단일 페이지 애플리케이션(SPA)을 위한 리다이렉트 규칙
+# 어떤 경로로 들어오든 index.html을 보여줍니다.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
