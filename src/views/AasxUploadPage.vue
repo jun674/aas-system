@@ -1,0 +1,892 @@
+<template>
+  <div class="aasx-upload-container">
+    <div class="upload-section">
+      <h5 class="mb-4">AASX File Upload</h5>
+      
+      <div 
+        class="upload-area"
+        :class="{ 'drag-over': isDragging }"
+        @dragover.prevent="onDragOver"
+        @dragleave.prevent="onDragLeave"
+        @drop.prevent="onDrop"
+      >
+        <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+        <h6>Drag and drop AASX files here or click to select</h6>
+        <p class="text-muted small">No file limit - Batch processing supported</p>
+        
+        <input 
+          type="file" 
+          ref="fileInput" 
+          @change="handleFileSelect" 
+          accept=".aasx" 
+          multiple
+          style="display: none;"
+        >
+        
+        <input 
+          type="file" 
+          ref="folderInput" 
+          @change="handleFolderSelect" 
+          webkitdirectory
+          directory
+          multiple
+          style="display: none;"
+        >
+        
+        <div class="d-flex gap-2 justify-content-center mt-3">
+          <button 
+            class="btn btn-primary"
+            @click="$refs.fileInput.click()"
+            :disabled="uploading"
+          >
+            <i class="fas fa-file me-2"></i>
+            Select Files
+          </button>
+          
+          <button 
+            class="btn btn-primary"
+            @click="$refs.folderInput.click()"
+            :disabled="uploading"
+          >
+            <i class="fas fa-folder-open me-2"></i>
+            Select Folder
+          </button>
+        </div>
+      </div>
+
+      <div v-if="selectedFiles.length > 0" class="file-stats mt-4">
+        <div class="row">
+          <div class="col-md-3">
+            <div class="stat-card">
+              <h6>Total Files</h6>
+              <h3>{{ selectedFiles.length }}</h3>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card">
+              <h6>Total Size</h6>
+              <h3>{{ formatFileSize(totalSize) }}</h3>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card">
+              <h6>Upload Completed</h6>
+              <h3>{{ uploadedCount }} / {{ selectedFiles.length }}</h3>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card">
+              <h6>Upload Status</h6>
+              <h3>{{ uploadStatus }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- <div v-if="selectedFiles.length > 0" class="batch-settings mt-4">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="card-title">Upload Settings</h6>
+            <div class="row">
+              <div class="col-md-6">
+                <label class="form-label">Batch Size (Files per upload)</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  v-model.number="batchSize"
+                  min="1"
+                  max="50"
+                  :disabled="uploading"
+                >
+                <small class="text-muted">Recommended: 10-20 files (adjust based on server performance)</small>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Max Retries</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  v-model.number="maxRetries"
+                  min="0"
+                  max="5"
+                  :disabled="uploading"
+                >
+                <small class="text-muted">Automatic retry on failure</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> -->
+
+      <div v-if="selectedFiles.length > 0" class="file-list-section mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6>
+            File List 
+            <button 
+              class="btn btn-sm btn-outline-secondary ms-2"
+              @click="showFileList = !showFileList"
+            >
+              <i class="fas" :class="showFileList ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </button>
+          </h6>
+          <div>
+            <button 
+              class="btn btn-sm btn-outline-danger me-2"
+              @click="clearFailedFiles"
+              v-if="failedFiles.length > 0"
+            >
+              <i class="fas fa-trash me-1"></i>
+              Remove Failed ({{ failedFiles.length }})
+            </button>
+            <button 
+              class="btn btn-sm btn-outline-secondary"
+              @click="clearFiles"
+              :disabled="uploading"
+            >
+              <i class="fas fa-trash me-1"></i>
+              Clear All
+            </button>
+          </div>
+        </div>
+        
+        <div v-show="showFileList" class="file-list-wrapper"> <div class="list-group file-list">
+            <div 
+              v-for="(file, index) in paginatedFiles" 
+              :key="file.id"
+              class="list-group-item d-flex justify-content-between align-items-center"
+              :class="{
+                'list-group-item-success': file.status === 'completed',
+                'list-group-item-danger': file.status === 'failed',
+                'list-group-item-warning': file.status === 'uploading',
+                'list-group-item-light': file.status === 'pending'
+              }"
+            >
+              <div class="file-info">
+                <i class="fas fa-file me-2"></i>
+                {{ file.name }}
+                <small class="text-muted ms-2">({{ formatFileSize(file.size) }})</small>
+                <div v-if="file.path && file.path !== file.name" class="small text-muted ms-4">
+                  <i class="fas fa-folder me-1"></i>{{ file.path }}
+                </div>
+                <div v-if="file.error" class="small text-danger ms-4">
+                  <i class="fas fa-exclamation-circle me-1"></i>{{ file.error }}
+                </div>
+              </div>
+              <div class="file-actions d-flex align-items-center">
+                <span class="badge me-2" :class="getStatusBadgeClass(file.status)">
+                  {{ getStatusText(file.status) }}
+                </span>
+                <button 
+                  class="btn btn-sm btn-outline-danger"
+                  @click="removeFile(file.id)"
+                  :disabled="uploading && file.status === 'uploading'"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <nav v-if="totalPages > 1" class="mt-3">
+            <ul class="pagination justify-content-center">
+              <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                <a class="page-link" href="#" @click.prevent="currentPage = 1">
+                  <i class="fas fa-angle-double-left"></i>
+                </a>
+              </li>
+              <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                <a class="page-link" href="#" @click.prevent="currentPage--">
+                  <i class="fas fa-angle-left"></i>
+                </a>
+              </li>
+              <li class="page-item active">
+                <span class="page-link">
+                  {{ currentPage }} / {{ totalPages }}
+                </span>
+              </li>
+              <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                <a class="page-link" href="#" @click.prevent="currentPage++">
+                  <i class="fas fa-angle-right"></i>
+                </a>
+              </li>
+              <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                <a class="page-link" href="#" @click.prevent="currentPage = totalPages">
+                  <i class="fas fa-angle-double-right"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+      <div v-if="selectedFiles.length > 0" class="upload-controls mt-4">
+        <button 
+          class="btn btn-success btn-lg me-2"
+          @click="startBatchUpload"
+          :disabled="uploading || allFilesProcessed"
+        >
+          <span v-if="!uploading">
+            <i class="fas fa-upload me-2"></i>
+            Start Upload
+          </span>
+          <span v-else>
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            Uploading...
+          </span>
+        </button>
+        
+        <button 
+          class="btn btn-warning btn-lg me-2"
+          @click="pauseUpload"
+          v-if="uploading && !isPaused"
+        >
+          <i class="fas fa-pause me-2"></i>
+          Pause
+        </button>
+        
+        <button 
+          class="btn btn-info btn-lg me-2"
+          @click="resumeUpload"
+          v-if="uploading && isPaused"
+        >
+          <i class="fas fa-play me-2"></i>
+          Resume
+        </button>
+        
+        <button 
+          class="btn btn-danger btn-lg"
+          @click="cancelUpload"
+          v-if="uploading"
+        >
+          <i class="fas fa-stop me-2"></i>
+          Cancel
+        </button>
+      </div>
+
+      <div v-if="uploading || uploadedCount > 0" class="mt-4">
+        <h6>Overall Progress</h6>
+        <div class="progress" style="height: 30px;">
+          <div 
+            class="progress-bar progress-bar-striped"
+            :class="{ 'progress-bar-animated': uploading }"
+            role="progressbar"
+            :style="{ width: overallProgress + '%' }"
+            :aria-valuenow="overallProgress"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+            {{ overallProgress }}%
+          </div>
+        </div>
+        
+        <div v-if="uploading && currentBatchProgress > 0" class="mt-3">
+          <h6>Current Batch Progress ({{ currentBatchFiles.length }} files)</h6>
+          <div class="progress" style="height: 20px;">
+            <div 
+              class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+              role="progressbar"
+              :style="{ width: currentBatchProgress + '%' }"
+              :aria-valuenow="currentBatchProgress"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              {{ currentBatchProgress }}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="uploadLogs.length > 0" class="upload-logs mt-4">
+        <h6>Upload Logs</h6>
+        <div class="log-container">
+          <div v-for="(log, index) in uploadLogs" :key="index" class="log-entry" :class="'log-' + log.type">
+            <span class="log-time">{{ log.time }}</span>
+            <span class="log-message">{{ log.message }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { ref, computed, watch, nextTick } from 'vue'
+import axios from 'axios'
+
+export default {
+  name: 'AASXUploadIntegrated',
+  setup() {
+    // State Management
+    const fileInput = ref(null)
+    const folderInput = ref(null)
+    const selectedFiles = ref([])
+    const uploading = ref(false)
+    const isPaused = ref(false)
+    const uploadedCount = ref(0)
+    const failedFiles = ref([])
+    const uploadLogs = ref([])
+    const isDragging = ref(false)
+    const showFileList = ref(true)
+    
+    // Batch Settings
+    const batchSize = ref(10)
+    const maxRetries = ref(3)
+    const currentBatchFiles = ref([])
+    const currentBatchProgress = ref(0)
+    
+    // Pagination
+    const currentPage = ref(1)
+    const filesPerPage = ref(20)
+    
+    // Upload Control
+    let uploadController = null
+    let isUploading = false
+
+    // Computed Properties
+    const totalSize = computed(() => {
+      return selectedFiles.value.reduce((sum, file) => sum + file.size, 0)
+    })
+
+    const uploadStatus = computed(() => {
+      if (uploading.value && isPaused.value) return 'Paused'
+      if (uploading.value) return 'Uploading'
+      if (uploadedCount.value === selectedFiles.value.length && selectedFiles.value.length > 0) return 'Completed'
+      if (failedFiles.value.length > 0) return `${failedFiles.value.length} Failed`
+      return 'Pending'
+    })
+
+    const overallProgress = computed(() => {
+      if (selectedFiles.value.length === 0) return 0
+      const completed = selectedFiles.value.filter(f => f.status === 'completed').length
+      return Math.round((completed / selectedFiles.value.length) * 100)
+    })
+
+    const allFilesProcessed = computed(() => {
+      return selectedFiles.value.every(f => f.status === 'completed' || f.status === 'failed')
+    })
+
+    const totalPages = computed(() => {
+      return Math.ceil(selectedFiles.value.length / filesPerPage.value)
+    })
+
+    const paginatedFiles = computed(() => {
+      const start = (currentPage.value - 1) * filesPerPage.value
+      const end = start + filesPerPage.value
+      return selectedFiles.value.slice(start, end)
+    })
+
+    // Methods
+    const generateFileId = () => {
+      return Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+    }
+
+    const addLog = (message, type = 'info') => {
+      uploadLogs.value.push({
+        time: new Date().toLocaleTimeString(),
+        message,
+        type
+      })
+      // Keep only the last 100 logs
+      if (uploadLogs.value.length > 100) {
+        uploadLogs.value = uploadLogs.value.slice(-100)
+      }
+      
+      // Auto-scroll log container (executed on next tick)
+      nextTick(() => {
+        const logContainer = document.querySelector('.log-container')
+        if (logContainer) {
+          logContainer.scrollTop = logContainer.scrollHeight
+        }
+      })
+    }
+
+    const handleFileSelect = (event) => {
+      const files = Array.from(event.target.files)
+      addFiles(files, 'file')
+    }
+
+    const handleFolderSelect = (event) => {
+      const files = Array.from(event.target.files)
+      const aasxFiles = files.filter(file => file.name.endsWith('.aasx'))
+      
+      if (aasxFiles.length === 0) {
+        alert('No AASX files found in the selected folder.')
+        return
+      }
+      
+      addLog(`Found ${aasxFiles.length} AASX files in the folder.`, 'info')
+      addFiles(aasxFiles, 'folder')
+    }
+
+    const addFiles = (files, source = 'unknown') => {
+      const aasxFiles = files.filter(file => file.name.endsWith('.aasx'))
+      const nonAasxFiles = files.filter(file => !file.name.endsWith('.aasx'))
+      
+      if (nonAasxFiles.length > 0) {
+        addLog(`${nonAasxFiles.length} non-AASX files excluded.`, 'warning')
+      }
+      
+      let addedCount = 0
+      aasxFiles.forEach(file => {
+        const exists = selectedFiles.value.find(f => 
+          f.name === file.name && f.size === file.size
+        )
+        
+        if (!exists) {
+          const fileObj = {
+            id: generateFileId(),
+            file: file,
+            name: file.name,
+            size: file.size,
+            path: file.webkitRelativePath || file.name,
+            status: 'pending',
+            error: null,
+            retries: 0
+          }
+          selectedFiles.value.push(fileObj)
+          addedCount++
+        }
+      })
+      
+      addLog(`${addedCount} files added (Total: ${selectedFiles.value.length})`, 'success')
+    }
+
+    const removeFile = (fileId) => {
+      selectedFiles.value = selectedFiles.value.filter(f => f.id !== fileId)
+    }
+
+    const clearFiles = () => {
+      selectedFiles.value = []
+      uploadedCount.value = 0
+      failedFiles.value = []
+      uploadLogs.value = []
+      currentPage.value = 1
+      addLog('All files have been cleared.', 'info')
+    }
+
+    const clearFailedFiles = () => {
+      selectedFiles.value = selectedFiles.value.filter(f => f.status !== 'failed')
+      failedFiles.value = []
+      addLog('Failed files have been removed.', 'info')
+    }
+
+    const formatFileSize = (bytes) => {
+      if (bytes === 0) return '0 Bytes'
+      const k = 1024
+      const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+      const i = Math.floor(Math.log(bytes) / Math.log(k))
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+    }
+
+    const onDragOver = (e) => {
+      isDragging.value = true
+    }
+
+    const onDragLeave = (e) => {
+      isDragging.value = false
+    }
+
+    const onDrop = (e) => {
+      isDragging.value = false
+      const files = Array.from(e.dataTransfer.files)
+      addFiles(files, 'drag')
+    }
+
+    const getStatusText = (status) => {
+      const statusMap = {
+        'pending': 'Pending',
+        'uploading': 'Uploading',
+        'completed': 'Completed',
+        'failed': 'Failed'
+      }
+      return statusMap[status] || status
+    }
+
+    const getStatusBadgeClass = (status) => {
+      const classMap = {
+        'pending': 'bg-secondary',
+        'uploading': 'bg-warning',
+        'completed': 'bg-success',
+        'failed': 'bg-danger'
+      }
+      return classMap[status] || 'bg-secondary'
+    }
+
+    // Batch Upload Logic
+    const uploadBatch = async (batch) => {
+      const formData = new FormData()
+      
+      batch.forEach(fileObj => {
+        formData.append('files', fileObj.file)
+        fileObj.status = 'uploading'
+      })
+      
+      formData.append('adminId', '1') // Example: Add admin ID
+      
+      try {
+        uploadController = new AbortController()
+        
+        const response = await axios.post('/api/aas/aasx/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          signal: uploadController.signal,
+          onUploadProgress: (progressEvent) => {
+            currentBatchProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          }
+        })
+        
+        // Success handling
+        batch.forEach(fileObj => {
+          fileObj.status = 'completed'
+          uploadedCount.value++
+        })
+        
+        addLog(`Batch upload successful: ${batch.length} files`, 'success')
+        return true
+        
+      } catch (error) {
+        if (error.name === 'CanceledError') {
+          batch.forEach(fileObj => {
+            if (fileObj.status === 'uploading') {
+              fileObj.status = 'pending'
+            }
+          })
+          addLog('Upload cancelled.', 'warning')
+          return false
+        }
+        
+        // Error handling
+        batch.forEach(fileObj => {
+          fileObj.status = 'failed'
+          fileObj.error = error.response?.data?.message || error.message
+          fileObj.retries++
+          failedFiles.value.push(fileObj)
+        })
+        
+        addLog(`Batch upload failed: ${error.message}`, 'error')
+        return false
+      }
+    }
+
+    const startBatchUpload = async () => {
+      uploading.value = true
+      isPaused.value = false
+      isUploading = true
+      uploadedCount.value = 0
+      failedFiles.value = []
+      
+      addLog(`Starting upload - Total ${selectedFiles.value.length} files`, 'info')
+      
+      // Select only pending files
+      const pendingFiles = selectedFiles.value.filter(f => 
+        f.status === 'pending' || (f.status === 'failed' && f.retries < maxRetries.value)
+      )
+      
+      // Process in batches
+      for (let i = 0; i < pendingFiles.length; i += batchSize.value) {
+        if (!isUploading || isPaused.value) break
+        
+        const batch = pendingFiles.slice(i, i + batchSize.value)
+        currentBatchFiles.value = batch
+        currentBatchProgress.value = 0
+        
+        addLog(`Processing batch ${Math.floor(i / batchSize.value) + 1} (${batch.length} files)`, 'info')
+        
+        const success = await uploadBatch(batch)
+        
+        // Retry failed files
+        if (!success && !isPaused.value) {
+          const retryFiles = batch.filter(f => 
+            f.status === 'failed' && f.retries < maxRetries.value
+          )
+          
+          if (retryFiles.length > 0) {
+            addLog(`Retrying ${retryFiles.length} files...`, 'warning')
+            await uploadBatch(retryFiles)
+          }
+        }
+        
+        // Wait briefly (to prevent server overload)
+        if (i + batchSize.value < pendingFiles.length && isUploading) {
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      }
+      
+      uploading.value = false
+      isUploading = false
+      currentBatchFiles.value = []
+      currentBatchProgress.value = 0
+      
+      const successCount = selectedFiles.value.filter(f => f.status === 'completed').length
+      const failCount = selectedFiles.value.filter(f => f.status === 'failed').length
+      
+      addLog(`Upload completed - Success: ${successCount}, Failed: ${failCount}`, 
+        failCount > 0 ? 'warning' : 'success')
+    }
+
+    const pauseUpload = () => {
+      isPaused.value = true
+      isUploading = false
+      if (uploadController) {
+        uploadController.abort()
+      }
+      addLog('Upload paused.', 'info')
+    }
+
+    const resumeUpload = () => {
+      isPaused.value = false
+      startBatchUpload()
+      addLog('Resuming upload.', 'info')
+    }
+
+    const cancelUpload = () => {
+      isUploading = false
+      uploading.value = false
+      isPaused.value = false
+      if (uploadController) {
+        uploadController.abort()
+      }
+      
+      // Revert uploading files to pending
+      selectedFiles.value.forEach(file => {
+        if (file.status === 'uploading') {
+          file.status = 'pending'
+        }
+      })
+      
+      currentBatchFiles.value = []
+      currentBatchProgress.value = 0
+      addLog('Upload cancelled.', 'warning')
+    }
+
+    // Watch for page changes
+    watch(currentPage, (newPage) => {
+      if (newPage < 1) currentPage.value = 1
+      if (newPage > totalPages.value) currentPage.value = totalPages.value
+    })
+
+    return {
+      // refs
+      fileInput,
+      folderInput,
+      
+      // State
+      selectedFiles,
+      uploading,
+      isPaused,
+      uploadedCount,
+      failedFiles,
+      uploadLogs,
+      isDragging,
+      showFileList,
+      batchSize,
+      maxRetries,
+      currentBatchFiles,
+      currentBatchProgress,
+      currentPage,
+      filesPerPage,
+      
+      // Computed Properties
+      totalSize,
+      uploadStatus,
+      overallProgress,
+      allFilesProcessed,
+      totalPages,
+      paginatedFiles,
+      
+      // Methods
+      handleFileSelect,
+      handleFolderSelect,
+      removeFile,
+      clearFiles,
+      clearFailedFiles,
+      formatFileSize,
+      onDragOver,
+      onDragLeave,
+      onDrop,
+      getStatusText,
+      getStatusBadgeClass,
+      startBatchUpload,
+      pauseUpload,
+      resumeUpload,
+      cancelUpload
+    }
+  }
+}
+</script>
+
+<style scoped>
+.aasx-upload-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.upload-section {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.upload-area {
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.upload-area:hover {
+  border-color: #0d6efd;
+  background-color: #e7f1ff;
+}
+
+.upload-area.drag-over {
+  border-color: #0d6efd;
+  background-color: #e7f1ff;
+  transform: scale(1.02);
+}
+
+/* Stat Cards */
+.stat-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid #dee2e6;
+}
+
+.stat-card h6 {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-bottom: 10px;
+}
+
+.stat-card h3 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+/* File List */
+.file-list-wrapper { /* Added wrapper for scroll */
+  max-height: 400px; /* Set a max height */
+  overflow-y: auto; /* Enable vertical scroll */
+  border: 1px solid #dee2e6; /* Optional: Add border for visual separation */
+  border-radius: 4px;
+  padding: 5px; /* Optional: Add padding inside scrollable area */
+}
+
+.list-group-item {
+  margin-bottom: 5px;
+  transition: all 0.2s ease;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-actions {
+  flex-shrink: 0;
+}
+
+/* Progress Bar */
+.progress {
+  background-color: #e9ecef;
+}
+
+/* Upload Logs */
+.log-container {
+  max-height: 200px;
+  overflow-y: auto;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 10px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.875rem;
+}
+
+.log-entry {
+  margin-bottom: 5px;
+  display: flex;
+  gap: 10px;
+}
+
+.log-time {
+  color: #6c757d;
+  flex-shrink: 0;
+}
+
+.log-info { color: #0d6efd; }
+.log-success { color: #198754; }
+.log-warning { color: #ffc107; }
+.log-error { color: #dc3545; }
+
+/* Icon Colors */
+.fa-cloud-upload-alt {
+  color: #0d6efd;
+}
+
+.fa-file {
+  color: #ffffff;
+}
+
+/* Scrollbar Styles */
+.file-list-wrapper::-webkit-scrollbar, /* Added for the new wrapper */
+.log-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.file-list-wrapper::-webkit-scrollbar-track, /* Added for the new wrapper */
+.log-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.file-list-wrapper::-webkit-scrollbar-thumb, /* Added for the new wrapper */
+.log-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.file-list-wrapper::-webkit-scrollbar-thumb:hover, /* Added for the new wrapper */
+.log-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Button Group */
+.upload-controls {
+  text-align: center;
+}
+
+/* Batch Settings Card */
+.batch-settings .card {
+  border: 1px solid #dee2e6;
+}
+
+.batch-settings .form-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Pagination */
+.pagination {
+  margin-bottom: 0;
+}
+
+.page-link {
+  color: #0d6efd;
+  border-radius: 4px;
+  margin: 0 2px;
+}
+
+.page-item.active .page-link {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+</style>
