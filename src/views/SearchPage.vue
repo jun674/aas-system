@@ -1,13 +1,27 @@
 <template>
   <div class="search-page-container">
+    <!-- 모바일 슬라이드 토글 버튼 - 사이드바가 닫혀있을 때만 표시 -->
+    <button 
+      v-if="showSidebar && !sidebarOpen"
+      class="mobile-menu-toggle"
+      @click="toggleSidebar"
+      title="Open sidebar"
+    >
+      <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 2L8 8L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    
     <DynamicSidebar
       v-if="showSidebar"
       :active-category="activeCategory"
       :menu-counts="menuCounts"
+      :is-open="sidebarOpen"
       @menu-selected="onMenuSelected"
+      @close-sidebar="closeSidebar"
     />
    
-    <div class="main-content" :class="{ 'with-sidebar': showSidebar }">
+    <div class="main-content" :class="{ 'with-sidebar': showSidebar && sidebarOpen && !isMobile }">
       <template v-if="currentMenu === 'AASX'">
         <div class="content-header">
           <i class="fas fa-exchange-alt"></i>
@@ -42,8 +56,8 @@
           @filter-type-change="onFilterTypeChange"
         />
        
-        <div class="search-results">
-          <div class="results-tree">
+        <div class="search-results" :class="{ 'mobile-view': isMobile }">
+          <div class="results-tree" v-show="!isMobile || mobileView === 'tree'">
             <TreeView
               :tree-data="treeData"
               :loading="loading"
@@ -53,12 +67,33 @@
             />
           </div>
          
-          <div class="results-detail">
+          <div class="results-detail" v-show="!isMobile || mobileView === 'detail'">
             <EquipmentDetail
               :selected-node="selectedNode"
               :detail-data="selectedNodeDetail"
             />
           </div>
+        </div>
+        
+        <!-- 모바일 뷰 전환 버튼 -->
+        <div v-if="isMobile && currentMenu !== 'AASX'" class="mobile-view-switcher">
+          <button 
+            class="view-btn"
+            :class="{ active: mobileView === 'tree' }"
+            @click="mobileView = 'tree'"
+          >
+            <i class="fas fa-sitemap"></i>
+            Tree
+          </button>
+          <button 
+            class="view-btn"
+            :class="{ active: mobileView === 'detail' }"
+            @click="mobileView = 'detail'"
+            :disabled="!selectedNode"
+          >
+            <i class="fas fa-info-circle"></i>
+            Detail
+          </button>
         </div>
       </template>
     </div>
@@ -66,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import DynamicSidebar from '@/components/layout/DynamicSidebar.vue';
 import SearchFilters from '@/components/search/SearchFilters.vue';
 import TreeView from '@/components/common/TreeView.vue';
@@ -90,6 +125,9 @@ const {
 } = useSearch();
 
 const activeCategory = ref('equipment');
+const sidebarOpen = ref(true);
+const isMobile = ref(false);
+const mobileView = ref('tree');
 
 const showSidebar = computed(() => {
   const categoriesWithSubmenu = ['equipment', 'material', 'process'];
@@ -133,15 +171,58 @@ const onFilterTypeChange = () => {
   searchFilters.filterValue = '';
 };
 
-/**
- * [수정] 라우터 쿼리 처리 로직을 명확한 if-else if 체인으로 변경
- */
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value;
+};
+
+const closeSidebar = () => {
+  sidebarOpen.value = false;
+};
+
+// 노드 선택 시 모바일에서는 자동으로 상세 뷰로 전환
+const handleSelectNode = (node) => {
+  selectNode(node);
+  if (isMobile.value) {
+    mobileView.value = 'detail';
+  }
+};
+
+// 화면 크기 체크
+const checkScreenSize = () => {
+  const wasMobile = isMobile.value;
+  isMobile.value = window.innerWidth <= 768;
+  
+  // 데스크톱으로 전환 시 사이드바 열기
+  if (wasMobile && !isMobile.value) {
+    sidebarOpen.value = true;
+  }
+};
+
+onMounted(() => {
+  checkScreenSize();
+  window.addEventListener('resize', checkScreenSize);
+  
+  // 모바일에서는 초기에 사이드바 닫기
+  if (isMobile.value) {
+    sidebarOpen.value = false;
+  }
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkScreenSize);
+});
+
+// selectNode 메서드 오버라이드
+watch(() => selectedNode.value, (newNode) => {
+  if (newNode && isMobile.value) {
+    mobileView.value = 'detail';
+  }
+});
+
 const handleQuery = async (query) => {
   console.log("Handling query:", query);
 
-  // 우선순위 1: 필터 검색 (대시보드 바로가기 포함)
   if (query.filterType && query.value) {
-    // 검색 컨텍스트를 'ALL'로 설정
     if (query.menu === 'ALL') {
       await onMenuSelected('ALL');
     }
@@ -149,18 +230,15 @@ const handleQuery = async (query) => {
     searchFilters.filterValue = query.value;
     await performSearch();
   } 
-  // 우선순위 2: 키워드 검색
   else if (query.keyword) {
-    await onMenuSelected('ALL'); // 키워드 검색은 항상 전체 데이터 대상
+    await onMenuSelected('ALL');
     searchFilters.filterType = 'numberofphases';
     searchFilters.filterValue = query.keyword;
     await performSearch();
   } 
-  // 우선순위 3: 메뉴 선택 (TopBar 등)
   else if (query.menu) {
     await onMenuSelected(query.menu);
   } 
-  // 우선순위 4: 카테고리 선택 (TopBar 등)
   else if (query.category) {
     const category = query.category;
     activeCategory.value = category;
@@ -176,7 +254,6 @@ const handleQuery = async (query) => {
       }
     }
   } 
-  // 우선순위 5: 아무 조건도 없는 기본 상태
   else {
     activeCategory.value = 'equipment';
     await onMenuSelected(MENU_TYPES.EQUIPMENT.TIG);
@@ -194,6 +271,52 @@ watch(() => props.query, (newQuery) => {
   height: 100%;
   width: 100%;
   background-color: #f8f9fa;
+  position: relative;
+}
+
+/* 모바일 슬라이드 토글 버튼 - 사이드바 닫혀있을 때만 */
+.mobile-menu-toggle {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  z-index: 1001;
+  background-color: #0d6efd;
+  border: none;
+  border-radius: 0 12px 12px 0;
+  width: 24px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  padding: 0;
+  padding-left: 2px;
+}
+
+.mobile-menu-toggle:hover {
+  background-color: #0b5ed7;
+  width: 28px;
+}
+
+/* 버튼 클릭 효과 */
+.mobile-menu-toggle:active {
+  transform: scale(0.95);
+}
+
+/* 모바일에서 햄버거 버튼 표시 */
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+}
+
+/* 데스크톱에서 햄버거 버튼 숨김 */
+@media (min-width: 769px) {
+  .mobile-menu-toggle {
+    display: none;
+  }
 }
 
 .main-content {
@@ -208,6 +331,12 @@ watch(() => props.query, (newQuery) => {
 
 .main-content.with-sidebar {
   margin-left: 240px;
+}
+
+@media (max-width: 768px) {
+  .main-content.with-sidebar {
+    margin-left: 0;
+  }
 }
 
 .main-content:not(.with-sidebar) {
@@ -274,20 +403,80 @@ watch(() => props.query, (newQuery) => {
   border-right: 1px solid #dee2e6;
 }
 
-@media (max-width: 1200px) {
-  .main-content.with-sidebar {
-    margin-left: 0; 
+/* 모바일 스타일 */
+@media (max-width: 768px) {
+  .search-results.mobile-view {
+    position: relative;
+  }
+  
+  .results-tree,
+  .results-detail {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  
+  /* 모바일 뷰 전환 버튼 */
+  .mobile-view-switcher {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    background-color: white;
+    padding: 8px;
+    border-radius: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 100;
+  }
+  
+  .view-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    background-color: #f8f9fa;
+    color: #495057;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .view-btn:hover:not(:disabled) {
+    background-color: #e9ecef;
+  }
+  
+  .view-btn.active {
+    background-color: #0d6efd;
+    color: white;
+  }
+  
+  .view-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .view-btn i {
+    font-size: 16px;
   }
 }
 
-@media (max-width: 768px) {
-  .search-results {
-    flex-direction: column;
-    height: auto;
+/* 데스크톱에서 모바일 뷰 스위처 숨김 */
+@media (min-width: 769px) {
+  .mobile-view-switcher {
+    display: none;
   }
-  .results-tree, .results-detail {
-    width: 100%;
-    height: 50%;
+}
+
+@media (max-width: 1200px) {
+  .main-content.with-sidebar {
+    margin-left: 0; 
   }
 }
 </style>
