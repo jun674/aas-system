@@ -233,104 +233,102 @@
 
 <script>
 import { ref } from 'vue'
-import apiClient from '@/services/api'
+import apiClient from '@/services/api' // API 통신을 위한 axios 인스턴스
 
 export default {
   name: 'EquipmentDetail',
+  // 부모 컴포넌트로부터 전달받는 데이터 정의
   props: {
+    // 트리 뷰에서 선택된 노드 객체
     selectedNode: {
       type: Object,
       default: null
     },
+    // (현재 코드에서는 사용되지 않음) 상세 데이터를 별도로 받을 경우를 위한 prop
     detailData: {
       type: Object,
       default: null
     }
   },
   setup() {
-    const showRawData = ref(true)
-    const showConcept = ref(false)
-    const conceptData = ref(null)
-    const loadingConcept = ref(false)
+    // --- 상태 관리 (Reactive State) ---
+    const showRawData = ref(true) // Raw JSON 데이터 표시 여부
+    const showConcept = ref(false) // Concept Description 모달 표시 여부
+    const conceptData = ref(null) // API로 받아온 Concept 데이터 저장
+    const loadingConcept = ref(false) // Concept 데이터 로딩 상태
 
+    // --- UI 헬퍼 메소드 ---
+
+    // 노드 타입에 따라 표시할 약어(문자)를 반환
     const getNodeTypeChar = (type) => {
       const charMap = {
-        'equipment': 'AAS',
-        'aas': 'AAS',
-        'submodel': 'S',
-        'collection': 'C',
-        'property': 'P',
-        'multilanguageproperty': 'M',
-        'file': 'F',
-        'reference': 'R',
-        'range': 'R',
-        'blob': 'B',
-        'element': 'E'
-      }
-      return charMap[type] || '•'
+        'equipment': 'AAS', 'aas': 'AAS', 'submodel': 'S', 'collection': 'C', 'property': 'P',
+        'multilanguageproperty': 'M', 'file': 'F', 'reference': 'R', 'range': 'R', 'blob': 'B', 'element': 'E'
+      };
+      return charMap[type] || '•'; // 매핑되는 타입이 없으면 기본 문자 반환
     }
 
+    // 노드 타입에 따라 적용할 CSS 클래스를 반환 (아이콘 색상 결정)
     const getNodeIconClass = (type) => {
       const classMap = {
-        'equipment': 'icon-equipment',
-        'aas': 'icon-equipment',
-        'submodel': 'icon-submodel',
-        'collection': 'icon-collection',
-        'property': 'icon-property',
-        'multilanguageproperty': 'icon-multilanguage',
-        'file': 'icon-file',
-        'reference': 'icon-reference',
-        'range': 'icon-range',
-        'blob': 'icon-blob',
+        'equipment': 'icon-equipment', 'aas': 'icon-equipment', 'submodel': 'icon-submodel',
+        'collection': 'icon-collection', 'property': 'icon-property', 'multilanguageproperty': 'icon-multilanguage',
+        'file': 'icon-file', 'reference': 'icon-reference', 'range': 'icon-range', 'blob': 'icon-blob',
         'element': 'icon-element'
-      }
-      return classMap[type] || 'icon-default'
+      };
+      return classMap[type] || 'icon-default';
     }
 
+    // Semantic ID 객체에서 실제 ID 값을 추출
     const getSemanticId = (semanticId) => {
       if (!semanticId || !semanticId.keys || !semanticId.keys.length) {
-        return 'N/A'
+        return 'N/A';
       }
-      return semanticId.keys[0].value || 'N/A'
+      return semanticId.keys[0].value || 'N/A';
     }
 
+    // 다국어 속성(MultiLanguageProperty) 값에서 영어 또는 첫 번째 값을 추출
     const getMultiLanguageValue = (value) => {
-        if (!Array.isArray(value) || value.length === 0) return null;
-        const enValue = value.find(v => v.language === 'en');
-        if (enValue) return enValue.text;
-        return value[0].text;
+      if (!Array.isArray(value) || value.length === 0) return null;
+      const enValue = value.find(v => v.language === 'en'); // 영어 값 우선
+      if (enValue) return enValue.text;
+      return value[0].text; // 영어가 없으면 첫 번째 값
     }
 
+    // 다양한 타입의 값을 화면에 표시하기 좋은 문자열로 포맷팅
     const formatValue = (value, modelType) => {
-      if (value === null || value === undefined) return 'N/A'
+      if (value === null || value === undefined) return 'N/A';
       
+      // 다국어 속성이면 해당 함수로 처리
       if (modelType === 'MultiLanguageProperty') {
         return getMultiLanguageValue(value);
       }
       
-      if (Array.isArray(value)) {
-        return `Array (${value.length} items)`
-      }
-      if (typeof value === 'object' && value !== null) {
-        return JSON.stringify(value)
-      }
-      return value
+      if (Array.isArray(value)) return `Array (${value.length} items)`;
+      if (typeof value === 'object' && value !== null) return JSON.stringify(value);
+      return value;
     }
 
+    // --- 비동기 메소드 (API 호출) ---
+
+    // 'View Concept' 버튼 클릭 시, Semantic ID에 해당하는 Concept Description 정보를 API로 요청
     const showConceptDescription = async (semanticId) => {
-      if (!semanticId || !semanticId.keys || !semanticId.keys.length) return
+      if (!semanticId || !semanticId.keys || !semanticId.keys.length) return;
       
-      const conceptId = semanticId.keys[0].value
-      if (!conceptId) return
+      const conceptId = semanticId.keys[0].value;
+      if (!conceptId) return;
       
-      showConcept.value = true
-      loadingConcept.value = true
-      conceptData.value = null
+      // 모달과 로딩 상태 활성화
+      showConcept.value = true;
+      loadingConcept.value = true;
+      conceptData.value = null;
       
       try {
-        const encodedId = btoa(conceptId);
-        const response = await apiClient.get(`/concept/description/${encodedId}`)
+        const lowercaseId = conceptId.toLowerCase(); // ID를 소문자로 변환
+        const encodedId = btoa(lowercaseId); // ID를 Base64로 인코딩하여 URL에 사용
+        const response = await apiClient.get(`/concept/description/${encodedId}`);
         
+        // 응답 데이터 처리 (API 응답이 배열일 경우 첫 번째 요소 사용)
         if (response.data && response.data.message) {
           const message = Array.isArray(response.data.message) ? response.data.message[0] : response.data.message;
           conceptData.value = message;
@@ -338,18 +336,21 @@ export default {
           conceptData.value = null;
         }
       } catch (error) {
-        console.error('Failed to load concept description:', error)
+        console.error('Failed to load concept description:', error);
         conceptData.value = null;
       } finally {
-        loadingConcept.value = false
+        // API 호출 성공/실패 여부와 관계없이 로딩 상태 비활성화
+        loadingConcept.value = false;
       }
     }
 
+    // 모달 닫기
     const closeConcept = () => {
-      showConcept.value = false
-      conceptData.value = null
+      showConcept.value = false;
+      conceptData.value = null;
     }
 
+    // 템플릿에서 사용할 수 있도록 상태와 메소드를 반환
     return {
       showRawData,
       showConcept,

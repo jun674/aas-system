@@ -65,24 +65,32 @@ import { useRouter } from 'vue-router';
 import apiClient from '@/services/api';
 
 const router = useRouter();
-const searchKeyword = ref('');
 
+const searchKeyword = ref(''); // 입력하는 검색어를 저장하기 위한 반응형 상태 변수
+
+// 대시보드에 표시될 전체 항목 수를 저장하는 반응형 상태 변수들
 const totalAas = ref(0);
 const totalSubmodels = ref(0);
 const totalConcepts = ref(0);
 
-onMounted(() => {
-  fetchDashboardCounts();
+// 컴포넌트가 DOM에 마운트(생성)된 직후에 실행될 코드를 등록
+onMounted(() => {  
+  fetchDashboardCounts(); // 대시보드에 필요한 숫자 데이터들을 가져오는 함수를 호출
 });
 
+/**
+ * 대시보드 카드에 표시될 전체 AAS, Submodel, Concept의 개수를 API를 통해 비동기적으로 가져오는 함수
+ */
 const fetchDashboardCounts = async () => {
   try {
+    // Promise.all을 사용하여 여러 API 요청을 동시에 보내고 모든 요청이 완료될 때까지 wait
     const [aasResponse, submodelResponse, conceptResponse] = await Promise.all([
       apiClient.get('/aas?page=1'),
       apiClient.get('/submodel?page=1'),
       apiClient.get('/concept/description?page=1')
     ]);
 
+    // 각 API 응답에서 totalCount 값을 추출하여 반응형 상태 변수에 할당
     totalAas.value = aasResponse.data.totalCount || 0;
     totalSubmodels.value = submodelResponse.data.totalCount || 0;
     totalConcepts.value = conceptResponse.data.totalCount || 0;
@@ -92,26 +100,38 @@ const fetchDashboardCounts = async () => {
   }
 };
 
+/**
+ * 특정 카테고리가 지정된 검색 페이지로 이동하는 함수
+ */
 const navigateToSearch = (category) => {
   router.push({ path: '/search', query: { category: category } });
 };
 
+/**
+ * AASX 파일 업로드 페이지로 이동하는 함수
+ */
 const navigateToUpload = () => {
     router.push({ path: '/search', query: { menu: 'AASX' } });
 };
 
+/**
+ * 메인 검색창에서 입력한 키워드로 검색을 실행하는 함수
+ */
 const executeSearch = () => {
-  if (!searchKeyword.value.trim()) return;
-  router.push({ path: '/search', query: { keyword: searchKeyword.value } });
+  if (!searchKeyword.value.trim()) return;  // 입력된 검색어가 공백을 제외하고 비어있으면 아무 작업도 하지 않음
+  router.push({ path: '/search', query: { keyword: searchKeyword.value } }); // 검색어를 쿼리 파라미터로 포함하여 검색 페이지로 이동
 };
 
+/**
+ * 미리 정의된 조건으로 빠른 검색을 실행하는 함수
+ */
 const quickSearch = (filterType, value) => {
   router.push({
     path: '/search',
     query: { 
       filterType: filterType,
       value: value,
-      menu: 'ALL' 
+      menu: 'ALL' // '전체 데이터 보기' 컨텍스트에서 검색하도록 지정
     }
   });
 };

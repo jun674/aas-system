@@ -291,26 +291,43 @@
 import { ref } from 'vue'
 
 export default {
+  // 컴포넌트의 이름 정의
   name: 'Sidebar',
-  props: {
-    menuCounts: {
+  
+  // 부모 컴포넌트로부터 전달받는 데이터(속성)를 정의
+  props: {   
+    menuCounts: { // 각 메뉴 항목 옆에 표시될 숫자 카운트 데이터를 담는 객체
       type: Object,
-      default: () => ({})
+      default: () => ({}) // 기본값은 빈 객체
     }
   },
+  
+  // 부모 컴포넌트로 이벤트를 전달하기 위해 'emits'를 정의
   emits: ['menu-selected'],
+  
   setup(props, { emit }) {
-    const activeMenu = ref('TIG') // 기본값을 TIG로 설정
+    // 현재 활성화(선택)된 메뉴 항목을 저장하는 반응형 상태 변수
+    // 페이지 로드 시 CO2 메뉴가 활성화
+    const activeMenu = ref('CO2')
 
+    /**
+     * 메뉴 항목을 클릭했을 때 호출되는 함수
+     */
     const selectMenu = (menuName) => {
-      activeMenu.value = menuName
+      
+      activeMenu.value = menuName // activeMenu의 값을 클릭된 메뉴 이름으로 변경하여 UI를 업데이트
+      
+      // 'menu-selected'라는 이름의 이벤트를 부모 컴포넌트로 전달(emit)
+      // 부모 컴포넌트는 이 이벤트를 수신하여 어떤 메뉴가 선택되었는지 알 수 있음
       emit('menu-selected', menuName)
+      
       console.log('>> 선택된 메뉴:', menuName)
     }
 
+    // setup 함수에서 반환하는 모든 값들은 템플릿(<template>)에서 사용
     return {
-      activeMenu,
-      selectMenu
+      activeMenu, // 활성 메뉴 상태를 템플릿에 노출
+      selectMenu  // 메뉴 선택 함수를 템플릿에 노출
     }
   }
 }

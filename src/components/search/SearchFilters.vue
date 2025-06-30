@@ -102,29 +102,38 @@
   </div>
 </template>
 
-<script>
+<script> 
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 
 export default {
-  name: 'SearchFilters',
-  props: {
-    filters: {
+  
+  name: 'SearchFilters', // 컴포넌트의 이름 정의
+
+  // 부모 컴포넌트로부터 전달받는 데이터(속성) 정의
+  props: {    
+    filters: { // 검색 필터 상태를 담고 있는 객체 (상위 컴포넌트와 v-model로 연결될 수 있음)
       type: Object,
-      required: true
-    },
-    loading: {
+      required: true // 필수 props로 지정
+    },    
+    loading: { // 검색 진행 중 로딩 상태를 나타내는 boolean 값
       type: Boolean,
       default: false
-    },
-    error: {
+    },    
+    error: { // 검색 중 발생한 에러 메시지
       type: String,
       default: null
     },
   },
+
+  // 부모 컴포넌트로 이벤트를 전달하기 위한 'emits' 정의
   emits: ['search', 'reset', 'filter-type-change'],
+
+  
   setup(props, { emit }) {
+    // 현재 화면이 모바일 크기인지 여부를 저장하는 반응형 상태
     const isMobile = ref(false)
     
+    // 검색 필터 종류를 선택하는 드롭다운에 표시될 옵션 목록
     const filterOptions = ref([
       { value: 'numberofphases', label: 'Number of Phases' },
       { value: 'inputpowervoltage', label: 'Input Power Voltage' },
@@ -134,6 +143,7 @@ export default {
       { value: 'dutycycle', label: 'Duty Cycle' }
     ]);
     
+    // 각 필터 종류에 따라 검색 입력창에 보여줄 예시 placeholder 텍스트
     const placeholderExamples = {
       'numberofphases': 'e.g., Three',
       'inputpowervoltage': 'e.g., 380, 220',
@@ -143,30 +153,42 @@ export default {
       'dutycycle': 'e.g., 60, 100'
     };
 
+    // 현재 선택된 필터 종류에 따라 동적으로 placeholder 텍스트를 반환하는 계산된 속성(computed property)
     const currentPlaceholder = computed(() => {
       return placeholderExamples[props.filters.filterType] || 'Input a value';
     });
     
+    /**
+     * 빠른 검색을 위한 함수
+     */
     const quickSearch = (filterType, value) => {
+      // 부모로부터 받은 filters 객체의 값을 직접 변경
       props.filters.filterType = filterType
       props.filters.filterValue = value
+      // 부모 컴포넌트에 'search' 이벤트를 발생시켜 실제 검색을 요청
       emit('search')
     }
     
-    // 화면 크기 체크
+    // 화면 너비를 체크하여 isMobile 상태를 업데이트하는 함수
     const checkScreenSize = () => {
       isMobile.value = window.innerWidth <= 768
     }
 
+    // --- 생명주기 훅 (Lifecycle Hooks) ---
+
+    // 컴포넌트가 마운트(생성)될 때 실행
     onMounted(() => {
-      checkScreenSize()
-      window.addEventListener('resize', checkScreenSize)
+      checkScreenSize() // 초기 화면 크기 체크
+      window.addEventListener('resize', checkScreenSize) // 화면 크기 변경 이벤트를 감지
     })
 
+    // 컴포넌트가 제거될 때 실행
     onUnmounted(() => {
+      // 메모리 누수 방지를 위해 등록했던 이벤트 리스너를 제거
       window.removeEventListener('resize', checkScreenSize)
     })
     
+    // setup 함수에서 반환하는 모든 값들은 템플릿(<template>)에서 사용 가능
     return {
       filterOptions,
       quickSearch,

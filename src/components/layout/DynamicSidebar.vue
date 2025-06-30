@@ -114,44 +114,72 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 
 export default {
+  // 컴포넌트의 이름 정의
   name: 'DynamicSidebar',
+  
+  // 부모 컴포넌트로부터 전달받는 데이터(속성) 정의
   props: {
+    // 현재 활성화된 주 카테고리
     activeCategory: {
       type: String,
       default: 'equipment'
     },
+    // 각 메뉴 항목 옆에 표시될 숫자 카운트
     menuCounts: {
       type: Object,
       default: () => ({})
     },
+    // 사이드바가 열려있는지 여부
     isOpen: {
       type: Boolean,
       default: true
     }
   },
+  
+  // 부모 컴포넌트로 이벤트를 전달하기 위한 'emits' 정의
   emits: ['menu-selected', 'close-sidebar'],
+  
   setup(props, { emit }) {
-    const activeMenu = ref('CO2')
+    // --- 상태 관리 (Reactive State) ---
+
+    // 현재 활성화(선택)된 서브 메뉴를 저장 (기본값: 'CO2')
+    const activeMenu = ref('CO2') 
+    
+    // 확장 가능한 메뉴들의 열림/닫힘 상태를 관리하는 객체
     const expandedMenus = reactive({
-      welding: true,
-      cnc: false
+      welding: true, // 'welding' 메뉴는 기본적으로 열린 상태
+      cnc: false   // 'cnc' 메뉴는 기본적으로 닫힌 상태
     })
+    
+    // 현재 화면이 모바일 크기인지 여부를 저장
     const isMobile = ref(false)
 
-    // 메뉴 아이템들
+    // --- 메뉴 데이터 ---
+
+    // 'Equipment' 카테고리의 'Welding' 서브 메뉴 아이템 목록
     const weldingItems = ['CO2', 'EBW', 'FW', 'MAG', 'MIG', 'OAW', 'PW', 'RSEW', 'RSW', 'SAW', 'SMAW', 'Sold', 'SW', 'TIG', 'UW']
+    
+    // 'Material' 카테고리의 서브 메뉴 아이템 목록
     const materialItems = [
       { value: 'Steel', label: 'Steel' },
       { value: 'Aluminum', label: 'Aluminum' },
       { value: 'Stainless Steel', label: 'Stainless Steel' }
     ]
+    
+    // 'Process' 카테고리의 서브 메뉴 아이템 목록
     const processItems = ['Welding', 'Cutting', 'Brazing']
 
+    // --- 계산된 속성 (Computed Properties) ---
+
+    // 서브 메뉴가 있는 특정 카테고리일 때만 사이드바 내용을 보여주기 위한 computed 속성
     const showSidebar = computed(() => {
       const categoriesWithSubmenu = ['equipment', 'material', 'process']
       return categoriesWithSubmenu.includes(props.activeCategory)
     })
 
+    // --- 메소드 (Methods) ---
+
+    // 현재 활성화된 카테고리에 맞는 아이콘 클래스를 반환하는 함수
     const getCategoryIcon = () => {
       const iconMap = {
         equipment: 'fa-cogs',
@@ -161,9 +189,10 @@ export default {
         quality: 'fa-check-circle',
         production: 'fa-industry'
       }
-      return iconMap[props.activeCategory] || 'fa-folder'
+      return iconMap[props.activeCategory] || 'fa-folder' // 매핑되는 아이콘이 없으면 기본 아이콘 반환
     }
 
+    // 현재 활성화된 카테고리의 제목을 반환하는 함수
     const getCategoryTitle = () => {
       const titleMap = {
         equipment: 'Equipment',
@@ -173,36 +202,44 @@ export default {
         quality: 'Quality',
         production: 'Production'
       }
-      return titleMap[props.activeCategory] || 'Menu'
+      return titleMap[props.activeCategory] || 'Menu' // 매핑되는 제목이 없으면 기본 제목 반환
     }
 
+    // 메뉴의 확장/축소 상태를 토글하는 함수
     const toggleMenu = (menu) => {
       expandedMenus[menu] = !expandedMenus[menu]
     }
 
+    // 서브 메뉴를 선택했을 때 실행되는 함수
     const selectMenu = (menuName) => {
-      activeMenu.value = menuName
-      emit('menu-selected', menuName)
-      // 모바일에서는 메뉴 선택 후 사이드바 닫기
+      activeMenu.value = menuName // 선택된 메뉴를 활성 상태로 변경
+      emit('menu-selected', menuName) // 부모 컴포넌트에 'menu-selected' 이벤트를 전달
+      
+      // 모바일 화면에서는 메뉴를 선택하면 자동으로 사이드바를 닫도록 이벤트를 전달
       if (isMobile.value) {
         emit('close-sidebar')
       }
     }
 
-    // 화면 크기 체크
+    // 화면 너비를 체크하여 모바일 여부를 판단하는 함수
     const checkScreenSize = () => {
-      isMobile.value = window.innerWidth <= 768
+      isMobile.value = window.innerWidth <= 768 // 너비가 768px 이하이면 모바일로 간주
     }
 
+    // --- 생명주기 훅 (Lifecycle Hooks) ---
+
+    // 컴포넌트가 마운트(생성)될 때 실행
     onMounted(() => {
-      checkScreenSize()
-      window.addEventListener('resize', checkScreenSize)
+      checkScreenSize() // 초기 화면 크기 체크
+      window.addEventListener('resize', checkScreenSize) // 화면 크기 변경 이벤트를 감지
     })
 
+    // 컴포넌트가 언마운트(제거)될 때 실행
     onUnmounted(() => {
-      window.removeEventListener('resize', checkScreenSize)
+      window.removeEventListener('resize', checkScreenSize) // 메모리 누수 방지를 위해 이벤트 리스너 제거
     })
 
+    // setup 함수에서 반환하는 모든 값들은 템플릿에서 사용할 수 있음
     return {
       activeMenu,
       expandedMenus,

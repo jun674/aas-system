@@ -84,19 +84,14 @@ export default {
       console.log('TreeNode 선택:', this.node.id);
       this.$emit('select', this.node)
     },
-    // handleDoubleClick() {
-    //   // 더블클릭 시 토글 (자식이 있는 경우만)
-    //   if (this.node.children && this.node.children.length > 0) {
-    //     this.$emit('toggle', this.node.id)
-    //   }
-    // },
+
     getNodeTypeChar(type) {
       // 타입별 문자 반환
       const charMap = {
         'equipment': 'AAS',
         'aas': 'AAS',
         'submodel': 'Submodel',
-        'collection': 'Collection', // ElementCollection에서 Collection으로 축약
+        'collection': 'Collection',
         'property': 'Property',
         'multilanguageproperty': 'MultiProperty', 
         'file': 'File',
@@ -104,7 +99,7 @@ export default {
         'range': 'Range',      
         'blob': 'Blob',
         'element': 'Element',
-        'placeholder': '...' // Placeholder를 위한 문자
+        'placeholder': '...' 
       }
       return charMap[type] || '•'
     },
@@ -128,16 +123,11 @@ export default {
     }
   },
   mounted() {
-    // console.log(`TreeNode 마운트: ${this.node.name}, type: ${this.node.type}, expanded: ${this.node.expanded}, children: ${this.node.children?.length || 0}`);
-    // if (this.node.children && this.node.children.length > 0 && this.node.children[0].type !== 'placeholder') {
-    //   console.log(`  → 하위 노드:`, this.node.children.map(c => c.name));
-    // }
   }
 }
 </script>
 
 <style scoped>
-/* 기존 스타일 그대로 유지 */
 .tree-node {
   user-select: none;
 }
@@ -163,7 +153,6 @@ export default {
   font-weight: 500;
 }
 
-/* has-value 클래스는 매칭된 값에만 적용 */
 .tree-node-content.has-value {
   background-color: #fff3cd;
   color: #856404;
@@ -222,7 +211,7 @@ export default {
 }
 
 .icon-multilanguage {
-  background-color: #009688; /* Teal 색상 */
+  background-color: #009688; 
 }
 
 .icon-file {
@@ -248,8 +237,8 @@ export default {
 .icon-default {
   background-color: #BDBDBD;
 }
-.icon-placeholder { /* Placeholder 아이콘 스타일 추가 */
-  background-color: #9e9e9e; /* 회색 */
+.icon-placeholder { 
+  background-color: #9e9e9e; 
   animation: pulse 1.5s infinite;
 }
 
@@ -290,7 +279,7 @@ export default {
   display: flex;
   align-items: center;
   padding: 4px 8px;
-  margin-left: 20px; /* 들여쓰기 */
+  margin-left: 20px;
   color: #6c757d;
   font-size: 12px;
 }

@@ -1,4 +1,3 @@
-<!-- src/components/common/TreeView.vue -->
 <template>
   <div class="tree-view">
     <div v-if="loading" class="loading-spinner">
@@ -52,7 +51,7 @@ export default {
       type: Boolean,
       default: false
     },
-    error: {  // 이 부분 추가
+    error: { 
       type: String,
       default: null
     }
@@ -91,7 +90,7 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  position: relative; /* 이 줄 추가 */
+  position: relative; 
 }
 
 .tree-container {
@@ -100,23 +99,16 @@ export default {
   flex-direction: column;
   overflow: hidden;
   padding: 15px;
-  height: 100%; /* 이 줄 추가 */
-  box-sizing: border-box; /* 이 줄 추가 */
+  height: 100%; 
+  box-sizing: border-box; 
 }
-
-/* .tree-header {
-  flex-shrink: 0;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #dee2e6;
-} */
 
 .tree-content {
   flex: 1;
   overflow-y: auto;
   overflow-x: auto;
   padding-right: 10px;
-  padding-bottom: 20px; /* 이 줄 추가 */
+  padding-bottom: 20px; 
 }
 
 /* 스크롤바 스타일링 */

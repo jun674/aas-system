@@ -113,15 +113,19 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute } from 'vue-router'; 
 
+// 현재 라우트 객체를 가져와서 'active' 클래스 바인딩에 사용
 const route = useRoute();
+// 모바일 네비게이션 메뉴의 표시 여부를 제어하는 반응형 상태
 const showMobileNav = ref(false);
 
+// 모바일 네비게이션 토글 버튼 클릭 시 호출되는 함수
 const toggleMobileNav = () => {
   showMobileNav.value = !showMobileNav.value;
 };
 
+// 네비게이션 링크 클릭 시 모바일 메뉴를 닫는 함수
 const closeMobileNav = () => {
   showMobileNav.value = false;
 };

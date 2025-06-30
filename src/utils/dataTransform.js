@@ -1,24 +1,23 @@
-/**
- * API 응답 데이터를 트리 구조로 변환하는 유틸리티 함수들
- */
+
+// --- 데이터 추출 및 검색 헬퍼 함수 --- //
 
 /**
- * URL에서 모델명 또는 특정 식별자 추출 (범용적)
- * AAS ID URL에서 특정 패턴의 식별자를 추출하는 함수.
- * @param {string} id - AAS ID URL
- * @returns {string|null} - 추출된 식별자 (모델명 또는 분류 코드)
+ * AAS ID로 사용되는 URL과 유사한 문자열에서 특정 식별자를 추출
+ * 주로 모델명이나 분류 코드처럼 의미 있는 값을 찾아 반환하는 데 사용
  */
 function extractIdentifierFromId(id) {
   if (!id) return null;
   
-  // 패턴: .../aas/TungstenInsertGasType-classify/150LMT2/1/0
+  // URL 경로처럼 '/'를 기준으로 문자열을 분할
   const parts = id.split('/');
   
-  // 'aas' 다음 다음 부분을 찾기
+  // 'aas' 세그먼트의 인덱스찾기
   const aasIndex = parts.findIndex(part => part === 'aas');
+
+  // 'aas'와 그 뒤 두 번째 요소가 존재하면 해당 값을 식별자로 간주
   if (aasIndex !== -1 && parts.length > aasIndex + 2) {
     const identifier = parts[aasIndex + 2];
-    // 숫자만 있는 경우가 아니면 반환
+    // 식별자가 숫자만으로 구성된 경우는 제외하고 반환
     if (identifier && !identifier.match(/^\d+$/)) {
       return identifier;
     }
@@ -27,13 +26,14 @@ function extractIdentifierFromId(id) {
   return null;
 }
 
-
 /**
- * 서브모델 ID 추출 함수
+ * Submodel 객체에서 고유 ID를 추출
+ * 다양한 형식을 가질 수 있으므로, 여러 속성을 순차적으로 확인
  */
 function getSubmodelId(submodelRef) {
   if (!submodelRef) return null;
 
+  // keys 배열에서 값을 찾기
   if (submodelRef.keys && Array.isArray(submodelRef.keys)) {
     for (const key of submodelRef.keys) {
       if (key.value) {
@@ -41,6 +41,7 @@ function getSubmodelId(submodelRef) {
       }
     }
   }
+  // 다른 가능한 속성들을 확인
   if (submodelRef.id) return submodelRef.id;
   if (submodelRef.value) return submodelRef.value;
   if (submodelRef.type) return submodelRef.type;
@@ -49,16 +50,18 @@ function getSubmodelId(submodelRef) {
 }
 
 /**
- * 서브모델 데이터 찾기 함수
- * (transformApiToTree에서만 사용, submodelDataList가 존재할 때 유효)
+ * Submodel ID를 사용하여 전체 Submodel 데이터 목록에서 해당 데이터를 찾기
  */
 function findSubmodelData(submodels, submodelId) {
   if (!submodels || !submodelId) return null;
 
+  // 입력된 submodels가 배열이 아닐 경우를 대비해 배열만들기
   const submodelArray = Array.isArray(submodels) ? submodels : (submodels ? [submodels] : []);
 
+  // ID가 일치하는 것을 찾기
   let found = submodelArray.find(sm => sm && sm.id === submodelId);
 
+  // 찾지 못했다면 다른 속성(idShort, semanticId)과 비교하여 다시 찾기
   if (!found) {
     found = submodelArray.find(sm => {
       if (!sm) return false;
@@ -71,7 +74,7 @@ function findSubmodelData(submodels, submodelId) {
 }
 
 /**
- * Semantic ID 값 추출
+ * semanticId 객체에서 실제 ID 값을 추출
  */
 function getSemanticIdValue(semanticId) {
   if (!semanticId?.keys?.[0]?.value) return null;
@@ -79,24 +82,26 @@ function getSemanticIdValue(semanticId) {
 }
 
 /**
- * FacilityName 찾기
- * (transformApiToTree에서만 사용, submodelArray가 존재할 때 유효)
+ * 장비(equipment) 데이터와 Submodel 목록을 받아 'FacilityName'찾기
+ * 'Identification' Submodel 안에 있는 'FacilityName' 속성 값을 반환
  */
 function findFacilityName(equipment, submodelArray) {
   if (!equipment.submodel || !Array.isArray(equipment.submodel)) {
     return null;
   }
 
+  // 장비에 연결된 모든 Submodel 참조를 순회
   for (const subRef of equipment.submodel) {
     const submodelId = getSubmodelId(subRef);
     const submodelData = findSubmodelData(submodelArray, submodelId);
 
+    // 'Identification' Submodel을 찾기
     if (submodelData && submodelData.idShort === 'Identification') {
       if (submodelData.submodelElements) {
+        // 'FacilityName' 요소를 찾아 그 값을 반환
         const facilityNameElement = submodelData.submodelElements.find(
           element => element.idShort === 'FacilityName'
         );
-
         if (facilityNameElement && facilityNameElement.value) {
           return facilityNameElement.value;
         }
@@ -106,32 +111,35 @@ function findFacilityName(equipment, submodelArray) {
   return null;
 }
 
+
+// --- 데이터 포맷팅 및 타입 결정 헬퍼 함수 --- //
+
 /**
- * Element name 포맷팅
+ * Submodel Element의 이름을 포맷팅
+ * idShort를 기본으로 사용
  */
 function formatElementName(element) {
-  return element.idShort || 'Unnamed';
+  return element.idShort || 'Unnamed'; // idShort가 없으면 'Unnamed' 반환
 }
 
 /**
- * Element 타입 결정
+ * Element의 modelType에 따라 간단한 타입 문자열을 결정
  */
 function getElementType(element) {
   const typeMap = {
     'SubmodelElementCollection': 'collection',
     'Property': 'property',
-    // [수정] 'MultiLanguageProperty'를 위한 별도 타입 정의
     'MultiLanguageProperty': 'multilanguageproperty',
     'File': 'file',
     'ReferenceElement': 'reference',
     'Range': 'range',
     'Blob': 'blob'
   };
-  return typeMap[element.modelType] || 'element';
+  return typeMap[element.modelType] || 'element'; // 매핑되지 않은 타입은 'element'로 처리
 }
 
 /**
- * Property 값 포맷팅
+ * 'Property' 타입 Element의 값을 단위(unit)와 함께 포맷팅
  */
 function formatPropertyValue(element) {
   let value = element.value;
@@ -140,6 +148,7 @@ function formatPropertyValue(element) {
     return null;
   }
 
+  // semanticId, unit, idShort 순서로 단위를 찾기
   const unit = getUnitFromSemanticId(element.semanticId) ||
                element.unit ||
                getUnitFromIdShort(element.idShort);
@@ -151,7 +160,7 @@ function formatPropertyValue(element) {
 }
 
 /**
- * Semantic ID에서 단위 추출
+ * Semantic ID 값에 포함된 키워드를 기반으로 단위 추론
  */
 function getUnitFromSemanticId(semanticId) {
   if (!semanticId?.keys?.[0]?.value) return null;
@@ -174,7 +183,7 @@ function getUnitFromSemanticId(semanticId) {
 }
 
 /**
- * ID Short에서 단위 추출
+ * idShort 값에 포함된 키워드를 기반으로 단위를 추론
  */
 function getUnitFromIdShort(idShort) {
   if (!idShort) return null;
@@ -195,22 +204,33 @@ function getUnitFromIdShort(idShort) {
 }
 
 /**
- * 다국어 값 추출
+ * MultiLanguage 속성 값 배열에서 표시할 텍스트를 추출
  */
 function getMultiLanguageValue(mlValues, preferredLang = 'en') {
   if (!Array.isArray(mlValues)) return null;
 
+  // 1. 선호 언어 확인
   const preferred = mlValues.find(v => v.language === preferredLang);
   if (preferred) return preferred.text;
 
+  // 2. 영어 확인
   const english = mlValues.find(v => v.language === 'en');
   if (english) return english.text;
 
+  // 3. 첫 번째 값 사용
   return mlValues[0]?.text || null;
 }
 
+
+// --- 메인 변환 함수 --- //
+
 /**
- * 서브모델 요소들을 트리 구조로 변환
+ * Submodel Element 목록을 재귀적으로 순회하며 트리 노드 구조로 변환
+ * @param {Array} elements - 변환할 Submodel Element 배열
+ * @param {string} parentId - 부모 노드의 ID (고유 ID 생성을 위해 사용)
+ * @param {string} searchValue - 검색어. 일치하는 노드를 표시하는 데 사용됩니다.
+ * @param {Map} conceptsMap - (미사용) 컨셉 사전을 위한 파라미터
+ * @returns {Array} - 트리 노드 객체의 배열
  */
 export function transformSubmodelElements(elements, parentId = null, searchValue = null, conceptsMap = new Map()) {
   if (!Array.isArray(elements)) {
@@ -219,25 +239,19 @@ export function transformSubmodelElements(elements, parentId = null, searchValue
   }
 
   return elements.map((element, index) => {
+    // 각 element에 대한 기본 노드 구조를 생성
     const node = {
-      id: `${parentId || ''}_${element.idShort || `element_${index}`}`,
-      name: formatElementName(element),
-      type: getElementType(element),
-      expanded: false,
-      data: element,
-      children: [],
-      hasValue: false,
-      isMatched: false
+      id: `${parentId || ''}_${element.idShort || `element_${index}`}`, // 고유 ID 생성
+      name: formatElementName(element), // 표시될 이름 포맷팅
+      type: getElementType(element),     // 노드 타입 결정
+      expanded: false,                   // 기본적으로 축소된 상태
+      data: element,                     // 원본 데이터 저장
+      children: [],                      // 자식 노드 배열
+      hasValue: false,                   // 값을 가졌는지 여부
+      isMatched: false                   // 검색어와 일치하는지 여부
     };
 
-    if (element.semanticId?.keys?.[0]?.value) {
-      const conceptId = element.semanticId.keys[0].value;
-      const concept = conceptsMap.get(conceptId);
-      if (concept) {
-        node.concept = concept;
-      }
-    }
-
+    // SubmodelElementCollection 타입인 경우, 자식 요소들을 재귀적으로 변환
     if (element.modelType === 'SubmodelElementCollection' && Array.isArray(element.value)) {
       node.children = transformSubmodelElements(
         element.value,
@@ -245,32 +259,28 @@ export function transformSubmodelElements(elements, parentId = null, searchValue
         searchValue,
         conceptsMap
       );
-      
-      // [수정 2] 검색 시 강제로 펼치는 로직 제거
+      // 자식 중에 검색어와 일치하는 것이 있으면, 부모도 일치했다고 표시
       if (node.children.some(child => child.isMatched)) {
-        // node.expanded = true; 
         node.isMatched = true;
       }
-    } else if (element.modelType === 'SubmodelElementCollection' && element.value !== undefined) {
-        node.name = `${element.idShort}: (비-배열 컬렉션)`;
     }
 
-
+    // Property 타입인 경우, 값을 포맷팅하여 이름에 추가하고 검색어와 비교
     if (element.modelType === 'Property') {
       if (element.value !== undefined && element.value !== null && element.value !== '') {
         node.hasValue = true;
-        
         const valueDisplay = formatPropertyValue(element);
         if (valueDisplay) {
           node.name = `${element.idShort}: ${valueDisplay}`;
         }
-        
+        // 검색어가 있고, 현재 속성 값에 포함된다면 'isMatched'를 true로 설정
         if (searchValue && String(element.value).toLowerCase().includes(String(searchValue).toLowerCase())) { 
           node.isMatched = true;
         }
       }
     }
 
+    // MultiLanguageProperty 타입 처리
     if (element.modelType === 'MultiLanguageProperty' && element.value) {
       const mlValue = getMultiLanguageValue(element.value);
       if (mlValue) {
@@ -282,6 +292,7 @@ export function transformSubmodelElements(elements, parentId = null, searchValue
       }
     }
 
+    // File 타입 처리
     if (element.modelType === 'File') {
       node.name = `${element.idShort}`;
       node.type = 'file';
@@ -294,28 +305,35 @@ export function transformSubmodelElements(elements, parentId = null, searchValue
 }
 
 /**
- * AAS 목록과 (선택적) 서브모델 데이터를 받아 트리 구조로 변환하는 메인 함수.
- * 서브모델의 하위 요소는 searchValue가 있을 때 즉시 로드하거나, 없을 때 Lazy Loading을 위한 표시만 합니다.
+ * AAS 목록과 Submodel 데이터를 받아 전체 트리 구조로 변환하는 메인 함수
+ * @param {Array} aasData - 변환할 AAS 객체 배열
+ * @param {Array} submodelDataList - AAS에 포함된 Submodel의 상세 데이터 목록 
+ * @param {string} searchValue - 검색어. null이 아니면 검색 모드로 동작
+ * @returns {Array} - 최상위 트리 노드(장비)의 배열
  */
 export function transformApiToTree(aasData, submodelDataList, searchValue = null) {
+  // Submodel 데이터 목록이 항상 배열이 되도록 보정
   const submodelArray = Array.isArray(submodelDataList) ? submodelDataList : (submodelDataList ? [submodelDataList] : []);
 
+  // 각 AAS(장비) 데이터를 순회하며 트리 노드를 생성
   return aasData.map((equipment, index) => {
     let equipmentName = equipment.idShort || 'Unknown AAS';
-    let additionalInfo = '';
+    let additionalInfo = ''; // 장비 이름에 추가될 부가 정보 (모델명, 설비명 등)
 
+    // 장비 ID에서 모델명 같은 추가 정보를 추출
     const identifierFromId = extractIdentifierFromId(equipment.id);
     if (identifierFromId && identifierFromId !== equipment.idShort) { 
         additionalInfo = ` (${identifierFromId})`;
     } else {
+        // ID에서 못찾으면 'Identification' 서브모델에서 FacilityName을 찾기
         const facilityName = findFacilityName(equipment, submodelArray);
         if (facilityName && facilityName !== equipment.idShort) {
             additionalInfo = ` (${facilityName})`;
         }
     }
-
     equipmentName = `${equipment.idShort || 'Unknown AAS'}${additionalInfo}`;
 
+    // 장비(최상위) 노드를 생성
     const equipmentNode = {
       id: equipment.id,
       name: equipmentName,
@@ -326,19 +344,23 @@ export function transformApiToTree(aasData, submodelDataList, searchValue = null
       isMatched: false 
     };
 
+    // 장비 정보 자체에서 검색어와 일치하는 내용이 있는지 확인
     const aasSearchText = `${equipment.idShort || ''} ${equipment.id || ''} ${equipment.assetInformation?.globalAssetId || ''}`.toLowerCase();
     if (searchValue && aasSearchText.includes(String(searchValue).toLowerCase())) {
         equipmentNode.isMatched = true;
     }
 
+    // 장비에 연결된 Submodel들을 자식 노드로 변환
     if (equipment.submodel && Array.isArray(equipment.submodel)) {
         equipmentNode.children = equipment.submodel.map((subRef) => {
             const submodelId = getSubmodelId(subRef);
-            const submodelData = findSubmodelData(submodelArray, submodelId); 
+            const submodelData = findSubmodelData(submodelArray, submodelId); // 상세 데이터 목록에서 Submodel 정보를 찾음
 
+            // Submodel의 이름을 결정(idShort 우선, 없으면 ID에서 추측).
             let submodelNodeName = submodelData?.idShort;
             if (!submodelNodeName || submodelNodeName === '') {
                 if (submodelId) {
+                    // ID 경로에서 의미 있는 부분을 이름으로 사용하려는 시도
                     const idParts = submodelId.match(/\/sm\/[^\/]+\/[^\/]+\/([^\/]+)\/(\d+\/\d+)?\/?$/);
                     if (idParts && idParts[1]) {
                         submodelNodeName = idParts[1];
@@ -353,31 +375,33 @@ export function transformApiToTree(aasData, submodelDataList, searchValue = null
                 }
             }
 
+            // Submodel 노드를 생성
             const submodelNode = {
                 id: submodelId,
                 name: submodelNodeName,
                 type: 'submodel',
                 expanded: false,
-                data: submodelData || null,
+                data: submodelData || null, // 상세 데이터가 있으면 할당
                 parent: equipmentNode.id,
                 children: []
             };
             
+            // Submodel 정보에서 검색어와 일치하는지 확인
             const submodelSearchText = `${submodelNode.name || ''} ${submodelNode.id || ''}`.toLowerCase();
             if (searchValue && submodelSearchText.includes(String(searchValue).toLowerCase())) {
                 submodelNode.isMatched = true;
             }
 
-            // [수정 3] 자식 노드 구성 로직 단순화
+            // 검색 모드일 때와 일반 모드일 때 자식 노드 구성을 다르게 처리
             if (searchValue && submodelData?.submodelElements) {
-                // 검색 모드: 하위 요소를 즉시 변환하여 자식으로 설정
+                // 검색 모드: Submodel의 하위 요소들을 즉시 변환하여 자식으로 설정
                 const transformedElements = transformSubmodelElements(submodelData.submodelElements, submodelData.id, searchValue);
                 submodelNode.children = transformedElements;
                 if (transformedElements.some(el => el.isMatched)) {
-                    submodelNode.isMatched = true;
+                    submodelNode.isMatched = true; // 자식이 일치하면 부모도 일치
                 }
             } else {
-                // [수정 3] 일반 모드: Lazy Loading을 위해 항상 placeholder 추가
+                // 일반 모드: 나중에 사용자가 노드를 확장할 때 데이터를 로드(Lazy Loading)하기 위해 placeholder를 추가
                 submodelNode.children = [{id: submodelId + '_placeholder', type: 'placeholder'}];
             }
 
@@ -385,10 +409,9 @@ export function transformApiToTree(aasData, submodelDataList, searchValue = null
         }).filter(node => node !== null);
     }
     
-    // [수정 2] 검색 시 강제로 펼치는 로직 제거
+    // 자식 노드 중 일치하는 것이 있으면, 부모 장비 노드도 일치한다고 표시
     const hasMatchedChild = equipmentNode.children.some(child => child.isMatched);
     if (equipmentNode.isMatched || hasMatchedChild) {
-        // equipmentNode.expanded = true; // <- 이 줄을 제거하거나 주석 처리
         equipmentNode.isMatched = true;
     }
 
@@ -396,120 +419,39 @@ export function transformApiToTree(aasData, submodelDataList, searchValue = null
   });
 }
 
-
+// === 트리 상태 업데이트 유틸리티 함수 === //
 /**
- * AAS 목록을 트리 구조로 변환하는 기존 함수 (현재는 transformApiToTree가 대신 사용됨)
- * 이 함수는 이제 사용되지 않으므로, 충돌 방지를 위해 주석 처리하거나 제거할 수 있습니다.
- */
-/*
-export function transformAASToTree(aasList, submodelsMap = new Map()) {
-  if (!Array.isArray(aasList)) return [];
-
-  return aasList.map(aas => {
-    const aasNode = {
-      id: aas.id,
-      name: aas.idShort || 'Unknown AAS',
-      type: 'aas',
-      expanded: false,
-      data: aas,
-      children: [],
-      level: 0
-    };
-
-    if (aas.submodel && Array.isArray(aas.submodel)) {
-      aasNode.children = aas.submodel.map((subRef, index) => {
-        const submodelId = getSubmodelId(subRef);
-        const submodelData = submodelsMap.get(submodelId);
-        
-        return {
-          id: submodelId || `submodel_${index}`,
-          name: submodelData?.idShort || submodelId || 'Unknown Submodel',
-          type: 'submodel-ref',
-          expanded: false,
-          data: submodelData || { id: submodelId },
-          children: [],
-          level: 1,
-          parent: aasNode.id
-        };
-      });
-    }
-
-    return aasNode;
-  });
-}
-*/
-
-/**
- * Submodel을 트리 구조로 변환하는 함수 (현재는 transformApiToTree에서 서브모델 전체 데이터가 있을 때만 재귀적으로 호출)
- * 이 함수도 직접 사용되지 않으므로, 충돌 방지를 위해 주석 처리하거나 제거할 수 있습니다.
- */
-/*
-export function transformSubmodelToTree(submodel, conceptsMap = new Map()) {
-  if (!submodel) return null;
-
-  const submodelNode = {
-    id: submodel.id,
-    name: submodel.idShort || 'Unknown Submodel',
-    type: 'submodel',
-    expanded: false,
-    data: submodel,
-    children: []
-  };
-
-  if (submodel.submodelElements && Array.isArray(submodel.submodelElements)) {
-    submodelNode.children = transformSubmodelElements(
-      submodel.submodelElements,
-      submodelNode.id,
-      null,
-      conceptsMap
-    );
-  }
-  return submodelNode;
-}
-*/
-
-// === 트리 노드 확장/축소 토글 관련 유틸리티 함수들 ===
-// 이 함수들은 AAS 파일 자체에는 없었으나, 트리뷰 동작을 위해 추가되었으며,
-// useSearch.js에서 import하여 사용합니다.
-
-/**
- * 트리 노드의 expanded 상태를 토글합니다.
- * @param {Array} treeData - 전체 트리 데이터 배열
- * @param {string} nodeId - 토글할 노드의 ID
- * @returns {Array} - 업데이트된 트리 데이터 배열
+ * 특정 ID를 가진 노드의 'expanded' 상태(확장/축소)를 토글
  */
 export function toggleNodeExpanded(treeData, nodeId) {
   return updateTreeNodes(treeData, node => {
     if (node.id === nodeId) {
+      // ID가 일치하는 노드를 찾아 expanded 값을 반전시킨 새로운 노드 객체를 반환
       return { ...node, expanded: !node.expanded }
     }
-    return node
+    return node // 그 외의 노드는 그대로 반환
   })
 }
 
 /**
- * 트리 노드의 selected 상태를 업데이트합니다.
- * 하나의 노드만 선택될 수 있도록 다른 노드의 selected 상태는 false로 설정합니다.
- * @param {Array} treeData - 전체 트리 데이터 배열
- * @param {string} selectedId - 선택할 노드의 ID
- * @returns {Array} - 업데이트된 트리 데이터 배열
+ * 특정 ID를 가진 노드를 'selected'(선택됨) 상태로 만들고, 나머지 노드는 선택 해제
  */
 export function updateSelectedNode(treeData, selectedId) {
   return updateTreeNodes(treeData, node => ({
     ...node,
-    selected: node.id === selectedId
+    selected: node.id === selectedId // ID가 일치하는 노드만 selected를 true로 설정
   }))
 }
 
 /**
- * 트리 노드 업데이트 헬퍼 함수 (재귀)
- * @param {Array} nodes - 현재 레벨의 노드 배열
- * @param {Function} updateFn - 각 노드에 적용할 업데이트 함수
- * @returns {Array} - 업데이트된 노드 배열
+ * 트리 전체를 재귀적으로 순회하며 각 노드에 업데이트 함수를 적용하는 헬퍼 함수
+ * 불변성을 유지하기 위해 모든 노드를 복사하여 새로운 트리를 반환
  */
 function updateTreeNodes(nodes, updateFn) {
   return nodes.map(node => {
+    // 현재 노드에 업데이트 함수를 적용
     const updated = updateFn(node)
+    // 자식 노드가 있으면 재귀적으로 동일한 작업을 수행
     if (updated.children && updated.children.length > 0) {
       updated.children = updateTreeNodes(updated.children, updateFn)
     }

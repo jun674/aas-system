@@ -1,6 +1,3 @@
-// src/utils/menuFilters.js
-// 이 파일을 전체 복사하여 덮어쓰세요.
-
 /**
  * 메뉴별 AAS 필터링 유틸리티
  */
@@ -45,7 +42,7 @@ export const MENU_TYPES = {
   },
   // Special
   SPECIAL: {
-    ALL: 'ALL', // 'ALL_AAS' 사용 유지, 혼동 방지
+    ALL: 'ALL',
     AASX: 'AASX'
   }
 }
@@ -93,14 +90,11 @@ export const MANAGEMENT_KEYWORDS = {
 
 /**
  * AAS 데이터에서 특정 키워드 배열 중 하나라도 포함하는지 확인하는 헬퍼 함수
- * @param {Object} aas - AAS 객체
- * @param {Array} keywords - 검색할 키워드 배열
- * @returns {boolean} - 키워드가 발견되면 true
  */
 function hasKeywords(aas, keywords) {
   if (!aas || !keywords || keywords.length === 0) return false
 
-  // [수정] ID의 전체 문자열을 검색하도록 변경
+  // ID의 전체 문자열을 검색하도록 변경
   const searchFields = [
     aas.id, // ID 전체를 검색 필드에 포함
     aas.idShort,
@@ -119,12 +113,10 @@ function hasKeywords(aas, keywords) {
 }
 
 /**
- * AAS가 제외되어야 할 'Component' 타입인지 판단하는 함수.
- * @param {Object} aas - AAS 객체
- * @returns {boolean} - 제외되어야 할 Component AAS면 true
+ * AAS가 제외되어야 할 'Component' 타입인지 판단하는 함수
  */
 export function isExcludedComponentAAS(aas) {
-  // [수정] trim()을 추가하여 " Component " 와 같이 공백이 있는 경우도 처리
+  // trim()을써 공백이 있는 경우도 처리
   const idShortLower = (aas.idShort || '').trim().toLowerCase();
   
   if (idShortLower === 'component') {
