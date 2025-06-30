@@ -315,7 +315,7 @@ import axios from 'axios'
 export default {
   name: 'AASXUploadIntegrated',
   setup() {
-    // --- 상태 관리 (Reactive State) ---
+   // --- 상태 관리 (Reactive State) ---
     const fileInput = ref(null) // 파일 선택 input 엘리먼트에 대한 참조
     const folderInput = ref(null) // 폴더 선택 input 엘리먼트에 대한 참조
     const selectedFiles = ref([]) // 사용자가 선택한 파일 객체들의 배열
@@ -338,7 +338,8 @@ export default {
     const filesPerPage = ref(20) // 페이지 당 보여줄 파일 개수
     
     // --- 업로드 제어 변수 ---
-    let uploadController = null // Axios의 AbortController 인스턴스 (업로드 취소용)
+    let uploadController = null 
+    let isUploading = false
 
     // --- 계산된 속성 (Computed Properties) ---
     // 선택된 모든 파일의 총 크기 계산
@@ -390,12 +391,13 @@ export default {
       uploadLogs.value.push({
         time: new Date().toLocaleTimeString(),
         message,
-        type // 'info', 'success', 'warning', 'error'
+        type
       })
       // 로그는 최신 100개만 유지
       if (uploadLogs.value.length > 100) {
         uploadLogs.value = uploadLogs.value.slice(-100)
       }
+      
       // 새 로그가 추가되면 로그 컨테이너를 맨 아래로 스크롤
       nextTick(() => {
         const logContainer = document.querySelector('.log-container')
@@ -408,13 +410,13 @@ export default {
     // 파일 선택 input에서 파일이 선택됐을 때 호출
     const handleFileSelect = (event) => {
       const files = Array.from(event.target.files)
-      addFiles(files)
+      addFiles(files, 'file')
     }
 
     // 폴더 선택 input에서 폴더가 선택됐을 때 호출
     const handleFolderSelect = (event) => {
       const files = Array.from(event.target.files)
-      const aasxFiles = files.filter(file => file.name.endsWith('.aasx')) // .aasx 파일만 필터링
+      const aasxFiles = files.filter(file => file.name.endsWith('.aasx'))
       
       if (aasxFiles.length === 0) {
         alert('No AASX files found in the selected folder.')
@@ -422,18 +424,11 @@ export default {
       }
       
       addLog(`Found ${aasxFiles.length} AASX files in the folder.`, 'info')
-      addFiles(aasxFiles)
+      addFiles(aasxFiles, 'folder')
     }
 
-    // 드래그 앤 드롭으로 파일이 추가됐을 때 호출
-    const onDrop = (e) => {
-      isDragging.value = false
-      const files = Array.from(e.dataTransfer.files)
-      addFiles(files)
-    }
-
-    // 파일 목록에 파일을 추가하는 핵심 로직
-    const addFiles = (files) => {
+    // 파일 목록에 파일을 추가
+    const addFiles = (files, source = 'unknown') => {
       const aasxFiles = files.filter(file => file.name.endsWith('.aasx'))
       const nonAasxFiles = files.filter(file => !file.name.endsWith('.aasx'))
       
@@ -443,19 +438,18 @@ export default {
       
       let addedCount = 0
       aasxFiles.forEach(file => {
-        // 중복 파일 체크 (이름과 크기가 동일한 경우)
         const exists = selectedFiles.value.find(f => 
           f.name === file.name && f.size === file.size
         )
         
         if (!exists) {
-          const fileObj = { // 관리하기 쉬운 파일 객체로 변환
+          const fileObj = {
             id: generateFileId(),
-            file: file, // 원본 File 객체
+            file: file,
             name: file.name,
             size: file.size,
-            path: file.webkitRelativePath || file.name, // 폴더 선택 시 상대 경로
-            status: 'pending', // 초기 상태는 '대기'
+            path: file.webkitRelativePath || file.name,
+            status: 'pending',
             error: null,
             retries: 0
           }
@@ -463,6 +457,7 @@ export default {
           addedCount++
         }
       })
+      
       addLog(`${addedCount} files added (Total: ${selectedFiles.value.length})`, 'success')
     }
 
@@ -496,16 +491,42 @@ export default {
       const i = Math.floor(Math.log(bytes) / Math.log(k))
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
     }
-    
+
     // --- 드래그 앤 드롭 이벤트 핸들러 ---
-    const onDragOver = () => { isDragging.value = true }
-    const onDragLeave = () => { isDragging.value = false }
+    const onDragOver = (e) => {
+      isDragging.value = true
+    }
+    const onDragLeave = (e) => {
+      isDragging.value = false
+    }
+    const onDrop = (e) => {
+      isDragging.value = false
+      const files = Array.from(e.dataTransfer.files)
+      addFiles(files, 'drag')
+    }
 
     // --- UI 헬퍼 메소드 ---
     // 파일 상태에 따라 표시할 텍스트 반환
-    const getStatusText = (status) => { /* ... */ }
-    // 파일 상태에 따라 적용할 Bootstrap 배지 클래스 반환
-    const getStatusBadgeClass = (status) => { /* ... */ }
+    const getStatusText = (status) => {
+      const statusMap = {
+        'pending': 'Pending',
+        'uploading': 'Uploading',
+        'completed': 'Completed',
+        'failed': 'Failed'
+      }
+      return statusMap[status] || status
+    }
+
+     // 파일 상태에 따라 적용할 Bootstrap 배지 클래스 반환
+    const getStatusBadgeClass = (status) => {
+      const classMap = {
+        'pending': 'bg-secondary',
+        'uploading': 'bg-warning',
+        'completed': 'bg-success',
+        'failed': 'bg-danger'
+      }
+      return classMap[status] || 'bg-secondary'
+    }
 
     // --- 배치 업로드 핵심 로직 ---
     // 한 배치의 파일을 업로드하는 함수
@@ -517,13 +538,15 @@ export default {
         fileObj.status = 'uploading'
       })
       
-      formData.append('adminId', '1') // 예시: 추가 데이터 전송
+      formData.append('adminId', '1') // Example: Add admin ID
       
       try {
         uploadController = new AbortController() // 취소를 위한 컨트롤러 생성
         
         const response = await axios.post('/api/aas/aasx/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
           signal: uploadController.signal, // 컨트롤러 연결
           onUploadProgress: (progressEvent) => { // 업로드 진행률 콜백
             currentBatchProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
@@ -535,17 +558,18 @@ export default {
           fileObj.status = 'completed'
           uploadedCount.value++
         })
+        
         addLog(`Batch upload successful: ${batch.length} files`, 'success')
         return true
         
-      } catch (error) {
-        // 업로드 취소된 경우
+      } catch (error) { // 업로드 취소된 경우
         if (error.name === 'CanceledError') {
           batch.forEach(fileObj => {
             if (fileObj.status === 'uploading') {
-              fileObj.status = 'pending' // 상태를 다시 '대기'로 변경
+              fileObj.status = 'pending'
             }
           })
+          addLog('Upload cancelled.', 'warning')
           return false
         }
         
@@ -556,6 +580,7 @@ export default {
           fileObj.retries++
           failedFiles.value.push(fileObj)
         })
+        
         addLog(`Batch upload failed: ${error.message}`, 'error')
         return false
       }
@@ -565,7 +590,8 @@ export default {
     const startBatchUpload = async () => {
       uploading.value = true
       isPaused.value = false
-      uploadedCount.value = 0 // 카운터 초기화
+      isUploading = true
+      uploadedCount.value = 0
       failedFiles.value = []
       
       addLog(`Starting upload - Total ${selectedFiles.value.length} files`, 'info')
@@ -577,7 +603,7 @@ export default {
       
       // 필터링된 파일들을 배치 크기만큼 잘라서 순차적으로 처리
       for (let i = 0; i < pendingFiles.length; i += batchSize.value) {
-        if (!uploading.value || isPaused.value) break // 중단 또는 일시정지 시 루프 탈출
+        if (!isUploading || isPaused.value) break // 중단 또는 일시정지 시 루프 탈출
         
         const batch = pendingFiles.slice(i, i + batchSize.value)
         currentBatchFiles.value = batch
@@ -585,42 +611,59 @@ export default {
         
         addLog(`Processing batch ${Math.floor(i / batchSize.value) + 1} (${batch.length} files)`, 'info')
         
-        await uploadBatch(batch) // 한 배치 업로드 실행
+        const success = await uploadBatch(batch)
+        
+        // Retry failed files
+        if (!success && !isPaused.value) {
+          const retryFiles = batch.filter(f => 
+            f.status === 'failed' && f.retries < maxRetries.value
+          )
+          
+          if (retryFiles.length > 0) {
+            addLog(`Retrying ${retryFiles.length} files...`, 'warning')
+            await uploadBatch(retryFiles) // 한 배치 업로드 실행
+          }
+        }
         
         // 서버 과부하 방지를 위해 배치 사이에 잠시 대기
-        if (i + batchSize.value < pendingFiles.length && uploading.value) {
-          await new Promise(resolve => setTimeout(resolve, 500)) // 0.5초 대기
+        if (i + batchSize.value < pendingFiles.length && isUploading) {
+          await new Promise(resolve => setTimeout(resolve, 1000))
         }
       }
       
       uploading.value = false
+      isUploading = false
       currentBatchFiles.value = []
       currentBatchProgress.value = 0
+      
       // 최종 결과 로그 출력
       const successCount = selectedFiles.value.filter(f => f.status === 'completed').length
       const failCount = selectedFiles.value.filter(f => f.status === 'failed').length
-      addLog(`Upload completed - Success: ${successCount}, Failed: ${failCount}`, failCount > 0 ? 'warning' : 'success')
+      
+      // 업로드 일시정지
+      addLog(`Upload completed - Success: ${successCount}, Failed: ${failCount}`, 
+        failCount > 0 ? 'warning' : 'success')
     }
 
-    // 업로드 일시정지
     const pauseUpload = () => {
       isPaused.value = true
+      isUploading = false
       if (uploadController) {
-        uploadController.abort() // 현재 진행중인 axios 요청 취소
+        uploadController.abort()
       }
       addLog('Upload paused.', 'info')
     }
 
     // 일시정지된 업로드 재개
     const resumeUpload = () => {
-      isPaused.value = false
-      uploading.value = true // 다시 업로드 상태로
-      startBatchUpload() // 업로드 프로세스 다시 시작 (남은 파일부터 처리)
+      isPaused.value = false // 다시 업로드 상태로
+      startBatchUpload()  // 업로드 프로세스 다시 시작 (남은 파일부터 처리)
       addLog('Resuming upload.', 'info')
     }
 
     // 전체 업로드 취소
     const cancelUpload = () => {
+      isUploading = false
       uploading.value = false
       isPaused.value = false
       if (uploadController) {
@@ -645,9 +688,51 @@ export default {
       if (newPage > totalPages.value) currentPage.value = totalPages.value
     })
 
-    // setup 함수에서 반환된 모든 것들은 template에서 사용 가능
     return {
-      // refs, state, computed, methods ...
+      // refs
+      fileInput,
+      folderInput,
+      
+      // State
+      selectedFiles,
+      uploading,
+      isPaused,
+      uploadedCount,
+      failedFiles,
+      uploadLogs,
+      isDragging,
+      showFileList,
+      batchSize,
+      maxRetries,
+      currentBatchFiles,
+      currentBatchProgress,
+      currentPage,
+      filesPerPage,
+      
+      // Computed Properties
+      totalSize,
+      uploadStatus,
+      overallProgress,
+      allFilesProcessed,
+      totalPages,
+      paginatedFiles,
+      
+      // Methods
+      handleFileSelect,
+      handleFolderSelect,
+      removeFile,
+      clearFiles,
+      clearFailedFiles,
+      formatFileSize,
+      onDragOver,
+      onDragLeave,
+      onDrop,
+      getStatusText,
+      getStatusBadgeClass,
+      startBatchUpload,
+      pauseUpload,
+      resumeUpload,
+      cancelUpload
     }
   }
 }

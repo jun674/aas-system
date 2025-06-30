@@ -190,6 +190,14 @@
             <i class="fas fa-code me-2"></i>
             Raw JSON Data
           </h6>
+          <button 
+            class="btn btn-sm btn-outline-primary copy-btn"
+            @click="copyJsonData"
+            :title="copyButtonText"
+          >
+            <i :class="copyButtonIcon"></i>
+            {{ copyButtonText }}
+          </button>
         </div>
         <div class="section-content">
           <pre class="raw-data">{{ JSON.stringify(selectedNode.data, null, 2) }}</pre>
@@ -210,13 +218,65 @@
             </div>
             <div v-else-if="conceptData">
               <div class="concept-info">
-                <div class="info-item">
-                  <label>ID:</label>
-                  <span>{{ conceptData.id }}</span>
+                <div class="concept-info-row">
+                  <div class="concept-label">ID:</div>
+                  <div class="concept-value">{{ conceptData.id }}</div>
                 </div>
-                 <div class="info-item">
-                  <label>ID Short:</label>
-                  <span>{{ conceptData.idShort || 'N/A' }}</span>
+                <div class="concept-info-row">
+                  <div class="concept-label">ID Short:</div>
+                  <div class="concept-value">{{ conceptData.idShort || 'N/A' }}</div>
+                </div>
+                
+                <!-- Embedded Data Specifications -->
+                <div v-if="conceptData.embeddedDataSpecifications && conceptData.embeddedDataSpecifications.length > 0" class="embedded-specs">
+                  <h6 class="subsection-title">
+                    <i class="fas fa-database"></i>
+                    Data Specification
+                  </h6>
+                  
+                  <div v-for="(spec, index) in conceptData.embeddedDataSpecifications" :key="index" class="spec-content">
+                    <!-- Data Type -->
+                    <div v-if="spec.dataSpecificationContent && spec.dataSpecificationContent.dataType" class="spec-row">
+                      <div class="spec-label">Data Type:</div>
+                      <div class="spec-value-box">{{ spec.dataSpecificationContent.dataType }}</div>
+                    </div>
+                    
+                    <!-- Preferred Name -->
+                    <div v-if="spec.dataSpecificationContent && spec.dataSpecificationContent.preferredName" class="spec-row">
+                      <div class="spec-label">Preferred Name:</div>
+                      <div class="spec-value">
+                        <div v-for="(name, idx) in spec.dataSpecificationContent.preferredName" :key="idx" class="lang-item">
+                          <span class="lang-tag">{{ name.language }}:</span>
+                          <span class="lang-text">{{ name.text }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Definition -->
+                    <div v-if="spec.dataSpecificationContent && spec.dataSpecificationContent.definition" class="spec-row">
+                      <div class="spec-label">Definition:</div>
+                      <div class="spec-value">
+                        <div v-for="(def, idx) in spec.dataSpecificationContent.definition" :key="idx" class="definition-item">
+                          <span class="lang-tag">{{ def.language }}:</span>
+                          <div class="definition-text">{{ def.text }}</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Unit -->
+                    <div v-if="spec.dataSpecificationContent && spec.dataSpecificationContent.unit !== undefined" class="spec-row">
+                      <div class="spec-label">Unit:</div>
+                      <div class="spec-value-box">{{ spec.dataSpecificationContent.unit || 'None' }}</div>
+                    </div>
+                    
+                    <!-- Data Specification Reference -->
+                    <div v-if="spec.dataSpecification && spec.dataSpecification.keys" class="spec-row">
+                      <div class="spec-label">Specification Reference:</div>
+                      <div class="spec-value reference-text">
+                        {{ spec.dataSpecification.keys[0].value }}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -250,12 +310,14 @@ export default {
       default: null
     }
   },
-  setup() {
+  setup(props) {
     // --- 상태 관리 (Reactive State) ---
     const showRawData = ref(true) // Raw JSON 데이터 표시 여부
     const showConcept = ref(false) // Concept Description 모달 표시 여부
     const conceptData = ref(null) // API로 받아온 Concept 데이터 저장
     const loadingConcept = ref(false) // Concept 데이터 로딩 상태
+    const copyButtonText = ref('Copy') // 복사 버튼 텍스트
+    const copyButtonIcon = ref('fas fa-copy') // 복사 버튼 아이콘
 
     // --- UI 헬퍼 메소드 ---
 
@@ -350,18 +412,48 @@ export default {
       conceptData.value = null;
     }
 
+    // JSON 데이터 클립보드에 복사
+    const copyJsonData = async () => {
+      try {
+        const jsonText = JSON.stringify(props.selectedNode.data, null, 2);
+        await navigator.clipboard.writeText(jsonText);
+        
+        // 복사 성공 시 버튼 텍스트와 아이콘 변경
+        copyButtonText.value = 'Copied!';
+        copyButtonIcon.value = 'fas fa-check';
+        
+        // 2초 후 원래 상태로 복원
+        setTimeout(() => {
+          copyButtonText.value = 'Copy';
+          copyButtonIcon.value = 'fas fa-copy';
+        }, 2000);
+      } catch (error) {
+        console.error('Failed to copy:', error);
+        copyButtonText.value = 'Failed';
+        copyButtonIcon.value = 'fas fa-times';
+        
+        setTimeout(() => {
+          copyButtonText.value = 'Copy';
+          copyButtonIcon.value = 'fas fa-copy';
+        }, 2000);
+      }
+    }
+
     // 템플릿에서 사용할 수 있도록 상태와 메소드를 반환
     return {
       showRawData,
       showConcept,
       conceptData,
       loadingConcept,
+      copyButtonText,
+      copyButtonIcon,
       getNodeTypeChar,
       getNodeIconClass,
       getSemanticId,
       formatValue,
       showConceptDescription,
-      closeConcept
+      closeConcept,
+      copyJsonData
     }
   }
 }
@@ -429,6 +521,9 @@ export default {
   padding: 10px 0;
   border-bottom: 2px solid #e9ecef;
   margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .section-header-static h6 {
@@ -438,6 +533,24 @@ export default {
   font-size: 14px;
   color: #2c3e50;
   font-weight: 600;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.copy-btn i {
+  font-size: 12px;
+}
+
+.copy-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .subsection-header {
@@ -642,6 +755,7 @@ export default {
   text-decoration: underline;
 }
 
+/* Concept Modal Styles */
 .concept-modal {
   position: fixed;
   top: 0;
@@ -659,8 +773,8 @@ export default {
   background: white;
   border-radius: 8px;
   width: 90%;
-  max-width: 600px;
-  max-height: 80vh;
+  max-width: 700px;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -709,26 +823,127 @@ export default {
 .concept-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
-.description-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-}
-
-.description-item {
+.concept-info-row {
   display: flex;
   gap: 10px;
+  align-items: baseline;
 }
 
-.language-tag {
+.concept-label {
+  font-size: 13px;
   font-weight: 600;
   color: #6c757d;
-  min-width: 40px;
+  min-width: 80px;
+}
+
+.concept-value {
+  font-size: 13px;
+  color: #212529;
+}
+
+/* Embedded Specifications Styles */
+.embedded-specs {
+  margin-top: 20px;
+}
+
+.subsection-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subsection-title i {
+  font-size: 16px;
+}
+
+.spec-content {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.spec-row {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+.spec-row:last-child {
+  margin-bottom: 0;
+}
+
+.spec-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.spec-value {
+  font-size: 13px;
+  color: #212529;
+  flex: 1;
+}
+
+.spec-value-box {
+  font-size: 12px;
+  color: #212529;
+  background-color: #e7f3ff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.lang-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.lang-tag {
+  font-weight: 600;
+  color: #6c757d;
+  font-size: 11px;
+  min-width: 50px;
+  text-transform: uppercase;
+}
+
+.lang-text {
+  font-size: 13px;
+  color: #212529;
+}
+
+.definition-item {
+  margin-bottom: 10px;
+}
+
+.definition-text {
+  font-size: 13px;
+  color: #212529;
+  line-height: 1.6;
+  text-align: justify;
+  margin-top: 4px;
+  padding-left: 58px;
+}
+
+.reference-text {
+  font-size: 11px;
+  color: #495057;
+  word-break: break-all;
+  font-family: 'Consolas', 'Monaco', monospace;
+  background-color: #f8f9fa;
+  padding: 6px 10px;
+  border-radius: 4px;
 }
 </style>

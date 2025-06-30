@@ -119,7 +119,7 @@ export default {
   
   // 부모 컴포넌트로부터 전달받는 데이터(속성) 정의
   props: {
-    // 현재 활성화된 주 카테고리
+    // 현재 활성화된 주 카테고리 (예: 'equipment', 'material')
     activeCategory: {
       type: String,
       default: 'equipment'
@@ -139,6 +139,7 @@ export default {
   // 부모 컴포넌트로 이벤트를 전달하기 위한 'emits' 정의
   emits: ['menu-selected', 'close-sidebar'],
   
+  // Vue 3 Composition API의 진입점
   setup(props, { emit }) {
     // --- 상태 관리 (Reactive State) ---
 

@@ -139,12 +139,32 @@ const showSidebar = computed(() => {
   return categoriesWithSubmenu.includes(activeCategory.value);
 });
 
-// --- 헬퍼 함수 (Helper Functions) ---
-// 현재 메뉴나 카테고리에 맞는 헤더 아이콘 클래스를 반환
-const getHeaderIcon = () => { /* ... */ };
+const getHeaderIcon = () => {
+  const iconMap = {
+    [MENU_TYPES.SPECIAL.ALL]: 'fa-globe',
+    [MENU_TYPES.SPECIAL.AASX]: 'fa-exchange-alt'
+  };
+  const category = activeCategory.value;
+  if (category === 'equipment') return 'fa-fire';
+  if (category === 'material') return 'fa-cube';
+  if (category === 'process') return 'fa-sync-alt';
+  return iconMap[currentMenu.value] || 'fa-cog';
+};
 
-// 서브 메뉴 이름(menuName)을 기반으로 상위 카테고리를 찾아 반환하는 역방향 조회 함수
-const getCategoryForMenu = (menu) => { /* ... */ };
+const getCategoryForMenu = (menu) => {
+  for (const categoryKey in MENU_TYPES) {
+    const categoryObj = MENU_TYPES[categoryKey];
+    if (typeof categoryObj === 'object') {
+      for (const menuKey in categoryObj) {
+        if (categoryObj[menuKey] === menu) {
+          const lowerCaseCategory = categoryKey.toLowerCase();
+          return lowerCaseCategory === 'special' ? null : lowerCaseCategory;
+        }
+      }
+    }
+  }
+  return null;
+};
 
 // --- 이벤트 핸들러 ---
 // DynamicSidebar 컴포넌트에서 메뉴가 선택되었을 때 호출
@@ -160,9 +180,13 @@ const onFilterTypeChange = () => {
 };
 
 // 사이드바를 토글(열고/닫고)
-const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value; };
-// 사이드바close
-const closeSidebar = () => { sidebarOpen.value = false; };
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value;
+};
+
+const closeSidebar = () => {
+  sidebarOpen.value = false;
+};
 
 // TreeView에서 노드가 선택되었을 때 호출
 const handleSelectNode = (node) => {
@@ -173,25 +197,26 @@ const handleSelectNode = (node) => {
   }
 };
 
-// --- 반응형 로직 및 생명주기 훅 ---
-// 화면 크기를 체크하여 모바일 여부를 판단하고 상태를 업데이트
+// 화면 크기 체크
 const checkScreenSize = () => {
   const wasMobile = isMobile.value;
   isMobile.value = window.innerWidth <= 768;
   
-  // 모바일 뷰에서 데스크톱 뷰로 전환될 때 사이드바를 자동open
+  // 데스크톱으로 전환 시 사이드바 열기
   if (wasMobile && !isMobile.value) {
     sidebarOpen.value = true;
   }
 };
 
-// 컴포넌트가 마운트될 때 실행
+// --- 반응형 로직 및 생명주기 훅 ---
+// 화면 크기를 체크하여 모바일 여부를 판단하고 상태를 업데이트
 onMounted(() => {
   checkScreenSize(); // 초기 화면 크기 확인
   window.addEventListener('resize', checkScreenSize); // 창 크기 변경 감지 리스너 추가
   
+  // 모바일에서는 초기에 사이드바 닫기
   if (isMobile.value) {
-    sidebarOpen.value = false; // 모바일에서는 기본적으로 사이드바를 닫아 둠
+    sidebarOpen.value = false;
   }
 });
 
@@ -200,9 +225,8 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkScreenSize); // 메모리 누수 방지를 위해 리스너 제거
 });
 
-// selectedNode의 변경을 감지하는 Watcher
+// selectNode 메서드 오버라이드
 watch(() => selectedNode.value, (newNode) => {
-  // 모바일에서 새로운 노드가 선택되면 상세 뷰로 강제 전환
   if (newNode && isMobile.value) {
     mobileView.value = 'detail';
   }
@@ -215,14 +239,16 @@ const handleQuery = async (query) => {
   console.log("Handling query:", query);
 
   if (query.filterType && query.value) { // 필터 검색 조건이 있을 경우
-    if (query.menu === 'ALL') await onMenuSelected('ALL');
+    if (query.menu === 'ALL') {
+      await onMenuSelected('ALL');
+    }
     searchFilters.filterType = query.filterType;
     searchFilters.filterValue = query.value;
     await performSearch();
   } 
   else if (query.keyword) { // 키워드 검색 조건이 있을 경우
     await onMenuSelected('ALL');
-    searchFilters.filterType = 'numberofphases'; // 예시 기본 필터
+    searchFilters.filterType = 'numberofphases';
     searchFilters.filterValue = query.keyword;
     await performSearch();
   } 
@@ -233,9 +259,9 @@ const handleQuery = async (query) => {
     const category = query.category;
     activeCategory.value = category;
     const categoryKey = category.toUpperCase();
-    
-    // 서브메뉴가 없는 카테고리이거나, 있는 카테고리의 기본 메뉴를 선택
     const singleLevelMenus = ['operation', 'quality', 'production'];
+
+    // 서브메뉴가 없는 카테고리이거나, 있는 카테고리의 기본 메뉴를 선택
     if (singleLevelMenus.includes(category)) {
       await onMenuSelected(category.charAt(0).toUpperCase() + category.slice(1));
     } else if (MENU_TYPES[categoryKey]) {
