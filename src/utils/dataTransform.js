@@ -366,10 +366,24 @@ export function transformApiToTree(aasData, submodelDataList, searchValue = null
                         submodelNodeName = idParts[1];
                     } else {
                         const parts = submodelId.split('/');
-                        let potentialName = parts.find(p => ['Identification', 'Nameplate', 'TechnicalData'].includes(p));
-                        if(!potentialName) potentialName = parts[parts.length - 1];
+                        // 더 많은 패턴 추가
+                        let potentialName = parts.find(p => [
+                            'Identification', 'Nameplate', 'TechnicalData',
+                            'OperationData', 'Documentation', 'MachineBreakdown',
+                            'AlarmData', 'operationData', 'documentation'
+                        ].includes(p));
+                        
+                        if(!potentialName) {
+                            // 숫자가 아닌 마지막 부분 찾기
+                            for(let i = parts.length - 1; i >= 0; i--) {
+                                if(parts[i] && !parts[i].match(/^\d+$/) && parts[i] !== '') {
+                                    potentialName = parts[i];
+                                    break;
+                                }
+                            }
+                        }
                         submodelNodeName = potentialName || 'Unknown Submodel';
-                    }
+                        }
                 } else {
                     submodelNodeName = 'Unknown Submodel';
                 }
