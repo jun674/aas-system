@@ -137,34 +137,40 @@ const closeMobileNav = () => {
   top: 0;
   left: 0;
   right: 0;
-  height: 50px;
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  height: 56px;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   z-index: 1100;
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 24px;
 }
 
 .topbar-brand {
   color: white;
-  font-weight: bold;
-  font-size: 16px;
-  margin-right: 40px;
+  font-weight: 700;
+  font-size: 18px;
+  margin-right: 48px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  transition: opacity 0.2s ease;
+}
+
+.topbar-brand:hover {
+  opacity: 0.9;
 }
 
 .brand-logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 4px;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 6px;
+  backdrop-filter: blur(10px);
 }
 
 .brand-logo svg {
@@ -173,8 +179,9 @@ const closeMobileNav = () => {
 }
 
 .brand-text {
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.5px;
+  font-size: 17px;
 }
 
 .mobile-nav-toggle {
@@ -184,29 +191,37 @@ const closeMobileNav = () => {
   color: white;
   font-size: 20px;
   cursor: pointer;
-  padding: 5px 10px;
+  padding: 8px;
   margin-left: auto;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.mobile-nav-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .topbar-nav {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   flex: 1;
 }
 
 .nav-link {
-  color: #bdc3c7;
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 8px 14px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  transition: all 0.2s;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
   cursor: pointer;
   white-space: nowrap;
+  position: relative;
 }
 
 .nav-link:hover {
@@ -215,52 +230,89 @@ const closeMobileNav = () => {
 }
 
 .nav-link.active {
-  background-color: rgba(52, 152, 219, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
   color: white;
 }
 
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: #60a5fa;
+  border-radius: 2px;
+}
+
 .nav-link i {
-  font-size: 14px;
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.nav-link:hover i,
+.nav-link.active i {
+  opacity: 1;
 }
 
 .nav-divider {
   width: 1px;
-  height: 20px;
-  background-color: rgba(189, 195, 199, 0.3);
-  margin: 0 10px;
+  height: 24px;
+  background-color: rgba(255, 255, 255, 0.2);
+  margin: 0 12px;
+}
+
+.all-view {
+  color: #86efac;
 }
 
 .all-view:hover {
-  background-color: rgba(39, 174, 96, 0.2);
+  background-color: rgba(134, 239, 172, 0.15);
+  color: #86efac;
 }
 
 .all-view.active {
-  background-color: rgba(39, 174, 96, 0.3);
+  background-color: rgba(134, 239, 172, 0.25);
+  color: #86efac;
+}
+
+.all-view.active::after {
+  background: #86efac;
+}
+
+.aasx-menu {
+  color: #fca5a5;
 }
 
 .aasx-menu:hover {
-  background-color: rgba(231, 76, 60, 0.2);
+  background-color: rgba(252, 165, 165, 0.15);
+  color: #fca5a5;
 }
 
 .aasx-menu.active {
-  background-color: rgba(231, 76, 60, 0.3);
+  background-color: rgba(252, 165, 165, 0.25);
+  color: #fca5a5;
+}
+
+.aasx-menu.active::after {
+  background: #fca5a5;
 }
 
 /* 모바일 스타일 */
 @media (max-width: 768px) {
   .topbar {
-    padding: 0 15px;
+    padding: 0 16px;
+    height: 52px;
   }
   
-  /* 브랜드 텍스트는 계속 표시 */
   .topbar-brand {
-    font-size: 14px; /* 모바일에서 약간 작게 */
-    gap: 8px;
+    font-size: 16px;
+    gap: 10px;
   }
   
   .brand-logo {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
   }
   
   .topbar-brand {
@@ -273,18 +325,19 @@ const closeMobileNav = () => {
   
   .topbar-nav {
     position: fixed;
-    top: 50px;
+    top: 52px;
     right: -100%;
     width: 280px;
-    height: calc(100vh - 50px);
-    background: #2c3e50;
+    height: calc(100vh - 52px);
+    background: #1e293b;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
     flex-direction: column;
     align-items: stretch;
-    gap: 0;
+    gap: 4px;
     padding: 20px;
     overflow-y: auto;
     transition: right 0.3s ease;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+    box-shadow: -4px 0 12px rgba(0,0,0,0.3);
   }
   
   .topbar-nav.mobile-open {
@@ -294,7 +347,11 @@ const closeMobileNav = () => {
   .nav-link {
     padding: 12px 16px;
     border-radius: 8px;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
+  }
+  
+  .nav-link.active::after {
+    display: none;
   }
   
   .nav-link span {
@@ -304,7 +361,7 @@ const closeMobileNav = () => {
   .nav-divider {
     width: 100%;
     height: 1px;
-    margin: 10px 0;
+    margin: 12px 0;
   }
 }
 
@@ -312,11 +369,35 @@ const closeMobileNav = () => {
 @media (min-width: 769px) and (max-width: 1024px) {
   .nav-link {
     padding: 8px 12px;
-    font-size: 12px;
+    font-size: 13px;
   }
   
   .nav-link i {
     display: none;
+  }
+}
+
+/* 호버 효과 강화 */
+@media (hover: hover) {
+  .nav-link {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(0,0,0,0.05) 0%, transparent 70%);
+    transform: scale(0);
+    transition: transform 0.3s ease;
+  }
+  
+  .nav-link:hover::before {
+    transform: scale(1);
   }
 }
 </style>

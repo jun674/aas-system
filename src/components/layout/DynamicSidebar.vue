@@ -24,7 +24,14 @@
       
       <div class="sidebar-header">
         <i class="fas" :class="getCategoryIcon()"></i>
-        {{ getCategoryTitle() }}
+        <span class="header-title">{{ getCategoryTitle() }}</span>
+        <button
+          class="sidebar-collapse-btn"
+          @click="$emit('close-sidebar')"
+          title="Hide sidebar"
+        >
+          <i class="fas fa-times"></i>
+        </button>
       </div>
    
       <nav class="sidebar-nav">
@@ -263,11 +270,11 @@ export default {
 .dynamic-sidebar {
   position: fixed;
   left: 0;
-  top: 50px;
+  top: 56px;
   bottom: 0;
-  width: 240px;
-  background-color: #f8f9fa;
-  border-right: 1px solid #dee2e6;
+  width: 260px;
+  background-color: #ffffff;
+  border-right: 1px solid #e1e4e8;
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 1000;
@@ -284,8 +291,9 @@ export default {
 /* 모바일 스타일 */
 @media (max-width: 768px) {
   .dynamic-sidebar {
+    top: 52px;
     transform: translateX(-100%);
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.1);
   }
   
   .dynamic-sidebar.is-open {
@@ -306,92 +314,147 @@ export default {
   /* 모바일 닫기 버튼 */
   .mobile-close-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
+    top: 15px;
+    right: 15px;
+    background: #f6f8fa;
     border: none;
-    font-size: 20px;
-    color: #495057;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    font-size: 18px;
+    color: #586069;
     cursor: pointer;
-    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
     z-index: 1;
   }
   
   .mobile-close-btn:hover {
-    color: #212529;
+    background: #e1e4e8;
+    color: #24292e;
   }
 }
 
-/* 기존 스타일들 유지 */
+/* 사이드바 헤더 */
 .sidebar-header {
-  background-color: #e9ecef;
-  color: #495057;
-  padding: 15px 20px;
+  background: linear-gradient(135deg, #f6f8fa 0%, #ffffff 100%);
+  color: #24292e;
+  padding: 15px 24px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid #dee2e6;
+  gap: 12px;
+  border-bottom: 1px solid #e1e4e8;
+  letter-spacing: 0.3px;
+  min-height: 60px;
+  position: relative;
 }
 
 .sidebar-header i {
-  color: #6c757d;
+  color: #586069;
+  font-size: 18px;
 }
 
-.sidebar-nav {
-  padding: 10px;
+.header-title {
+  flex: 1;
 }
 
-.nav-link {
-  color: #495057;
-  padding: 10px 15px;
+.sidebar-collapse-btn {
+  background: #f6f8fa;
+  border: none;
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #586069;
+  margin-left: auto;
+  font-size: 18px;
+}
+
+.sidebar-collapse-btn:hover {
+  background: #e1e4e8;
+  color: #24292e;
+}
+
+.sidebar-collapse-btn i {
+  font-size: 18px;
+}
+
+/* 네비게이션 */
+.sidebar-nav {
+  padding: 16px 12px;
+}
+
+/* 메인 네비게이션 링크 */
+.nav-link {
+  color: #24292e;
+  padding: 12px 16px;
+  border-radius: 8px;
   text-decoration: none;
   display: flex;
   align-items: center;
-  font-size: 13px;
-  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
   margin-bottom: 4px;
   cursor: pointer;
+  position: relative;
 }
 
 .nav-link:hover {
-  background-color: #e9ecef;
-  color: #212529;
+  background-color: #f6f8fa;
+  color: #0969da;
 }
 
 .nav-link.active {
-  background-color: #0d6efd;
-  color: white;
+  background-color: #dbeafe;
+  color: #0969da;
 }
 
 .nav-link.expanded {
-  background-color: #e9ecef;
+  background-color: #f6f8fa;
+  color: #0969da;
 }
 
 .nav-link i {
-  margin-right: 10px;
-  width: 16px;
+  margin-right: 12px;
+  width: 20px;
   text-align: center;
-  font-size: 12px;
+  font-size: 14px;
+  opacity: 0.8;
 }
 
+.nav-link:hover i,
+.nav-link.active i,
+.nav-link.expanded i {
+  opacity: 1;
+}
+
+/* 화살표 아이콘 */
 .fa-chevron-down {
-  transition: transform 0.2s;
-  font-size: 10px;
+  transition: transform 0.2s ease;
+  font-size: 12px;
+  opacity: 0.6;
 }
 
 .nav-link.expanded .fa-chevron-down {
   transform: rotate(180deg);
 }
 
+/* 서브메뉴 */
 .submenu {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-out;
-  margin-left: 10px;
-  margin-bottom: 5px;
+  margin: 4px 0 8px 0;
+  padding-left: 12px;
 }
 
 .submenu.show {
@@ -399,23 +462,55 @@ export default {
   overflow-y: auto;
 }
 
+/* 서브메뉴 아이템 */
 .submenu-item {
-  padding: 8px 15px 8px 30px;
-  font-size: 12px;
+  padding: 10px 16px 10px 36px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #586069;
   background-color: transparent;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.submenu-item::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  background-color: #d1d5db;
+  border-radius: 50%;
+  transition: all 0.2s ease;
 }
 
 .submenu-item:hover {
-  background-color: #dee2e6;
+  background-color: #f6f8fa;
+  color: #24292e;
+}
+
+.submenu-item:hover::before {
+  background-color: #0969da;
+  width: 6px;
+  height: 6px;
 }
 
 .submenu-item.active {
-  background-color: #6c757d;
-  color: white;
+  background-color: #e7f3ff;
+  color: #0969da;
+  font-weight: 500;
+}
+
+.submenu-item.active::before {
+  background-color: #0969da;
+  width: 6px;
+  height: 6px;
 }
 
 .submenu-item i {
-  font-size: 6px;
+  display: none;
 }
 
 /* 스크롤바 스타일 */
@@ -424,15 +519,41 @@ export default {
 }
 
 .dynamic-sidebar::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f6f8fa;
 }
 
 .dynamic-sidebar::-webkit-scrollbar-thumb {
-  background: #adb5bd;
+  background: #d1d5db;
   border-radius: 3px;
 }
 
 .dynamic-sidebar::-webkit-scrollbar-thumb:hover {
-  background: #6c757d;
+  background: #adb5bd;
+}
+
+/* 호버 효과 강화 */
+@media (hover: hover) {
+  .nav-link {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background-color: #0969da;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+  
+  .nav-link:hover::after,
+  .nav-link.active::after,
+  .nav-link.expanded::after {
+    transform: translateX(0);
+  }
 }
 </style>

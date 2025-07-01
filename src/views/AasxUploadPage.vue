@@ -1,18 +1,16 @@
 <template>
   <div class="aasx-upload-container">
     <div class="upload-section">
-      <h5 class="mb-4">AASX File Upload</h5>
-      
-      <div 
+      <div
         class="upload-area"
         :class="{ 'drag-over': isDragging }"
         @dragover.prevent="onDragOver"
         @dragleave.prevent="onDragLeave"
         @drop.prevent="onDrop"
       >
-        <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
-        <h6>Drag and drop AASX files here or click to select</h6>
-        <p class="text-muted small">No file limit - Batch processing supported</p>
+        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+        <h5 class="upload-title">Drag and drop AASX files here</h5>
+        <p class="upload-subtitle">or click the buttons below to select files</p>
         
         <input 
           type="file" 
@@ -33,51 +31,63 @@
           style="display: none;"
         >
         
-        <div class="d-flex gap-2 justify-content-center mt-3">
-          <button 
-            class="btn btn-primary"
+        <div class="upload-buttons">
+          <button
+            class="upload-btn"
             @click="$refs.fileInput.click()"
             :disabled="uploading"
           >
-            <i class="fas fa-file me-2"></i>
-            Select Files
+            <i class="fas fa-file"></i>
+            <span>Select Files</span>
           </button>
           
-          <button 
-            class="btn btn-primary"
+          <button
+            class="upload-btn"
             @click="$refs.folderInput.click()"
             :disabled="uploading"
           >
-            <i class="fas fa-folder-open me-2"></i>
-            Select Folder
+            <i class="fas fa-folder-open"></i>
+            <span>Select Folder</span>
           </button>
         </div>
       </div>
 
-      <div v-if="selectedFiles.length > 0" class="file-stats mt-4">
-        <div class="row">
-          <div class="col-md-3">
-            <div class="stat-card">
-              <h6>Total Files</h6>
-              <h3>{{ selectedFiles.length }}</h3>
+      <div v-if="selectedFiles.length > 0" class="file-stats">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ selectedFiles.length }}</div>
+              <div class="stat-label">Total Files</div>
             </div>
           </div>
-          <div class="col-md-3">
-            <div class="stat-card">
-              <h6>Total Size</h6>
-              <h3>{{ formatFileSize(totalSize) }}</h3>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-database"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ formatFileSize(totalSize) }}</div>
+              <div class="stat-label">Total Size</div>
             </div>
           </div>
-          <div class="col-md-3">
-            <div class="stat-card">
-              <h6>Upload Completed</h6>
-              <h3>{{ uploadedCount }} / {{ selectedFiles.length }}</h3>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ uploadedCount }} / {{ selectedFiles.length }}</div>
+              <div class="stat-label">Completed</div>
             </div>
           </div>
-          <div class="col-md-3">
-            <div class="stat-card">
-              <h6>Upload Status</h6>
-              <h3>{{ uploadStatus }}</h3>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ uploadStatus }}</div>
+              <div class="stat-label">Status</div>
             </div>
           </div>
         </div>
@@ -117,66 +127,67 @@
         </div>
       </div> -->
 
-      <div v-if="selectedFiles.length > 0" class="file-list-section mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6>
-            File List 
-            <button 
-              class="btn btn-sm btn-outline-secondary ms-2"
+      <div v-if="selectedFiles.length > 0" class="file-list-section">
+        <div class="section-header">
+          <h6 class="section-title">
+            <i class="fas fa-list"></i>
+            File List
+            <button
+              class="toggle-btn"
               @click="showFileList = !showFileList"
             >
               <i class="fas" :class="showFileList ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
             </button>
           </h6>
-          <div>
-            <button 
-              class="btn btn-sm btn-outline-danger me-2"
+          <div class="section-actions">
+            <button
+              class="action-btn danger"
               @click="clearFailedFiles"
               v-if="failedFiles.length > 0"
             >
-              <i class="fas fa-trash me-1"></i>
+              <i class="fas fa-trash"></i>
               Remove Failed ({{ failedFiles.length }})
             </button>
-            <button 
-              class="btn btn-sm btn-outline-secondary"
+            <button
+              class="action-btn"
               @click="clearFiles"
               :disabled="uploading"
             >
-              <i class="fas fa-trash me-1"></i>
+              <i class="fas fa-trash"></i>
               Clear All
             </button>
           </div>
         </div>
         
-        <div v-show="showFileList" class="file-list-wrapper"> <div class="list-group file-list">
+        <div v-show="showFileList" class="file-list-wrapper">
+          <div class="file-list">
             <div 
-              v-for="(file, index) in paginatedFiles" 
+              v-for="(file, index) in paginatedFiles"
               :key="file.id"
-              class="list-group-item d-flex justify-content-between align-items-center"
-              :class="{
-                'list-group-item-success': file.status === 'completed',
-                'list-group-item-danger': file.status === 'failed',
-                'list-group-item-warning': file.status === 'uploading',
-                'list-group-item-light': file.status === 'pending'
-              }"
+              class="file-item"
+              :class="'status-' + file.status"
             >
               <div class="file-info">
-                <i class="fas fa-file me-2"></i>
-                {{ file.name }}
-                <small class="text-muted ms-2">({{ formatFileSize(file.size) }})</small>
-                <div v-if="file.path && file.path !== file.name" class="small text-muted ms-4">
-                  <i class="fas fa-folder me-1"></i>{{ file.path }}
+                <div class="file-main">
+                  <i class="fas fa-file file-icon"></i>
+                  <span class="file-name">{{ file.name }}</span>
+                  <span class="file-size">({{ formatFileSize(file.size) }})</span>
                 </div>
-                <div v-if="file.error" class="small text-danger ms-4">
-                  <i class="fas fa-exclamation-circle me-1"></i>{{ file.error }}
+                <div v-if="file.path && file.path !== file.name" class="file-path">
+                  <i class="fas fa-folder"></i>
+                  {{ file.path }}
+                </div>
+                <div v-if="file.error" class="file-error">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ file.error }}
                 </div>
               </div>
-              <div class="file-actions d-flex align-items-center">
-                <span class="badge me-2" :class="getStatusBadgeClass(file.status)">
+              <div class="file-actions">
+                <span class="status-badge" :class="'status-' + file.status">
                   {{ getStatusText(file.status) }}
                 </span>
-                <button 
-                  class="btn btn-sm btn-outline-danger"
+                <button
+                  class="remove-btn"
                   @click="removeFile(file.id)"
                   :disabled="uploading && file.status === 'uploading'"
                 >
@@ -186,117 +197,121 @@
             </div>
           </div>
           
-          <nav v-if="totalPages > 1" class="mt-3">
-            <ul class="pagination justify-content-center">
-              <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                <a class="page-link" href="#" @click.prevent="currentPage = 1">
-                  <i class="fas fa-angle-double-left"></i>
-                </a>
-              </li>
-              <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                <a class="page-link" href="#" @click.prevent="currentPage--">
-                  <i class="fas fa-angle-left"></i>
-                </a>
-              </li>
-              <li class="page-item active">
-                <span class="page-link">
-                  {{ currentPage }} / {{ totalPages }}
-                </span>
-              </li>
-              <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                <a class="page-link" href="#" @click.prevent="currentPage++">
-                  <i class="fas fa-angle-right"></i>
-                </a>
-              </li>
-              <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                <a class="page-link" href="#" @click.prevent="currentPage = totalPages">
-                  <i class="fas fa-angle-double-right"></i>
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-
-      <div v-if="selectedFiles.length > 0" class="upload-controls mt-4">
-        <button 
-          class="btn btn-success btn-lg me-2"
-          @click="startBatchUpload"
-          :disabled="uploading || allFilesProcessed"
-        >
-          <span v-if="!uploading">
-            <i class="fas fa-upload me-2"></i>
-            Start Upload
-          </span>
-          <span v-else>
-            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-            Uploading...
-          </span>
-        </button>
-        
-        <button 
-          class="btn btn-warning btn-lg me-2"
-          @click="pauseUpload"
-          v-if="uploading && !isPaused"
-        >
-          <i class="fas fa-pause me-2"></i>
-          Pause
-        </button>
-        
-        <button 
-          class="btn btn-info btn-lg me-2"
-          @click="resumeUpload"
-          v-if="uploading && isPaused"
-        >
-          <i class="fas fa-play me-2"></i>
-          Resume
-        </button>
-        
-        <button 
-          class="btn btn-danger btn-lg"
-          @click="cancelUpload"
-          v-if="uploading"
-        >
-          <i class="fas fa-stop me-2"></i>
-          Cancel
-        </button>
-      </div>
-
-      <div v-if="uploading || uploadedCount > 0" class="mt-4">
-        <h6>Overall Progress</h6>
-        <div class="progress" style="height: 30px;">
-          <div 
-            class="progress-bar progress-bar-striped"
-            :class="{ 'progress-bar-animated': uploading }"
-            role="progressbar"
-            :style="{ width: overallProgress + '%' }"
-            :aria-valuenow="overallProgress"
-            aria-valuemin="0"
-            aria-valuemax="100"
-          >
-            {{ overallProgress }}%
-          </div>
-        </div>
-        
-        <div v-if="uploading && currentBatchProgress > 0" class="mt-3">
-          <h6>Current Batch Progress ({{ currentBatchFiles.length }} files)</h6>
-          <div class="progress" style="height: 20px;">
-            <div 
-              class="progress-bar progress-bar-striped progress-bar-animated bg-info"
-              role="progressbar"
-              :style="{ width: currentBatchProgress + '%' }"
-              :aria-valuenow="currentBatchProgress"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              {{ currentBatchProgress }}%
+          <div v-if="totalPages > 1" class="pagination-wrapper">
+            <div class="pagination">
+              <button
+                class="page-btn"
+                :disabled="currentPage === 1"
+                @click="currentPage = 1"
+              >
+                <i class="fas fa-angle-double-left"></i>
+              </button>
+              <button
+                class="page-btn"
+                :disabled="currentPage === 1"
+                @click="currentPage--"
+              >
+                <i class="fas fa-angle-left"></i>
+              </button>
+              <span class="page-info">
+                {{ currentPage }} / {{ totalPages }}
+              </span>
+              <button
+                class="page-btn"
+                :disabled="currentPage === totalPages"
+                @click="currentPage++"
+              >
+                <i class="fas fa-angle-right"></i>
+              </button>
+              <button
+                class="page-btn"
+                :disabled="currentPage === totalPages"
+                @click="currentPage = totalPages"
+              >
+                <i class="fas fa-angle-double-right"></i>
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div v-if="uploadLogs.length > 0" class="upload-logs mt-4">
-        <h6>Upload Logs</h6>
+      <div v-if="selectedFiles.length > 0" class="upload-controls">
+        <button
+          class="control-btn primary"
+          @click="startBatchUpload"
+          :disabled="uploading || allFilesProcessed"
+        >
+          <span v-if="!uploading">
+            <i class="fas fa-upload"></i>
+            Start Upload
+          </span>
+          <span v-else>
+            <span class="spinner"></span>
+            Uploading...
+          </span>
+        </button>
+        
+        <button
+          class="control-btn warning"
+          @click="pauseUpload"
+          v-if="uploading && !isPaused"
+        >
+          <i class="fas fa-pause"></i>
+          Pause
+        </button>
+        
+        <button
+          class="control-btn info"
+          @click="resumeUpload"
+          v-if="uploading && isPaused"
+        >
+          <i class="fas fa-play"></i>
+          Resume
+        </button>
+        
+        <button
+          class="control-btn danger"
+          @click="cancelUpload"
+          v-if="uploading"
+        >
+          <i class="fas fa-stop"></i>
+          Cancel
+        </button>
+      </div>
+
+      <div v-if="uploading || uploadedCount > 0" class="progress-section">
+        <div class="progress-item">
+          <h6 class="progress-title">Overall Progress</h6>
+          <div class="progress-bar-wrapper">
+            <div
+              class="progress-bar"
+              :class="{ 'animated': uploading }"
+              :style="{ width: overallProgress + '%' }"
+            >
+              <span class="progress-text">{{ overallProgress }}%</span>
+            </div>
+          </div>
+        </div>
+        
+        <div v-if="uploading && currentBatchProgress > 0" class="progress-item">
+          <h6 class="progress-title">Current Batch ({{ currentBatchFiles.length }} files)</h6>
+          <div class="progress-bar-wrapper">
+            <div
+              class="progress-bar batch"
+              :class="{ 'animated': true }"
+              :style="{ width: currentBatchProgress + '%' }"
+            >
+              <span class="progress-text">{{ currentBatchProgress }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="uploadLogs.length > 0" class="upload-logs">
+        <h6 class="section-title">
+          <i class="fas fa-terminal"></i>
+          Upload Logs
+        </h6>
         <div class="log-container">
           <div v-for="(log, index) in uploadLogs" :key="index" class="log-entry" :class="'log-' + log.type">
             <span class="log-time">{{ log.time }}</span>
@@ -740,72 +755,287 @@ export default {
 
 <style scoped>
 .aasx-upload-container {
-  padding: 20px;
+  padding: 24px;
+  height: 100%;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+}
+
+.upload-section {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.upload-section {
-  background: white;
-  border-radius: 8px;
-  padding: 30px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
+/* Upload Area */
 .upload-area {
-  border: 2px dashed #dee2e6;
-  border-radius: 8px;
-  padding: 40px;
+  background: white;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 60px 40px;
   text-align: center;
-  background-color: #f8f9fa;
   transition: all 0.3s ease;
-  cursor: pointer;
+  margin-bottom: 24px;
 }
 
 .upload-area:hover {
-  border-color: #0d6efd;
-  background-color: #e7f1ff;
+  border-color: #3b82f6;
+  background-color: #f0f9ff;
 }
 
 .upload-area.drag-over {
-  border-color: #0d6efd;
-  background-color: #e7f1ff;
-  transform: scale(1.02);
+  border-color: #3b82f6;
+  background-color: #e0f2fe;
+  transform: scale(1.01);
 }
 
-/* Stat Cards */
-.stat-card {
-  background: #f8f9fa;
+.upload-icon {
+  font-size: 48px;
+  color: #3b82f6;
+  margin-bottom: 16px;
+}
+
+.upload-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.upload-subtitle {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+/* Upload Buttons */
+.upload-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #3b82f6;
+  color: white;
+  border: none;
   border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-btn:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upload-btn i {
+  font-size: 16px;
+}
+
+/* Stats Section */
+.file-stats {
+  margin-bottom: 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
   padding: 20px;
-  text-align: center;
-  border: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
 }
 
-.stat-card h6 {
-  color: #6c757d;
-  font-size: 0.875rem;
-  margin-bottom: 10px;
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.stat-card h3 {
-  color: #2c3e50;
-  font-size: 1.5rem;
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  background: #e0f2fe;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon i {
+  font-size: 20px;
+  color: #3b82f6;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* File List Section */
+.file-list-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
 }
 
-/* File List */
-.file-list-wrapper { /* Added wrapper for scroll */
-  max-height: 400px; /* Set a max height */
-  overflow-y: auto; /* Enable vertical scroll */
-  border: 1px solid #dee2e6; /* Optional: Add border for visual separation */
-  border-radius: 4px;
-  padding: 5px; /* Optional: Add padding inside scrollable area */
+.section-title i {
+  color: #3b82f6;
 }
 
-.list-group-item {
-  margin-bottom: 5px;
+.toggle-btn {
+  background: #f3f4f6;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 8px;
   transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background: #e5e7eb;
+}
+
+.section-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.action-btn.danger {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.action-btn.danger:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* File List */
+.file-list-wrapper {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.file-list {
+  padding: 8px;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.file-item:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.file-item.status-completed {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.file-item.status-failed {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.file-item.status-uploading {
+  background: #fefce8;
+  border-color: #fde68a;
 }
 
 .file-info {
@@ -813,103 +1043,400 @@ export default {
   min-width: 0;
 }
 
+.file-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.file-icon {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.file-name {
+  font-weight: 500;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-size {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.file-path,
+.file-error {
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 22px;
+}
+
+.file-error {
+  color: #dc2626;
+}
+
+.file-path i,
+.file-error i {
+  font-size: 10px;
+}
+
 .file-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
 }
 
-/* Progress Bar */
-.progress {
-  background-color: #e9ecef;
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.status-pending {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-badge.status-uploading {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-badge.status-completed {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-badge.status-failed {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.remove-btn {
+  width: 28px;
+  height: 28px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6b7280;
+}
+
+.remove-btn:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Pagination */
+.pagination-wrapper {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-btn {
+  width: 32px;
+  height: 32px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6b7280;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Upload Controls */
+.upload-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.control-btn.primary {
+  background: #10b981;
+  color: white;
+}
+
+.control-btn.primary:hover:not(:disabled) {
+  background: #059669;
+}
+
+.control-btn.warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.control-btn.warning:hover:not(:disabled) {
+  background: #d97706;
+}
+
+.control-btn.info {
+  background: #3b82f6;
+  color: white;
+}
+
+.control-btn.info:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.control-btn.danger {
+  background: #ef4444;
+  color: white;
+}
+
+.control-btn.danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.control-btn i {
+  font-size: 16px;
+}
+
+/* Spinner */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Progress Section */
+.progress-section {
+  margin-bottom: 24px;
+}
+
+.progress-item {
+  margin-bottom: 20px;
+}
+
+.progress-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.progress-bar-wrapper {
+  background: #e5e7eb;
+  border-radius: 8px;
+  height: 32px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 8px;
+  transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar.batch {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.progress-bar.animated::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  to {
+    left: 100%;
+  }
+}
+
+.progress-text {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Upload Logs */
+.upload-logs {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.upload-logs .section-title {
+  margin-bottom: 16px;
+}
+
 .log-container {
   max-height: 200px;
   overflow-y: auto;
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  padding: 10px;
-  font-family: 'Consolas', 'Monaco', monospace;
-  font-size: 0.875rem;
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 16px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
 }
 
 .log-entry {
-  margin-bottom: 5px;
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  margin-bottom: 8px;
+  line-height: 1.4;
 }
 
 .log-time {
-  color: #6c757d;
+  color: #64748b;
   flex-shrink: 0;
+  font-size: 12px;
 }
 
-.log-info { color: #0d6efd; }
-.log-success { color: #198754; }
-.log-warning { color: #ffc107; }
-.log-error { color: #dc3545; }
-
-/* Icon Colors */
-.fa-cloud-upload-alt {
-  color: #0d6efd;
+.log-message {
+  flex: 1;
 }
 
-.fa-file {
-  color: #ffffff;
-}
+.log-info { color: #60a5fa; }
+.log-success { color: #4ade80; }
+.log-warning { color: #fbbf24; }
+.log-error { color: #f87171; }
 
 /* Scrollbar Styles */
-.file-list-wrapper::-webkit-scrollbar, /* Added for the new wrapper */
+.file-list-wrapper::-webkit-scrollbar,
 .log-container::-webkit-scrollbar {
   width: 8px;
 }
 
-.file-list-wrapper::-webkit-scrollbar-track, /* Added for the new wrapper */
+.file-list-wrapper::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
 .log-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #334155;
   border-radius: 4px;
 }
 
-.file-list-wrapper::-webkit-scrollbar-thumb, /* Added for the new wrapper */
+.file-list-wrapper::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
 .log-container::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #475569;
   border-radius: 4px;
 }
 
-.file-list-wrapper::-webkit-scrollbar-thumb:hover, /* Added for the new wrapper */
+.file-list-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
 .log-container::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #64748b;
 }
 
-/* Button Group */
-.upload-controls {
-  text-align: center;
-}
-
-/* Batch Settings Card */
-.batch-settings .card {
-  border: 1px solid #dee2e6;
-}
-
-.batch-settings .form-label {
-  font-weight: 600;
-  color: #495057;
-}
-
-/* Pagination */
-.pagination {
-  margin-bottom: 0;
-}
-
-.page-link {
-  color: #0d6efd;
-  border-radius: 4px;
-  margin: 0 2px;
-}
-
-.page-item.active .page-link {
-  background-color: #0d6efd;
-  border-color: #0d6efd;
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .upload-controls {
+    flex-wrap: wrap;
+  }
+  
+  .control-btn {
+    flex: 1;
+    min-width: 120px;
+  }
 }
 </style>

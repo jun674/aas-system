@@ -1,59 +1,142 @@
 <template>
   <main class="dashboard">
-    <h1>AAS System Dashboard</h1>
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">
+        <span class="title-gradient">AAS System Dashboard</span>
+      </h1>
+      <p class="dashboard-subtitle">Real-time Data Monitoring & Management</p>
+    </div>
     
     <section class="card-grid">
-      <div class="stat-card">
-        <div class="icon"><i class="fas fa-globe-asia"></i></div>
-        <h3>Total AAS</h3>
-        <p>{{ totalAas }}</p>
+      <div class="stat-card stat-card-primary">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <i class="fas fa-globe-asia"></i>
+          </div>
+          <div class="stat-info">
+            <h3>Total AAS</h3>
+            <p class="stat-number">{{ totalAas.toLocaleString() }}</p>
+          </div>
+        </div>
+        <div class="stat-card-bg"></div>
       </div>
-      <div class="stat-card">
-        <div class="icon"><i class="fas fa-folder-tree"></i></div>
-        <h3>Total Submodels</h3>
-        <p>{{ totalSubmodels }}</p>
+      
+      <div class="stat-card stat-card-success">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <i class="fas fa-folder-tree"></i>
+          </div>
+          <div class="stat-info">
+            <h3>Total Submodels</h3>
+            <p class="stat-number">{{ totalSubmodels.toLocaleString() }}</p>
+          </div>
+        </div>
+        <div class="stat-card-bg"></div>
       </div>
-      <div class="stat-card">
-        <div class="icon"><i class="fas fa-book"></i></div>
-        <h3>Total Concept Descriptions</h3>
-        <p>{{ totalConcepts }}</p>
+      
+      <div class="stat-card stat-card-warning">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <i class="fas fa-book"></i>
+          </div>
+          <div class="stat-info">
+            <h3>Total Concept Descriptions</h3>
+            <p class="stat-number">{{ totalConcepts.toLocaleString() }}</p>
+          </div>
+        </div>
+        <div class="stat-card-bg"></div>
       </div>
     </section>
 
     <section class="main-content-grid">
       <div class="content-box full-width">
-
         <div class="filter-shortcuts">
-          <h2>Shortcuts to key filters</h2>
-          <button class="btn" @click="quickSearch('inputpowervoltage', '380')"><i class="fas fa-bolt"></i> Input Power Voltage 380V</button>
-          <button class="btn" @click="quickSearch('numberofphases', 'Three')"><i class="fas fa-bolt"></i> Number of Phases Three</button>
-          <button class="btn" @click="quickSearch('dutycycle', '60')"><i class="fas fa-bolt"></i> Duty Cycle 60%</button>
+          <h2 class="section-title">
+            <i class="fas fa-filter"></i>
+            Quick Filters
+          </h2>
+          <div class="filter-buttons">
+            <button class="filter-btn" @click="quickSearch('inputpowervoltage', '380')">
+              <i class="fas fa-bolt"></i>
+              <span>Input Voltage 380V</span>
+            </button>
+            <button class="filter-btn" @click="quickSearch('numberofphases', 'Three')">
+              <i class="fas fa-wave-square"></i>
+              <span>Three Phase</span>
+            </button>
+            <button class="filter-btn" @click="quickSearch('dutycycle', '60')">
+              <i class="fas fa-percentage"></i>
+              <span>Duty Cycle 60%</span>
+            </button>
+          </div>
         </div>
-        <hr class="section-divider">
 
-        <h2>Quick Launch</h2>
-        <div class="quick-search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" v-model="searchKeyword" @keyup.enter="executeSearch" placeholder="What data do you need">
+        <div class="quick-launch-section">
+          <h2 class="section-title">
+            <i class="fas fa-rocket"></i>
+            Quick Launch
+          </h2>
+          
+          <div class="quick-search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input
+              type="text"
+              v-model="searchKeyword"
+              @keyup.enter="executeSearch"
+              placeholder="Enter search keywords..."
+              class="search-input"
+            >
+            <button class="search-btn" @click="executeSearch">
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+          
+          <nav class="action-card-list">
+            <a href="#" @click.prevent="navigateToSearch('equipment')" class="action-card equipment-card">
+              <div class="card-icon">
+                <i class="fas fa-cogs"></i>
+              </div>
+              <div class="card-content">
+                <h4>Equipment Search</h4>
+                <p>Browse manufacturing equipment</p>
+              </div>
+              <i class="fas fa-chevron-right arrow-icon"></i>
+            </a>
+            
+            <a href="#" @click.prevent="navigateToSearch('material')" class="action-card material-card">
+              <div class="card-icon">
+                <i class="fas fa-cube"></i>
+              </div>
+              <div class="card-content">
+                <h4>Material Search</h4>
+                <p>Browse materials and components</p>
+              </div>
+              <i class="fas fa-chevron-right arrow-icon"></i>
+            </a>
+            
+            <a href="#" @click.prevent="navigateToSearch('process')" class="action-card process-card">
+              <div class="card-icon">
+                <i class="fas fa-sync-alt"></i>
+              </div>
+              <div class="card-content">
+                <h4>Process Search</h4>
+                <p>Browse manufacturing processes</p>
+              </div>
+              <i class="fas fa-chevron-right arrow-icon"></i>
+            </a>
+            
+            <a href="#" @click.prevent="navigateToUpload" class="action-card upload-card">
+              <div class="card-icon">
+                <i class="fas fa-upload"></i>
+              </div>
+              <div class="card-content">
+                <h4>AASX Upload</h4>
+                <p>Upload new AAS packages</p>
+              </div>
+              <i class="fas fa-chevron-right arrow-icon"></i>
+            </a>
+          </nav>
         </div>
-        <nav class="action-card-list">
-          <a href="#" @click.prevent="navigateToSearch('equipment')">
-            <span class="icon"><i class="fas fa-cogs"></i></span>
-            Equipment Data Search
-          </a>
-          <a href="#" @click.prevent="navigateToSearch('material')">
-            <span class="icon"><i class="fas fa-cube"></i></span>
-            Material Data Search
-          </a>
-           <a href="#" @click.prevent="navigateToSearch('process')">
-            <span class="icon"><i class="fas fa-sync-alt"></i></span>
-            Process Data Search
-          </a>
-          <a href="#" @click.prevent="navigateToUpload">
-            <span class="icon upload-icon"><i class="fas fa-upload"></i></span>
-            AASX Upload
-          </a>
-        </nav>
       </div>
     </section>
   </main>
@@ -138,128 +221,443 @@ const quickSearch = (filterType, value) => {
 </script>
 
 <style scoped>
+/* 메인 대시보드 컨테이너 */
 main.dashboard {
-    padding: 20px 30px;
+    padding: 30px;
     height: calc(100vh - 50px);
     overflow-y: auto;
+    background: #f5f7fa;
 }
-.dashboard h1 {
-    font-size: 1.8em;
-    margin-bottom: 20px;
+
+/* 대시보드 헤더 */
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 40px;
 }
+
+.dashboard-title {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.title-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dashboard-subtitle {
+    color: #6c757d;
+    font-size: 1.1em;
+    margin: 0;
+}
+
+/* 통계 카드 그리드 */
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
 }
+
+/* 통계 카드 스타일 */
 .stat-card {
+    position: relative;
     background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border-left: 4px solid #3498db;
+    border-radius: 16px;
+    padding: 30px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
-.stat-card .icon {
-    font-size: 1.5em;
-    color: #3498db;
-    margin-bottom: 10px;
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
-.stat-card h3 {
-    margin: 0 0 5px 0;
-    color: #7f8c8d;
+
+.stat-card-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.stat-card-bg {
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 200%;
+    height: 200%;
+    opacity: 0.05;
+    transform: rotate(45deg);
+    transition: all 0.5s ease;
+}
+
+.stat-card-primary .stat-card-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-card-success .stat-card-bg {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.stat-card-warning .stat-card-bg {
+    background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+}
+
+.stat-card:hover .stat-card-bg {
+    opacity: 0.1;
+    transform: rotate(45deg) scale(1.1);
+}
+
+.stat-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8em;
+}
+
+.stat-card-primary .stat-icon-wrapper {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.stat-card-success .stat-icon-wrapper {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+}
+
+.stat-card-warning .stat-icon-wrapper {
+    background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+    color: white;
+}
+
+.stat-info h3 {
+    margin: 0 0 8px 0;
+    color: #6c757d;
     font-size: 0.9em;
-    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0.5px;
 }
-.stat-card p {
+
+.stat-number {
     margin: 0;
-    font-size: 2em;
-    font-weight: bold;
+    font-size: 2.2em;
+    font-weight: 700;
+    color: #2d3748;
 }
+
+/* 메인 콘텐츠 그리드 */
 .main-content-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 30px;
 }
+
 .content-box {
     background: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
+
 .content-box.full-width {
-  grid-column: 1 / -1;
+    grid-column: 1 / -1;
 }
-.content-box h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #dee2e6;
-    padding-bottom: 15px;
-}
-.filter-shortcuts {
-    margin-bottom: 15px; /* 아래 섹션과 간격 */
-}
-.filter-shortcuts .btn {
-    background-color: #e9ecef;
-    border: none;
-    border-radius: 15px;
-    padding: 8px 15px;
-    margin-right: 10px;
-    font-size: 0.9em;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.filter-shortcuts .btn:hover {
-    background-color: #d1d9e0;
-}
-.quick-search-box {
-    position: relative;
-    margin-bottom: 20px;
-}
-.quick-search-box input {
-    width: 100%;
-    padding: 12px 15px 12px 40px;
-    border-radius: 6px;
-    border: 1px solid #dee2e6;
-    font-size: 1em;
-    box-sizing: border-box;
-}
-.quick-search-box .fa-search {
-    position: absolute;
-    left: 15px;
-    top: 14px;
-    color: #7f8c8d;
-}
-.action-card-list a {
+
+/* 섹션 타이틀 */
+.section-title {
+    font-size: 1.4em;
+    margin: 0 0 25px 0;
+    color: #2d3748;
     display: flex;
     align-items: center;
-    padding: 18px 15px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    text-decoration: none;
-    color: #2c3e50;
+    gap: 10px;
+}
+
+.section-title i {
+    font-size: 0.9em;
+    color: #667eea;
+}
+
+/* 필터 섹션 */
+.filter-shortcuts {
+    margin-bottom: 40px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4a5568;
     font-weight: 500;
-    transition: all 0.2s ease;
 }
-.action-card-list a:hover {
+
+.filter-btn:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    background-color: #e7f1ff;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    border-color: transparent;
 }
-.action-card-list .icon {
-    font-size: 1.2em;
-    margin-right: 15px;
-    width: 25px;
-    text-align: center;
+
+.filter-btn i {
+    font-size: 0.9em;
+}
+
+/* 빠른 실행 섹션 */
+.quick-launch-section {
+    margin-top: 40px;
+}
+
+/* 검색 박스 */
+.quick-search-box {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 16px 50px 16px 50px;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    font-size: 1.05em;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 1.1em;
+}
+
+.search-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-btn:hover {
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* 액션 카드 리스트 */
+.action-card-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.action-card {
+    display: flex;
+    align-items: center;
+    padding: 25px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+}
+
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    transition: all 0.3s ease;
+}
+
+.equipment-card::before {
+    background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+}
+
+.material-card::before {
+    background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+}
+
+.process-card::before {
+    background: linear-gradient(90deg, #f6ad55 0%, #ed8936 100%);
+}
+
+.upload-card::before {
+    background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    background: white;
+}
+
+.action-card:hover::before {
+    height: 100%;
+    opacity: 0.05;
+}
+
+.card-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4em;
+    margin-right: 20px;
+    transition: all 0.3s ease;
+}
+
+.equipment-card .card-icon {
+    background: rgba(52, 152, 219, 0.1);
     color: #3498db;
 }
-.action-card-list .upload-icon {
+
+.material-card .card-icon {
+    background: rgba(72, 187, 120, 0.1);
+    color: #48bb78;
+}
+
+.process-card .card-icon {
+    background: rgba(246, 173, 85, 0.1);
+    color: #f6ad55;
+}
+
+.upload-card .card-icon {
+    background: rgba(231, 76, 60, 0.1);
     color: #e74c3c;
 }
-.section-divider {
-    border: none;
-    border-top: 1px solid #f1f1f1;
-    margin: 30px 0;
+
+.action-card:hover .card-icon {
+    transform: scale(1.1);
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-content h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.card-content p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+.arrow-icon {
+    color: #cbd5e0;
+    font-size: 1.2em;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover .arrow-icon {
+    color: #667eea;
+    transform: translateX(5px);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    main.dashboard {
+        padding: 20px;
+    }
+    
+    .dashboard-title {
+        font-size: 2em;
+    }
+    
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-buttons {
+        flex-direction: column;
+    }
+    
+    .filter-btn {
+        width: 100%;
+    }
+    
+    .action-card-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-card {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.stat-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.stat-card:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.content-box {
+    animation: fadeIn 0.6s ease-out 0.3s both;
 }
 </style>

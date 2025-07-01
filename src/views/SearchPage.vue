@@ -1,8 +1,18 @@
 <template>
   <div class="search-page-container">
+    <!-- 데스크톱 사이드바 열기 버튼 - 사이드바가 닫혀있을 때만 표시 -->
+    <button
+      v-if="showSidebar && !sidebarOpen && !isMobile"
+      class="sidebar-open-btn"
+      @click="toggleSidebar"
+      title="Show sidebar"
+    >
+      <i class="fas fa-chevron-right"></i>
+    </button>
+    
     <!-- 모바일 슬라이드 토글 버튼 - 사이드바가 닫혀있을 때만 표시 -->
-    <button 
-      v-if="showSidebar && !sidebarOpen"
+    <button
+      v-if="showSidebar && !sidebarOpen && isMobile"
       class="mobile-menu-toggle"
       @click="toggleSidebar"
       title="Open sidebar"
@@ -120,9 +130,9 @@ const props = defineProps({
 
 // useSearch 컴포저블을 호출하여 검색 관련 상태와 함수들을 분해 할당
 const {
-  loading, error, selectedNode, treeData, searchFilters,
+  loading, error, selectedNode, selectedNodeDetail, treeData, searchFilters,
   filterOptions, currentMenu, filteredAAS, menuCounts,
-  currentMenuDisplayName, changeMenu, performSearch, 
+  currentMenuDisplayName, changeMenu, performSearch,
   clearSearch, toggleNode, selectNode
 } = useSearch();
 
@@ -295,7 +305,7 @@ watch(() => props.query, (newQuery) => {
 /* 모바일 슬라이드 토글 버튼 - 사이드바 닫혀있을 때만 */
 .mobile-menu-toggle {
   position: fixed;
-  top: 70px;
+  top: 76px;
   left: 0;
   z-index: 1001;
   background-color: #0d6efd;
@@ -348,7 +358,7 @@ watch(() => props.query, (newQuery) => {
 }
 
 .main-content.with-sidebar {
-  margin-left: 240px;
+  margin-left: 260px;
 }
 
 @media (max-width: 768px) {
@@ -492,9 +502,48 @@ watch(() => props.query, (newQuery) => {
   }
 }
 
+/* 사이드바 열기 버튼 */
+.sidebar-open-btn {
+  position: fixed;
+  left: 0;
+  top: 76px;
+  z-index: 1001;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 0 8px 8px 0;
+  border-left: none;
+  width: 32px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.sidebar-open-btn:hover {
+  background: #f3f4f6;
+  box-shadow: 2px 2px 12px rgba(0,0,0,0.15);
+  width: 36px;
+}
+
+.sidebar-open-btn i {
+  font-size: 14px;
+  color: #374151;
+}
+
+.sidebar-open-btn:hover i {
+  color: #111827;
+}
+
 @media (max-width: 1200px) {
   .main-content.with-sidebar {
-    margin-left: 0; 
+    margin-left: 0;
+  }
+  
+  .sidebar-open-btn {
+    display: none;
   }
 }
 </style>
