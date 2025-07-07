@@ -24,7 +24,7 @@
       </div>
     </div>
     <div v-else class="tree-container">
-      <div class="tree-content">
+      <div class="tree-content" @scroll="handleScroll">
         <TreeNode
           v-for="node in treeData"
           :key="node.id"
@@ -61,7 +61,7 @@ export default {
       default: null
     }
   },
-  emits: ['node-toggle', 'node-select', 'retry'],
+  emits: ['node-toggle', 'node-select', 'retry', 'scrolled-to-bottom'],
   setup(props, { emit }) {
     const onToggle = (nodeId) => {
       console.log('TreeView onToggle 호출:', nodeId)  // 디버깅 로그
@@ -81,9 +81,19 @@ export default {
     const onSelect = (node) => {
       emit('node-select', node)
     }
+
+    const handleScroll = (event) => {
+      const { scrollTop, scrollHeight, clientHeight } = event.target;
+      // 사용자가 스크롤을 거의 끝까지 내렸을 때 이벤트를 발생시킵니다.
+      if (scrollHeight > clientHeight && scrollHeight - scrollTop <= clientHeight + 200) {
+        emit('scrolled-to-bottom');
+      }
+    };
+
     return {
       onToggle,
-      onSelect
+      onSelect,
+      handleScroll
     }
   }
 }

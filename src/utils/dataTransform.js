@@ -433,6 +433,73 @@ export function transformApiToTree(aasData, submodelDataList, searchValue = null
   });
 }
 
+/**
+ * Submodel 검색 결과를 트리 구조로 변환
+ * @param {Array} submodelList - API에서 받은 Submodel 목록
+ * @param {string} searchValue - 검색어
+ * @returns {Array} - 트리 노드 배열
+ */
+export function transformSubmodelSearch(submodelList, searchValue = null) {
+  if (!Array.isArray(submodelList)) return [];
+
+  return submodelList.map(submodel => {
+    const submodelNode = {
+      id: submodel.id,
+      name: submodel.idShort || 'Unknown Submodel',
+      type: 'submodel',
+      expanded: false, // 기본적으로 접힌 상태로 변경
+      data: submodel,
+      children: [],
+      isMatched: true // 검색 결과이므로 항상 true
+    };
+
+    if (submodel.submodelElements && Array.isArray(submodel.submodelElements)) {
+      submodelNode.children = transformSubmodelElements(
+        submodel.submodelElements,
+        submodel.id,
+        searchValue
+      );
+    }
+    return submodelNode;
+  });
+}
+
+/**
+ * Concept Description 검색 결과를 트리 구조로 변환
+ * @param {Array} conceptList - API에서 받은 Concept Description 목록
+ * @returns {Array} - 트리 노드 배열
+ */
+export function transformConceptSearch(conceptList) {
+  if (!Array.isArray(conceptList)) return [];
+
+  return conceptList.map(concept => {
+    let name = concept.idShort;
+
+    const specContent = concept.embeddedDataSpecifications?.[0]?.dataSpecificationContent;
+    if (specContent?.preferredName) {
+      const preferredNameText = getMultiLanguageValue(specContent.preferredName, 'en');
+      if (preferredNameText) {
+        name = preferredNameText;
+      }
+    }
+    
+    if (!name) {
+        name = 'Unknown Concept';
+    }
+
+    return {
+      id: concept.id,
+      name: name,
+      type: 'concept',
+      expanded: false,
+      data: concept,
+      children: [],
+      isMatched: true
+    };
+  });
+}
+
+
 // === 트리 상태 업데이트 유틸리티 함수 === //
 /**
  * 특정 ID를 가진 노드의 'expanded' 상태(확장/축소)를 토글

@@ -1,6 +1,6 @@
 import { ref, reactive, computed, watch } from 'vue' // Vue의 반응성 시스템에서 필요한 함수들을 import
 import apiClient, { dataAPI, searchAPI } from '@/services/api' // API 클라이언트 및 특정 API 엔드포인트들을 import
-import { transformApiToTree, toggleNodeExpanded, updateSelectedNode, transformSubmodelElements } from '@/utils/dataTransform'// 데이터를 트리 구조로 변환하거나 노드를 조작하는 유틸리티 함수들을 import
+import { transformApiToTree, transformSubmodelSearch, transformConceptSearch, toggleNodeExpanded, updateSelectedNode, transformSubmodelElements } from '@/utils/dataTransform'// 데이터를 트리 구조로 변환하거나 노드를 조작하는 유틸리티 함수들을 import
 import { isExcludedComponentAAS, filterAASByMenuType, calculateMenuCounts, getMenuDisplayName, MENU_TYPES, EQUIPMENT_KEYWORDS } from '@/utils/menuFilters' // 메뉴 필터링, 카운트 계산 등 메뉴 관련 유틸리티 함수와 상수들을 import
 
 /**
@@ -23,7 +23,12 @@ export function useSearch() {
     filterType: '', // 필터 종류
     filterValue: '' // 필터 값
   })
-  const menuCounts = ref({}) // 각 메뉴별 데이터 개수 
+  const menuCounts = ref({}) // 각 메뉴별 데이터 개수
+  const pagination = reactive({
+    currentPage: 1,
+    hasMorePages: true,
+    isLoadingMore: false
+  })
 
   // --- 계산된 속성 (Computed Properties) --- //
   // 현재 메뉴에 따라 동적으로 필터 옵션을 결정
@@ -50,7 +55,7 @@ export function useSearch() {
     const examples = {
       'aas': 'e.g., CO2',
       'submodel': 'e.g., 180SL7',
-      'conceptdescription': 'e.g., homepage, 0173-1#02-AAX272#004',
+      'conceptdescription': 'e.g., homepage, secondarykeytype',
       'numberofphases': 'e.g., Three',
       'inputpowervoltage': 'e.g., 380, 220',
       'ratedfrequency': 'e.g., 60',
@@ -103,52 +108,49 @@ export function useSearch() {
   /**
    * 현재 선택된 메뉴에 해당하는 데이터를 화면에 표시
    */
-  const displayCurrentMenuData = async () => {
-    loading.value = true;
-    treeData.value = [];
-    error.value = null;
-    let allAasForMenu = []; // 에러 추적을 위해 try-catch 블록 외부에서 선언
+  const displayCurrentMenuData = async (page = 1) => {
+    if (page === 1) {
+      loading.value = true;
+      treeData.value = [];
+      error.value = null;
+    } else {
+      pagination.isLoadingMore = true;
+    }
 
     try {
       const keywords = EQUIPMENT_KEYWORDS[currentMenu.value] || [];
-      
       if (currentMenu.value === MENU_TYPES.SPECIAL.ALL) {
-        error.value = 'Please start by searching or select a category.';
-      } else if (keywords.length > 0) {
-        const keyword = keywords[0]; // 해당 메뉴의 대표 키워드 사용
-        let currentPage = 1;
-        let hasMorePages = true;
-        
-        // 키워드 기반으로 페이지네이션된 데이터를 모두 가져옴
-        while (hasMorePages) {
-          const responseData = await dataAPI.getAASByKeyword(keyword, currentPage);
-          const pageItems = responseData.message || [];
-          
-          if (pageItems.length > 0) {
-            allAasForMenu.push(...pageItems);
-            currentPage++;
-          } else {
-            hasMorePages = false;
+        // 'ALL' 메뉴 선택 시, 바로 전체 검색 실행
+        await performSearch(page);
+        loading.value = false;
+        return;
+      }
+      
+      if (keywords.length > 0) {
+        const keyword = keywords[0];
+        const responseData = await dataAPI.getAASByKeyword(keyword, page);
+        const pageItems = (responseData.message || []).filter(aas => !isExcludedComponentAAS(aas));
+
+        if (pageItems.length > 0) {
+          const newTreeNodes = transformApiToTree(pageItems, []);
+          treeData.value.push(...newTreeNodes);
+          pagination.currentPage = page;
+          pagination.hasMorePages = true; // Assume more pages until an empty response
+        } else {
+          pagination.hasMorePages = false;
+          if (page === 1) {
+            error.value = `${getMenuDisplayName(currentMenu.value)}: No data in range.`;
           }
         }
-        
-        // 특정 컴포넌트 AAS를 제외하고 필터링
-        const filteredList = allAasForMenu.filter(aas => !isExcludedComponentAAS(aas));
-
-        if (filteredList.length === 0) {
-          error.value = `${getMenuDisplayName(currentMenu.value)}: No data in range.`;
-        }
-        // 최종 목록을 트리 데이터 구조로 변환
-        treeData.value = transformApiToTree(filteredList, []);
-
       } else {
-         error.value = `No API keyword defined for menu: ${currentMenu.value}`;
+        error.value = `No API keyword defined for menu: ${currentMenu.value}`;
       }
-    } catch (err) {      
+    } catch (err) {
       error.value = 'Failed to load data. Please try again.';
       treeData.value = [];
     } finally {
-      loading.value = false
+      loading.value = false;
+      pagination.isLoadingMore = false;
     }
   };
 
@@ -161,82 +163,75 @@ export function useSearch() {
     selectedNode.value = null
     searchFilters.filterValue = ''
     error.value = null
-    await displayCurrentMenuData()
+    pagination.currentPage = 1;
+    pagination.hasMorePages = true;
+    await displayCurrentMenuData(1)
   };
 
   /**
    * 검색을 수행하는 함수
    */
-  const performSearch = async () => {
-    if (!searchFilters.filterValue.trim()) {
-      error.value = 'Please enter a search term.';
-      return;
+  const performSearch = async (page = 1) => {
+    if (page === 1) {
+      // Allow empty search, so remove the check:
+      // if (!searchFilters.filterValue.trim()) { ... }
+      loading.value = true;
+      treeData.value = [];
+      error.value = null;
+    } else {
+      pagination.isLoadingMore = true;
     }
 
-    loading.value = true;
-    error.value = null;
-
     try {
-      let finalAAS = [];
-      let submodelsFromAPI = [];
+      let results = [];
+      let submodelsFromAPI = []; // Only used in specific cases
 
       if (currentMenu.value === MENU_TYPES.SPECIAL.ALL) {
-        let allResults = [];
-        let currentPage = 1;
-        let hasMorePages = true;
-
-        while (hasMorePages) {
-          const responseData = await searchAPI.searchByKeyword(
-            searchFilters.filterType,
-            searchFilters.filterValue,
-            currentPage
-          );
-
-          if (responseData && responseData.code === 200) {
-            const pageItems = responseData.message || [];
-            if (pageItems.length > 0) {
-              allResults.push(...pageItems);
-              currentPage++;
-            } else {
-              hasMorePages = false;
-            }
-          } else {
-            hasMorePages = false;
-            if (currentPage === 1) {
-              throw new Error(responseData?.message || 'Search returned no results.');
-            }
+        const searchValue = searchFilters.filterValue;
+        const response = await searchAPI.searchByKeyword(searchFilters.filterType, searchValue, page);
+        
+        if (response && response.code === 200) {
+          results = response.message || [];
+          // Fallback for conceptdescription on the first page
+          if (page === 1 && results.length === 0 && searchFilters.filterType === 'conceptdescription' && searchValue.toLowerCase() !== searchValue) {
+            const fallbackResponse = await searchAPI.searchByKeyword(searchFilters.filterType, searchValue.toLowerCase(), page);
+            results = fallbackResponse.message || [];
           }
         }
-        finalAAS = allResults;
       } else {
-        const searchResult = await searchAPI.searchByFilter(
-          searchFilters.filterType,
-          searchFilters.filterValue
-        );
-
-        if (searchResult && searchResult.code === 200) {
-          if (searchResult.message && searchResult.message.length > 0) {
-            const firstMessage = searchResult.message[0];
-            const searchedAAS = firstMessage.aas ? (Array.isArray(firstMessage.aas) ? firstMessage.aas : [firstMessage.aas]) : [];
-            submodelsFromAPI = firstMessage.submodels ? (Array.isArray(firstMessage.submodels) ? firstMessage.submodels : [firstMessage.submodels]) : [];
-            finalAAS = filterAASByMenuType(searchedAAS, currentMenu.value);
-          }
-        } else {
-          throw new Error(searchResult?.message || 'Search returned no results.');
+        const response = await searchAPI.searchByFilter(searchFilters.filterType, searchFilters.filterValue);
+        if (response && response.code === 200 && response.message && response.message.length > 0) {
+          const firstMessage = response.message[0];
+          const searchedAAS = firstMessage.aas ? (Array.isArray(firstMessage.aas) ? firstMessage.aas : [firstMessage.aas]) : [];
+          submodelsFromAPI = firstMessage.submodels ? (Array.isArray(firstMessage.submodels) ? firstMessage.submodels : [firstMessage.submodels]) : [];
+          results = filterAASByMenuType(searchedAAS, currentMenu.value);
         }
       }
 
-      if (finalAAS.length === 0) {
-        error.value = 'No search results found for the current menu.';
-        treeData.value = [];
+      if (results.length > 0) {
+        let newTreeNodes;
+        if (searchFilters.filterType === 'submodel') {
+          newTreeNodes = transformSubmodelSearch(results, searchFilters.filterValue);
+        } else if (searchFilters.filterType === 'conceptdescription') {
+          newTreeNodes = transformConceptSearch(results);
+        } else {
+          newTreeNodes = transformApiToTree(results, submodelsFromAPI, searchFilters.filterValue);
+        }
+        treeData.value.push(...newTreeNodes);
+        pagination.currentPage = page;
+        pagination.hasMorePages = true;
       } else {
-        treeData.value = transformApiToTree(finalAAS, submodelsFromAPI, searchFilters.filterValue);
+        pagination.hasMorePages = false;
+        if (page === 1) {
+          error.value = 'No search results found for the current menu.';
+        }
       }
     } catch (err) {
       error.value = err.message || 'An error occurred during the search.';
-      treeData.value = [];
+      if (page === 1) treeData.value = [];
     } finally {
-      loading.value = false;
+      if (page === 1) loading.value = false;
+      pagination.isLoadingMore = false;
     }
   };
   
@@ -247,7 +242,9 @@ export function useSearch() {
     searchFilters.filterValue = ''
     selectedNode.value = null
     error.value = null
-    await displayCurrentMenuData()
+    pagination.currentPage = 1;
+    pagination.hasMorePages = true;
+    await displayCurrentMenuData(1)
   };
 
   /**
@@ -324,8 +321,42 @@ export function useSearch() {
   };
   
   // --- 반환 (Return) --- //
+  const loadMore = () => {
+    if (!pagination.hasMorePages || pagination.isLoadingMore || loading.value) return;
+    
+    const isSearchActive = searchFilters.filterValue.trim() !== '';
+    
+    if (isSearchActive) {
+      performSearch(pagination.currentPage + 1);
+    } else {
+      displayCurrentMenuData(pagination.currentPage + 1);
+    }
+  };
+
+  watch(currentMenu, () => {
+    searchFilters.filterType = '';
+    searchFilters.filterValue = '';
+  });
+
+  watch(treeData, (newData) => {
+    // Automatically load up to page 3.
+    const loadNextPage = (page) => {
+      if (pagination.currentPage === page - 1 && pagination.hasMorePages && !pagination.isLoadingMore) {
+        console.log(`Auto-loading page ${page}...`);
+        loadMore();
+      }
+    };
+
+    if (pagination.currentPage === 1 && newData.length > 0) {
+      setTimeout(() => loadNextPage(2), 1000);
+    }
+    if (pagination.currentPage === 2 && newData.length > 0) {
+      setTimeout(() => loadNextPage(3), 1000);
+    }
+  }, { deep: true });
+
   return {
-    loading, error, selectedNode, treeData, searchFilters, filterOptions, placeholder,
+    loading, error, selectedNode, treeData, searchFilters, filterOptions, placeholder, pagination,
     currentMenu, allData, filteredAAS, menuCounts, currentMenuDisplayName,
     hasResults, selectedNodeDetail,
     loadAllDataForDashboard,
@@ -334,6 +365,7 @@ export function useSearch() {
     performSearch,
     clearSearch,
     toggleNode,
-    selectNode
+    selectNode,
+    loadMore
   };
 }

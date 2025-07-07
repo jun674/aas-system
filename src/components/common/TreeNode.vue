@@ -100,6 +100,7 @@ export default {
         'aas': 'A',
         'submodel': 'S',
         'collection': 'C',
+        'concept': 'D',
         'property': 'P',
         'multilanguageproperty': 'M',
         'file': 'F',
@@ -136,6 +137,7 @@ export default {
         'aas': 'badge-equipment',
         'submodel': 'badge-submodel',
         'collection': 'badge-collection',
+        'concept': 'badge-concept',
         'property': 'badge-property',
         'multilanguageproperty': 'badge-multilanguage',
         'file': 'badge-file',
@@ -252,6 +254,12 @@ export default {
   background: #e5e7eb;
   color: #4b5563;
   border: 1px solid #d1d5db;
+}
+
+.badge-concept {
+  background: #fefce8;
+  color: #a16207;
+  border: 1px solid #fef08a;
 }
 
 .badge-property {

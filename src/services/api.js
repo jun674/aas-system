@@ -205,9 +205,11 @@ export const searchAPI = {
 
     try {
       console.log(`>> Keyword search on ${endpoint}: ${keyword}, page: ${page}`);
-      const response = await apiClient.get(`/${endpoint}`, {
-        params: { page, keyword }
-      });
+      const params = { page };
+      if (keyword) {
+        params.keyword = keyword;
+      }
+      const response = await apiClient.get(`/${endpoint}`, { params });
       return response.data;
     } catch (error) {
       console.error(`XX Keyword search on ${endpoint} failed:`, error.message);

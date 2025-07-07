@@ -69,13 +69,19 @@
        
         <div class="search-results" :class="{ 'mobile-view': isMobile }">
           <div class="results-tree" v-show="!isMobile || mobileView === 'tree'">
-            <TreeView
-              :tree-data="treeData"
-              :loading="loading"
-              :error="error"
-              @node-toggle="toggleNode"
-              @node-select="selectNode"
-            />
+            <div class="tree-view-wrapper">
+              <TreeView
+                :tree-data="treeData"
+                :loading="loading && pagination.currentPage === 1"
+                :error="error"
+                @node-toggle="toggleNode"
+                @node-select="selectNode"
+                @scrolled-to-bottom="loadMore"
+              />
+              <div v-if="pagination.isLoadingMore" class="loading-more-spinner">
+                <i class="fas fa-circle-notch fa-spin"></i> Loading more...
+              </div>
+            </div>
           </div>
          
           <div class="results-detail" v-show="!isMobile || mobileView === 'detail'">
@@ -134,7 +140,7 @@ const {
   loading, error, selectedNode, selectedNodeDetail, treeData, searchFilters,
   filterOptions, placeholder, currentMenu, filteredAAS, menuCounts,
   currentMenuDisplayName, changeMenu, performSearch,
-  clearSearch, toggleNode, selectNode
+  clearSearch, toggleNode, selectNode, pagination, loadMore
 } = useSearch();
 
 // --- 로컬 상태 관리 (Local Reactive State) ---
@@ -417,6 +423,23 @@ watch(() => props.query, (newQuery) => {
   display: flex;
   overflow: hidden;
   min-height: 0;
+}
+
+.tree-view-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+.loading-more-spinner {
+  padding: 20px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.loading-more-spinner i {
+  margin-right: 8px;
 }
 
 .results-tree,

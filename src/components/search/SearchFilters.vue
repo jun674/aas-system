@@ -39,7 +39,7 @@
           <button 
             @click="$emit('search')" 
             class="btn btn-primary"
-            :disabled="loading || !filters.filterValue.trim()"
+            :disabled="loading"
           >
             <i v-if="loading" class="fas fa-spinner fa-spin me-1"></i>
             <i v-else class="fas fa-search me-1"></i>
