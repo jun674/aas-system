@@ -191,6 +191,30 @@ export const searchAPI = {
     }
   },
 
+  // 키워드 기반 검색 (AAS, Submodel, ConceptDescription)
+  searchByKeyword: async (entityType, keyword, page = 1) => {
+    let endpoint = entityType;
+    if (entityType === 'conceptdescription') {
+      endpoint = 'concept/description';
+    }
+    
+    const validEndpoints = ['aas', 'submodel', 'concept/description'];
+    if (!validEndpoints.includes(endpoint)) {
+      throw new Error(`Invalid entity type for keyword search: ${entityType}`);
+    }
+
+    try {
+      console.log(`>> Keyword search on ${endpoint}: ${keyword}, page: ${page}`);
+      const response = await apiClient.get(`/${endpoint}`, {
+        params: { page, keyword }
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`XX Keyword search on ${endpoint} failed:`, error.message);
+      throw new Error(`Keyword search on ${endpoint} failed: ${error.response?.status} ${error.message}`);
+    }
+  },
+
   // 전체 검색 (테스트용)
   searchAll: async () => {
     try {

@@ -25,17 +25,42 @@ export function useSearch() {
   })
   const menuCounts = ref({}) // 각 메뉴별 데이터 개수 
 
-  // 검색 필터 드롭다운에 표시될 옵션 목록
-  const filterOptions = [
-    { value: 'numberofphases', label: 'Number of Phases' },
-    { value: 'inputpowervoltage', label: 'Input Power Voltage' },
-    { value: 'ratedfrequency', label: 'Rated Frequency' },
-    { value: 'ratedoutputcurrent', label: 'Rated Output Current' },
-    { value: 'inputcapacity/kw', label: 'Input Capacity' },
-    { value: 'dutycycle', label: 'Duty Cycle' }
-  ]
-
   // --- 계산된 속성 (Computed Properties) --- //
+  // 현재 메뉴에 따라 동적으로 필터 옵션을 결정
+  const filterOptions = computed(() => {
+    if (currentMenu.value === MENU_TYPES.SPECIAL.ALL) {
+      return [
+        { value: 'aas', label: 'AAS' },
+        { value: 'submodel', label: 'Submodel' },
+        { value: 'conceptdescription', label: 'Concept Description' },
+      ];
+    }
+    return [
+      { value: 'numberofphases', label: 'Number of Phases' },
+      { value: 'inputpowervoltage', label: 'Input Power Voltage' },
+      { value: 'ratedfrequency', label: 'Rated Frequency' },
+      { value: 'ratedoutputcurrent', label: 'Rated Output Current' },
+      { value: 'inputcapacity/kw', label: 'Input Capacity' },
+      { value: 'dutycycle', label: 'Duty Cycle' }
+    ];
+  });
+
+  // 현재 선택된 필터에 따라 동적으로 플레이스홀더를 결정
+  const placeholder = computed(() => {
+    const examples = {
+      'aas': 'e.g., CO2',
+      'submodel': 'e.g., 180SL7',
+      'conceptdescription': 'e.g., homepage, 0173-1#02-AAX272#004',
+      'numberofphases': 'e.g., Three',
+      'inputpowervoltage': 'e.g., 380, 220',
+      'ratedfrequency': 'e.g., 60',
+      'ratedoutputcurrent': 'e.g., 500, 350',
+      'inputcapacity/kw': 'e.g., 6.5',
+      'dutycycle': 'e.g., 60, 100'
+    };
+    return examples[searchFilters.filterType] || 'Input a value';
+  });
+
   const filteredAAS = computed(() => treeData.value) // 현재 트리 데이터를 외부에 제공하기 위한 computed 속성
   const currentMenuDisplayName = computed(() => getMenuDisplayName(currentMenu.value)) // 현재 메뉴의 표시 이름
   const hasResults = computed(() => treeData.value && treeData.value.length > 0) // 검색 결과 존재 여부
@@ -152,35 +177,60 @@ export function useSearch() {
     error.value = null;
 
     try {
-      // API를 통해 필터 검색 실행
-      const searchResult = await searchAPI.searchByFilter(
-        searchFilters.filterType,
-        searchFilters.filterValue
-      );
+      let finalAAS = [];
+      let submodelsFromAPI = [];
 
-      if (searchResult && searchResult.code === 200) {
-        let searchedAAS = [];
-        let submodelsFromAPI = [];
+      if (currentMenu.value === MENU_TYPES.SPECIAL.ALL) {
+        let allResults = [];
+        let currentPage = 1;
+        let hasMorePages = true;
 
-        // 검색 결과에서 AAS와 서브모델 데이터 추출
-        if (searchResult.message && searchResult.message.length > 0) {
-          const firstMessage = searchResult.message[0];
-          searchedAAS = firstMessage.aas ? (Array.isArray(firstMessage.aas) ? firstMessage.aas : [firstMessage.aas]) : [];
-          submodelsFromAPI = firstMessage.submodels ? (Array.isArray(firstMessage.submodels) ? firstMessage.submodels : [firstMessage.submodels]) : [];
+        while (hasMorePages) {
+          const responseData = await searchAPI.searchByKeyword(
+            searchFilters.filterType,
+            searchFilters.filterValue,
+            currentPage
+          );
+
+          if (responseData && responseData.code === 200) {
+            const pageItems = responseData.message || [];
+            if (pageItems.length > 0) {
+              allResults.push(...pageItems);
+              currentPage++;
+            } else {
+              hasMorePages = false;
+            }
+          } else {
+            hasMorePages = false;
+            if (currentPage === 1) {
+              throw new Error(responseData?.message || 'Search returned no results.');
+            }
+          }
         }
-        
-        // 현재 메뉴 타입에 맞게 검색된 AAS 목록을 필터링
-        const finalAAS = filterAASByMenuType(searchedAAS, currentMenu.value);
-
-        if (finalAAS.length === 0) {
-          error.value = 'No search results found for the current menu.';
-          treeData.value = [];
-        } else {
-          // 최종 결과를 트리 구조로 변환
-          treeData.value = transformApiToTree(finalAAS, submodelsFromAPI, searchFilters.filterValue);
-        }
+        finalAAS = allResults;
       } else {
-        throw new Error('Search returned no results.');
+        const searchResult = await searchAPI.searchByFilter(
+          searchFilters.filterType,
+          searchFilters.filterValue
+        );
+
+        if (searchResult && searchResult.code === 200) {
+          if (searchResult.message && searchResult.message.length > 0) {
+            const firstMessage = searchResult.message[0];
+            const searchedAAS = firstMessage.aas ? (Array.isArray(firstMessage.aas) ? firstMessage.aas : [firstMessage.aas]) : [];
+            submodelsFromAPI = firstMessage.submodels ? (Array.isArray(firstMessage.submodels) ? firstMessage.submodels : [firstMessage.submodels]) : [];
+            finalAAS = filterAASByMenuType(searchedAAS, currentMenu.value);
+          }
+        } else {
+          throw new Error(searchResult?.message || 'Search returned no results.');
+        }
+      }
+
+      if (finalAAS.length === 0) {
+        error.value = 'No search results found for the current menu.';
+        treeData.value = [];
+      } else {
+        treeData.value = transformApiToTree(finalAAS, submodelsFromAPI, searchFilters.filterValue);
       }
     } catch (err) {
       error.value = err.message || 'An error occurred during the search.';
@@ -275,15 +325,15 @@ export function useSearch() {
   
   // --- 반환 (Return) --- //
   return {
-    loading, error, selectedNode, treeData, searchFilters, filterOptions,
+    loading, error, selectedNode, treeData, searchFilters, filterOptions, placeholder,
     currentMenu, allData, filteredAAS, menuCounts, currentMenuDisplayName,
-    hasResults, selectedNodeDetail, 
-    loadAllDataForDashboard, 
+    hasResults, selectedNodeDetail,
+    loadAllDataForDashboard,
     loadInitialData: loadAllDataForDashboard,
-    changeMenu, 
-    performSearch, 
-    clearSearch, 
-    toggleNode, 
+    changeMenu,
+    performSearch,
+    clearSearch,
+    toggleNode,
     selectNode
   };
 }

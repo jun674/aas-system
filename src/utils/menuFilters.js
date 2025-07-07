@@ -168,76 +168,71 @@ export function getAASCategories(aas) {
 
 
 /**
- * 메뉴 타입에 따라 AAS 필터링
+ * AAS 데이터를 한 번만 순회하여 메뉴별 그룹과 카운트를 계산하는 최적화된 함수
+ * @param {Array} allAAS - 전체 AAS 배열
+ * @returns {Object} - { aasList: { menuType: [aas] }, menuCounts: { menuType: count } } 형태의 객체
+ */
+export function processAASData(allAAS) {
+  if (!allAAS || !Array.isArray(allAAS)) {
+    return { aasList: {}, menuCounts: {} };
+  }
+
+  const aasList = {};
+  const menuCounts = {};
+
+  // 모든 메뉴 타입 목록 생성 및 카운트 초기화
+  const allMenuTypes = [
+    ...Object.values(MENU_TYPES.EQUIPMENT),
+    ...Object.values(MENU_TYPES.MATERIAL),
+    ...Object.values(MENU_TYPES.PROCESS),
+    ...Object.values(MENU_TYPES.MANAGEMENT)
+  ];
+
+  allMenuTypes.forEach(type => {
+    aasList[type] = [];
+    menuCounts[type] = 0;
+  });
+
+  const processedAAS = allAAS.filter(aas => !isExcludedComponentAAS(aas));
+
+  processedAAS.forEach(aas => {
+    const categories = getAASCategories(aas);
+    categories.forEach(category => {
+      if (aasList[category]) {
+        aasList[category].push(aas);
+        menuCounts[category]++;
+      }
+    });
+  });
+
+  // 'ALL' 메뉴에 대한 데이터와 카운트 추가
+  aasList[MENU_TYPES.SPECIAL.ALL] = processedAAS;
+  menuCounts[MENU_TYPES.SPECIAL.ALL] = processedAAS.length;
+  
+  console.log('Processed AAS Data:', { aasList, menuCounts });
+  return { aasList, menuCounts };
+}
+
+
+/**
+ * 메뉴 타입에 따라 AAS 필터링 (최적화된 함수 사용)
  * @param {Array} allAAS - 전체 AAS 배열
  * @param {string} menuType - 메뉴 타입
  * @returns {Array} - 필터링된 AAS 배열
  */
 export function filterAASByMenuType(allAAS, menuType) {
-  if (!allAAS || !Array.isArray(allAAS)) return []
-
-  // 먼저 '제외되어야 할 Component' AAS를 필터링합니다.
-  const processedAAS = allAAS.filter(aas => !isExcludedComponentAAS(aas));
-  
-  console.log(`[filterAASByMenuType] 초기 AAS 개수 (모든 AAS): ${allAAS.length}, Component 제외 후: ${processedAAS.length}`);
-
-  // 'ALL' 메뉴는 '제외되어야 할 Component' AAS를 제외한 모든 AAS를 반환
-  if (menuType === MENU_TYPES.SPECIAL.ALL) {
-    console.log(`[filterAASByMenuType] 'ALL' 메뉴 선택: ${processedAAS.length}개 AAS 반환.`);
-    return processedAAS;
-  }
-  
-  // 나머지 메뉴 타입은 getAASCategories 함수를 사용하여 필터링
-  const filtered = processedAAS.filter(aas => {
-      const aasCategories = getAASCategories(aas);
-      const isIncluded = aasCategories.includes(menuType);
-      return isIncluded;
-  });
-  
-  console.log(`[filterAASByMenuType] '${menuType}' 메뉴 필터링 최종 결과: ${filtered.length}개 AAS.`);
-  return filtered;
+  const { aasList } = processAASData(allAAS);
+  return aasList[menuType] || [];
 }
 
 /**
- * 메뉴별 카운트 계산
+ * 메뉴별 카운트 계산 (최적화된 함수 사용)
  * @param {Array} allAAS - 전체 AAS 배열
  * @returns {Object} - 메뉴별 카운트 객체
  */
 export function calculateMenuCounts(allAAS) {
-  if (!allAAS || !Array.isArray(allAAS)) return {}
-
-  const counts = {};
-
-  // '제외되어야 할 Component' AAS를 필터링합니다.
-  const processedAAS = allAAS.filter(aas => !isExcludedComponentAAS(aas));
-
-  // 'ALL' 카운트
-  counts[MENU_TYPES.SPECIAL.ALL] = processedAAS.length;
-
-  // 모든 카테고리 타입에 대해 카운트 초기화
-  const allCategoryTypes = [
-      ...Object.values(MENU_TYPES.EQUIPMENT),
-      ...Object.values(MENU_TYPES.MATERIAL),
-      ...Object.values(MENU_TYPES.PROCESS),
-      ...Object.values(MENU_TYPES.MANAGEMENT)
-  ];
-  allCategoryTypes.forEach(type => {
-      counts[type] = 0; // 모든 카운트를 0으로 초기화
-  });
-
-
-  // 각 AAS를 순회하며 해당 AAS가 속하는 모든 카테고리의 카운트를 증가시킵니다.
-  processedAAS.forEach(aas => {
-      const categories = getAASCategories(aas);
-      categories.forEach(category => {
-          if (counts[category] !== undefined) {
-              counts[category]++;
-          }
-      });
-  });
-
-  console.log('메뉴별 카운트:', counts);
-  return counts;
+  const { menuCounts } = processAASData(allAAS);
+  return menuCounts;
 }
 
 /**

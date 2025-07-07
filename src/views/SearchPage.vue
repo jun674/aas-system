@@ -58,6 +58,7 @@
         <SearchFilters
           :filters="searchFilters"
           :filter-options="filterOptions"
+          :placeholder="placeholder"
           :loading="loading"
           :current-menu="currentMenu"
           :filtered-count="filteredAAS.length"
@@ -131,7 +132,7 @@ const props = defineProps({
 // useSearch 컴포저블을 호출하여 검색 관련 상태와 함수들을 분해 할당
 const {
   loading, error, selectedNode, selectedNodeDetail, treeData, searchFilters,
-  filterOptions, currentMenu, filteredAAS, menuCounts,
+  filterOptions, placeholder, currentMenu, filteredAAS, menuCounts,
   currentMenuDisplayName, changeMenu, performSearch,
   clearSearch, toggleNode, selectNode
 } = useSearch();

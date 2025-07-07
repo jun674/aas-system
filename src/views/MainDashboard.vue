@@ -83,7 +83,7 @@
               type="text"
               v-model="searchKeyword"
               @keyup.enter="executeSearch"
-              placeholder="Enter search keywords..."
+              placeholder="Enter AAS keywords and press Enter"
               class="search-input"
             >
             <button class="search-btn" @click="executeSearch">
@@ -201,8 +201,15 @@ const navigateToUpload = () => {
  * 메인 검색창에서 입력한 키워드로 검색을 실행하는 함수
  */
 const executeSearch = () => {
-  if (!searchKeyword.value.trim()) return;  // 입력된 검색어가 공백을 제외하고 비어있으면 아무 작업도 하지 않음
-  router.push({ path: '/search', query: { keyword: searchKeyword.value } }); // 검색어를 쿼리 파라미터로 포함하여 검색 페이지로 이동
+  if (!searchKeyword.value.trim()) return;
+  router.push({
+    path: '/search',
+    query: {
+      menu: 'ALL',
+      filterType: 'aas',
+      value: searchKeyword.value
+    }
+  });
 };
 
 /**

@@ -58,10 +58,10 @@
       </div>
     </div>
     
-    <div class="quick-search-section" :class="{ 'mobile-quick-search': isMobile }">
+    <div v-if="currentMenu !== 'ALL'" class="quick-search-section" :class="{ 'mobile-quick-search': isMobile }">
       <span class="quick-search-label">Quick Search</span>
       <div class="quick-search-buttons">
-        <button 
+        <button
           @click="quickSearch('inputpowervoltage', '380')"
           class="btn btn-outline-info btn-sm"
           :disabled="loading"
@@ -70,7 +70,7 @@
           <span class="desktop-full">Input Power Voltage 380V</span>
         </button>
         
-        <button 
+        <button
           @click="quickSearch('numberofphases', 'Three')"
           class="btn btn-outline-info btn-sm"
           :disabled="loading"
@@ -79,7 +79,7 @@
           <span class="desktop-full">Number of Phases Three</span>
         </button>
         
-        <button 
+        <button
           @click="quickSearch('dutycycle', '60')"
           class="btn btn-outline-info btn-sm"
           :disabled="loading"
@@ -88,7 +88,7 @@
           <span class="desktop-full">Duty Cycle 60%</span>
         </button>
         
-        <button 
+        <button
           @click="quickSearch('inputcapacity/kw', '6.5')"
           class="btn btn-outline-info btn-sm"
           :disabled="loading"
@@ -110,87 +110,63 @@ export default {
   name: 'SearchFilters', // 컴포넌트의 이름 정의
 
   // 부모 컴포넌트로부터 전달받는 데이터(속성) 정의
-  props: {    
-    filters: { // 검색 필터 상태를 담고 있는 객체 (상위 컴포넌트와 v-model로 연결될 수 있음)
+  props: {
+    filters: {
       type: Object,
-      required: true // 필수 props로 지정
-    },    
-    loading: { // 검색 진행 중 로딩 상태를 나타내는 boolean 값
+      required: true
+    },
+    loading: {
       type: Boolean,
       default: false
-    },    
-    error: { // 검색 중 발생한 에러 메시지
+    },
+    error: {
       type: String,
       default: null
     },
+    currentMenu: {
+      type: String,
+      required: true
+    },
+    // 부모로부터 필터 옵션을 동적으로 받도록 수정
+    filterOptions: {
+      type: Array,
+      required: true
+    },
+    // 부모로부터 플레이스홀더를 동적으로 받도록 수정
+    placeholder: {
+      type: String,
+      default: 'Input a value'
+    }
   },
 
-  // 부모 컴포넌트로 이벤트를 전달하기 위한 'emits' 정의
   emits: ['search', 'reset', 'filter-type-change'],
 
-  
   setup(props, { emit }) {
-    // 현재 화면이 모바일 크기인지 여부를 저장하는 반응형 상태
     const isMobile = ref(false)
-    
-    // 검색 필터 종류를 선택하는 드롭다운에 표시될 옵션 목록
-    const filterOptions = ref([
-      { value: 'numberofphases', label: 'Number of Phases' },
-      { value: 'inputpowervoltage', label: 'Input Power Voltage' },
-      { value: 'ratedfrequency', label: 'Rated Frequency' },
-      { value: 'ratedoutputcurrent', label: 'Rated Output Current' },
-      { value: 'inputcapacity/kw', label: 'Input Capacity' },
-      { value: 'dutycycle', label: 'Duty Cycle' }
-    ]);
-    
-    // 각 필터 종류에 따라 검색 입력창에 보여줄 예시 placeholder 텍스트
-    const placeholderExamples = {
-      'numberofphases': 'e.g., Three',
-      'inputpowervoltage': 'e.g., 380, 220',
-      'ratedfrequency': 'e.g., 60',
-      'ratedoutputcurrent': 'e.g., 500, 350',
-      'inputcapacity/kw': 'e.g., 6.5',
-      'dutycycle': 'e.g., 60, 100'
-    };
 
-    // 현재 선택된 필터 종류에 따라 동적으로 placeholder 텍스트를 반환하는 계산된 속성(computed property)
-    const currentPlaceholder = computed(() => {
-      return placeholderExamples[props.filters.filterType] || 'Input a value';
-    });
-    
-    /**
-     * 빠른 검색을 위한 함수
-     */
+    // currentPlaceholder를 props.placeholder를 직접 사용하도록 변경
+    const currentPlaceholder = computed(() => props.placeholder);
+
     const quickSearch = (filterType, value) => {
-      // 부모로부터 받은 filters 객체의 값을 직접 변경
       props.filters.filterType = filterType
       props.filters.filterValue = value
-      // 부모 컴포넌트에 'search' 이벤트를 발생시켜 실제 검색을 요청
       emit('search')
     }
-    
-    // 화면 너비를 체크하여 isMobile 상태를 업데이트하는 함수
+
     const checkScreenSize = () => {
       isMobile.value = window.innerWidth <= 768
     }
 
-    // --- 생명주기 훅 (Lifecycle Hooks) ---
-
-    // 컴포넌트가 마운트(생성)될 때 실행
     onMounted(() => {
-      checkScreenSize() // 초기 화면 크기 체크
-      window.addEventListener('resize', checkScreenSize) // 화면 크기 변경 이벤트를 감지
+      checkScreenSize()
+      window.addEventListener('resize', checkScreenSize)
     })
 
-    // 컴포넌트가 제거될 때 실행
     onUnmounted(() => {
-      // 메모리 누수 방지를 위해 등록했던 이벤트 리스너를 제거
       window.removeEventListener('resize', checkScreenSize)
     })
-    
-    // setup 함수에서 반환하는 모든 값들은 템플릿(<template>)에서 사용 가능
+
     return {
-      filterOptions,
       quickSearch,
       currentPlaceholder,
       isMobile
