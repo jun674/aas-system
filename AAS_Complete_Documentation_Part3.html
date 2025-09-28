@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAS 통합 시스템 전체 문서 (Part 3)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 헤더 스타일 */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        /* 네비게이션 */
+        nav {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+        
+        nav h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        nav ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        
+        nav a {
+            color: #4a5568;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: block;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        nav a:hover {
+            background: #f7fafc;
+            color: #667eea;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        /* 섹션 스타일 */
+        section {
+            background: white;
+            padding: 40px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        section h2 {
+            color: #2d3748;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        section h3 {
+            color: #4a5568;
+            font-size: 1.6em;
+            margin: 30px 0 20px 0;
+        }
+        
+        section h4 {
+            color: #718096;
+            font-size: 1.3em;
+            margin: 20px 0 15px 0;
+        }
+        
+        /* 테이블 스타일 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            overflow-x: auto;
+            display: block;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        tr:hover {
+            background: #f7fafc;
+        }
+        
+        /* 코드 블록 */
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        
+        /* 리스트 스타일 */
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+        
+        li {
+            margin: 8px 0;
+        }
+        
+        /* 카드 스타일 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .card {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        /* 다이어그램 박스 */
+        .diagram-box {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+        
+        .diagram-title {
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        /* 아키텍처 다이어그램 */
+        .architecture-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .arch-component {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px 30px;
+            text-align: center;
+            min-width: 150px;
+            position: relative;
+        }
+        
+        .arch-component h5 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .arch-arrow {
+            font-size: 2em;
+            color: #a0aec0;
+        }
+        
+        /* 알림 박스 */
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: #ebf8ff;
+            border-color: #3182ce;
+            color: #2c5282;
+        }
+        
+        .alert-success {
+            background: #f0fff4;
+            border-color: #48bb78;
+            color: #276749;
+        }
+        
+        .alert-warning {
+            background: #fffaf0;
+            border-color: #f6ad55;
+            color: #975a16;
+        }
+        
+        /* 푸터 */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #718096;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 60px;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            section {
+                padding: 20px;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+            
+            nav {
+                position: static;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>AAS 통합 시스템 전체 문서 (Part 3)</h1>
+            <p>백엔드 상세 분석 (계속)</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav>
+            <h2>📑 문서 목차 (Part 3)</h2>
+            <ul>
+                <li><a href="#backend-continue">백엔드 분석 (계속)</a></li>
+                <li><a href="AAS_Complete_Documentation.html">Part 1로 돌아가기</a></li>
+                <li><a href="AAS_Complete_Documentation_Part2.html">Part 2로 돌아가기</a></li>
+            </ul>
+        </nav>
+
+        <!-- 백엔드 분석 계속 -->
+        <section id="backend-continue">
+            <h2>⚙️ 문서 6: Kyungnam AAS Server 백엔드 상세 분석 (계속)</h2>
+            
+            <h3>1. 프로젝트 기본 정보</h3>
+            <table>
+                <tr>
+                    <th>항목</th>
+                    <th>내용</th>
+                </tr>
+                <tr>
+                    <td>프로젝트명</td>
+                    <td>kyungnam_aas_server</td>
+                </tr>
+                <tr>
+                    <td>프레임워크</td>
+                    <td>Spring Boot 3.4.5</td>
+                </tr>
+                <tr>
+                    <td>빌드 도구</td>
+                    <td>Gradle</td>
+                </tr>
+                <tr>
+                    <td>개발 언어</td>
+                    <td>Java 24</td>
+                </tr>
+                <tr>
+                    <td>데이터베이스</td>
+                    <td>MongoDB</td>
+                </tr>
+                <tr>
+                    <td>파일 스토리지</td>
+                    <td>AWS S3</td>
+                </tr>
+            </table>
+
+            <h3>2. 프로젝트 구조</h3>
+            <pre>
+kyungnam_aas_server/
+├── src/
+│   ├── main/
+│   │   ├── java/org/kyungnam/aas/
+│   │   │   ├── config/              # 설정 클래스
+│   │   │   │   ├── DataInitializer.java
+│   │   │   │   ├── SecurityConfig.java
+│   │   │   │   └── SwaggerConfig.java
+│   │   │   ├── controller/          # REST 컨트롤러
+│   │   │   │   ├── aas/            # AAS 관련
+│   │   │   │   ├── admin/          # 관리자 관련
+│   │   │   │   ├── auth/           # 인증 관련
+│   │   │   │   ├── ConceptDescription/
+│   │   │   │   ├── registry/       # 레지스트리
+│   │   │   │   ├── repository/     # 레포지토리
+│   │   │   │   └── Submodel/       # 서브모델
+│   │   │   ├── domain/              # 도메인 모델
+│   │   │   │   ├── aas/
+│   │   │   │   ├── common/
+│   │   │   │   ├── ConceptDescription/
+│   │   │   │   ├── submodel/
+│   │   │   │   ├── submoelElement/
+│   │   │   │   └── user/
+│   │   │   ├── module/              # 모듈
+│   │   │   │   ├── config/         # AWS 설정
+│   │   │   │   └── convert/        # AASX 변환
+│   │   │   └── common/              # 공통 클래스
+│   │   │       ├── response/       # 응답 포맷
+│   │   │       ├── service/        # 공통 서비스
+│   │   │       └── utils/          # 유틸리티
+│   │   └── resources/
+│   │       ├── application.yml      # 애플리케이션 설정
+│   │       └── templates/           # Thymeleaf 템플릿
+├── build.gradle                     # Gradle 빌드 설정
+└── public/                          # 정적 파일
+    └── different/                   # 검증 실패 파일 저장
+            </pre>
+
+            <h3>3. 핵심 설정 파일</h3>
+            <h4>3.1 build.gradle 주요 의존성</h4>
+            <pre>
+dependencies {
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-web-services'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    
+    // Eclipse BaSyx AAS4J
+    implementation 'org.eclipse.digitaltwin.basyx:basyx.aasrepository-core:2.0.0-milestone-05'
+    implementation 'org.eclipse.digitaltwin.basyx:basyx.submodelrepository-core:2.0.0-milestone-05'
+    implementation 'org.eclipse.digitaltwin.basyx:basyx.aasenvironment-core:2.0.0-milestone-05'
+    
+    // AWS
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.1.1'
+    implementation 'software.amazon.awssdk:s3:2.25.7'
+    
+    // 기타
+    implementation 'org.projectlombok:lombok'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+}
+            </pre>
+
+            <h3>4. 레이어드 아키텍처</h3>
+            <div class="diagram-box">
+                <div class="diagram-title">Spring Boot 레이어드 아키텍처</div>
+                <pre>
+┌─────────────────────────────────────────────────────┐
+│                 Presentation Layer                   │
+│  AASController | SubmodelController | AuthController │
+└─────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────┐
+│                   Service Layer                      │
+│    AASService | SubmodelService | AuthService       │
+│              AASXConvertModule | AWSS3Service       │
+└─────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────┐
+│                   Domain Layer                       │
+│  AASDomain | SubmodelDomain | ConceptDescriptionDomain│
+│         AASRepository | SubmodelRepository          │
+└─────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────┐
+│                  Infrastructure                      │
+│        MongoDB | AWS S3 | Eclipse BaSyx             │
+└─────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+
+            <h3>5. 주요 컴포넌트 분석</h3>
+            <h4>5.1 Controller Layer</h4>
+            <div class="card">
+                <h4>AASController.java</h4>
+                <pre>
+@Controller
+@RequestMapping("/aas")
+public class AASController {
+    // 주요 엔드포인트
+    - GET /aas                    // 전체 AAS 조회 (페이징, 키워드)
+    - GET /aas/{aasId}           // 특정 AAS 조회
+    - DELETE /aas/{aasId}        // AAS 삭제
+    - GET /aas/submodel/{aasId}  // AAS의 서브모델 조회
+    - POST /aas/aasx/upload      // AASX 파일 업로드
+    - DELETE /aas/all/delete     // 전체 AAS 삭제
+}
+                </pre>
+                <p><strong>특징</strong>:</p>
+                <ul>
+                    <li>Base64 인코딩된 ID 처리</li>
+                    <li>페이징 처리 (기본 10개)</li>
+                    <li>파일 업로드 지원</li>
+                </ul>
+            </div>
+
+            <h4>5.2 Service Layer</h4>
+            <div class="card">
+                <h4>AASService.java 주요 기능</h4>
+                <ol>
+                    <li><strong>AASX 파일 처리</strong>
+                        <ul>
+                            <li>파일 업로드 및 검증</li>
+                            <li>Eclipse BaSyx를 통한 파싱</li>
+                            <li>JSON 변환 및 저장</li>
+                        </ul>
+                    </li>
+                    <li><strong>데이터 검증</strong>
+                        <ul>
+                            <li>AAS, Submodel, ConceptDescription 검증</li>
+                            <li>불일치 시 파일로 저장 (./public/different/)</li>
+                        </ul>
+                    </li>
+                    <li><strong>데이터 저장</strong>
+                        <ul>
+                            <li>MongoDB 저장</li>
+                            <li>AWS S3 파일 업로드</li>
+                            <li>중복 ID 처리 (UUID 추가)</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <h4>5.3 Domain Layer</h4>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>AASDomain.java</h4>
+                    <pre>
+@Document(collection = "aas")
+public class AASDomain {
+    @Id
+    private String id;
+    private String idShort;
+    private Map&lt;String, Object&gt; assetInformation;
+    private List&lt;Map&lt;String, Object&gt;&gt; submodel;
+}
+                    </pre>
+                </div>
+                <div class="card">
+                    <h4>SubmodelDomain.java</h4>
+                    <pre>
+@Document(collection = "submodel")
+public class SubmodelDomain {
+    @Id
+    private String id;
+    private String idShort;
+    private String kind;
+    private Map&lt;String, Object&gt; semanticId;
+    private List&lt;Map&lt;String, Object&gt;&gt; submodelElements;
+}
+                    </pre>
+                </div>
+                <div class="card">
+                    <h4>ConceptDescriptionDomain.java</h4>
+                    <pre>
+@Document(collection = "conceptDescription")
+public class ConceptDescriptionDomain {
+    @Id
+    private String id;
+    private String idShort;
+    private List&lt;Map&lt;String, Object&gt;&gt; embeddedDataSpecifications;
+}
+                    </pre>
+                </div>
+            </div>
+
+            <h3>6. 핵심 모듈 분석</h3>
+            <h4>6.1 AASXConvertModule</h4>
+            <div class="card">
+                <h4>주요 기능</h4>
+                <ol>
+                    <li>AASX 파일 역직렬화</li>
+                    <li>AAS Environment 추출</li>
+                    <li>JSON 변환 및 포맷팅</li>
+                    <li>BOM(Byte Order Mark) 처리</li>
+                </ol>
+                <h4>처리 흐름</h4>
+                <pre>
+AASX 파일 → XmlDeserializer → Environment → 
+→ AAS/Submodel/ConceptDescription 추출 → 
+→ JSON 변환 → MongoDB 저장
+                </pre>
+            </div>
+
+            <h3>7. API 엔드포인트 상세</h3>
+            <h4>7.1 AAS 관련 API</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>엔드포인트</th>
+                        <th>메소드</th>
+                        <th>설명</th>
+                        <th>파라미터</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>/aas</td>
+                        <td>GET</td>
+                        <td>AAS 목록 조회</td>
+                        <td>page, keyword</td>
+                    </tr>
+                    <tr>
+                        <td>/aas/{aasId}</td>
+                        <td>GET</td>
+                        <td>AAS 상세 조회</td>
+                        <td>aasId (Base64)</td>
+                    </tr>
+                    <tr>
+                        <td>/aas/{aasId}</td>
+                        <td>DELETE</td>
+                        <td>AAS 삭제</td>
+                        <td>aasId (Base64)</td>
+                    </tr>
+                    <tr>
+                        <td>/aas/submodel/{aasId}</td>
+                        <td>GET</td>
+                        <td>서브모델 조회</td>
+                        <td>aasId (Base64)</td>
+                    </tr>
+                    <tr>
+                        <td>/aas/aasx/upload</td>
+                        <td>POST</td>
+                        <td>AASX 업로드</td>
+                        <td>adminId, files</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>7.2 Repository 검색 API</h4>
+            <pre>
+// 단일 필드 검색
+GET /repository/search/{field}?value={value}
+
+// 중첩 필드 검색 (점 표기법)
+GET /repository/search/{field1}/{field2}?value={value}
+
+// 예시
+GET /repository/search/ratedfrequency?value=50
+GET /repository/search/inputcapacity/kw?value=10
+            </pre>
+
+            <h3>8. 데이터 처리 흐름</h3>
+            <h4>8.1 AASX 파일 업로드 프로세스</h4>
+            <div class="diagram-box">
+                <div class="diagram-title">업로드 시퀀스 다이어그램</div>
+                <pre>
+Client → Controller → Service → AASXModule → MongoDB/S3
+  │         │            │          │            │
+  │  파일   │            │          │            │
+  │───────→│            │          │            │
+  │         │ 파일전달   │          │            │
+  │         │──────────→│          │            │
+  │         │            │ 파싱요청  │            │
+  │         │            │────────→│            │
+  │         │            │          │ JSON변환   │
+  │         │            │←────────│            │
+  │         │            │ 데이터검증│            │
+  │         │            │          │            │
+  │         │            │ S3업로드  │            │
+  │         │            │─────────────────────→│
+  │         │            │          │            │
+  │         │            │ DB저장    │            │
+  │         │            │─────────────────────→│
+  │         │            │          │            │
+  │         │ 성공응답    │          │            │
+  │         │←──────────│          │            │
+  │ 결과    │            │          │            │
+  │←────────│            │          │            │
+                </pre>
+            </div>
+
+            <h3>9. 보안 설정</h3>
+            <div class="card">
+                <h4>SecurityConfig.java</h4>
+                <pre>
+@Configuration
+public class SecurityConfig {
+    // 특징
+    - CSRF 비활성화 (REST API)
+    - 세션 기반 인증
+    - BCrypt 패스워드 인코딩
+    - 인증 필요 경로: /auth/logout, /auth/me
+    - 인증 불필요: /auth/login, /auth/signup
+}
+                </pre>
+            </div>
+
+            <h3>10. 특징 및 고려사항</h3>
+            <h4>10.1 장점</h4>
+            <ul>
+                <li><strong>표준 준수</strong>: Eclipse BaSyx AAS4J 사용</li>
+                <li><strong>확장성</strong>: MongoDB의 유연한 스키마</li>
+                <li><strong>대용량 처리</strong>: 페이징 및 S3 활용</li>
+                <li><strong>검증 시스템</strong>: 데이터 무결성 보장</li>
+            </ul>
+
+            <h4>10.2 개선 필요 사항</h4>
+            <ul>
+                <li><strong>트랜잭션 처리</strong>: MongoDB 트랜잭션 미사용</li>
+                <li><strong>에러 처리</strong>: 일관성 있는 예외 처리 필요</li>
+                <li><strong>로깅</strong>: 구조화된 로깅 시스템 필요</li>
+                <li><strong>테스트</strong>: 단위/통합 테스트 부재</li>
+            </ul>
+
+            <h3>11. 성능 최적화</h3>
+            <h4>11.1 현재 구현</h4>
+            <ul>
+                <li>페이징 처리 (기본 10개)</li>
+                <li>파일 스트림 처리</li>
+                <li>MongoDB 인덱싱 (미구현)</li>
+            </ul>
+
+            <h4>11.2 개선 제안</h4>
+            <ul>
+                <li><strong>캐싱</strong>: Spring Cache 활용</li>
+                <li><strong>비동기 처리</strong>: 대용량 파일 업로드</li>
+                <li><strong>배치 처리</strong>: 다중 파일 처리</li>
+                <li><strong>인덱싱</strong>: MongoDB 복합 인덱스</li>
+            </ul>
+
+            <h3>12. 배포 및 운영</h3>
+            <h4>12.1 빌드</h4>
+            <pre>
+./gradlew build
+# 출력: build/libs/aas_server.jar
+            </pre>
+
+            <h4>12.2 실행</h4>
+            <pre>
+java -jar aas_server.jar
+# 또는
+./gradlew bootRun
+            </pre>
+
+            <h4>12.3 환경 설정</h4>
+            <ul>
+                <li>MongoDB 연결 설정</li>
+                <li>AWS 자격 증명 설정</li>
+                <li>로그 레벨 설정</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>AAS 통합 시스템 문서 - 경남대학교 AAS 개발팀</p>
+            <p>작성일: 2025-09-28 | 문서 버전: 1.0.0</p>
+            <p>
+                <a href="AAS_Complete_Documentation.html">Part 1</a> | 
+                <a href="AAS_Complete_Documentation_Part2.html">Part 2</a> | 
+                Part 3
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

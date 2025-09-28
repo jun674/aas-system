@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAS 시스템 아키텍처 다이어그램</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h2 {
+            color: #4a5568;
+            font-size: 2em;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        h3 {
+            color: #718096;
+            font-size: 1.5em;
+            margin: 25px 0 15px 0;
+        }
+        
+        .diagram-box {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+            overflow-x: auto;
+        }
+        
+        .diagram-title {
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            text-align: left;
+        }
+        
+        .architecture-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .arch-component {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px 30px;
+            text-align: center;
+            min-width: 150px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .arch-component h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .arch-component p {
+            color: #4a5568;
+            font-size: 0.9em;
+        }
+        
+        .arch-arrow {
+            font-size: 2em;
+            color: #a0aec0;
+        }
+        
+        .flow-diagram {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .flow-step {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .flow-step:not(:last-child):after {
+            content: '↓';
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5em;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AAS 시스템 아키텍처 다이어그램</h1>
+        
+        <h2>1. 시스템 전체 구조도 (C4 Model - Context Diagram)</h2>
+        <div class="diagram-box">
+            <div class="diagram-title">시스템 컨텍스트 다이어그램</div>
+            <div class="architecture-diagram">
+                <div class="arch-component">
+                    <h4>사용자</h4>
+                    <p>User<br/>Admin</p>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-component">
+                    <h4>프론트엔드</h4>
+                    <p>aas-app<br/>Vue.js</p>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-component">
+                    <h4>백엔드</h4>
+                    <p>kyungnam_aas_server<br/>Spring Boot</p>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-component">
+                    <h4>데이터 저장소</h4>
+                    <p>MongoDB<br/>AWS S3</p>
+                </div>
+            </div>
+        </div>
+        
+        <h2>2. 프론트엔드 컴포넌트 구조도</h2>
+        <div class="diagram-box">
+            <div class="diagram-title">aas-app Frontend Architecture</div>
+            <pre>
+App.vue (Main Component)
+├── Router Views
+│   ├── MainDashboard.vue
+│   ├── SearchPage.vue
+│   ├── AasxUploadPage.vue
+│   ├── SignupPage.vue
+│   └── UserManagementPage.vue
+├── Components
+│   ├── Layout
+│   │   ├── TopBar.vue
+│   │   ├── Sidebar.vue
+│   │   ├── DynamicSidebar.vue
+│   │   └── Footer.vue
+│   ├── Common
+│   │   ├── TreeView.vue
+│   │   └── TreeNode.vue
+│   └── Features
+│       ├── LoginModal.vue
+│       ├── DashboardCharts.vue (미사용)
+│       ├── SearchFilters.vue
+│       └── EquipmentDetail.vue
+├── State Management (Pinia)
+│   ├── aas.js
+│   ├── auth.js (사용중)
+│   ├── ui.js (사용중)
+│   └── counter.js (예제)
+└── Services
+    ├── api.js
+    ├── aasService.js
+    └── authService.js
+            </pre>
+        </div>
+        
+        <h2>3. 백엔드 레이어 아키텍처</h2>
+        <div class="diagram-box">
+            <div class="diagram-title">kyungnam_aas_server Backend Architecture</div>
+            <pre>
+┌─────────────────────────────────────────────────────┐
+│                 Presentation Layer                   │
+│  AASController | SubmodelController | AuthController │
+└─────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────┐
+│                   Service Layer                      │
+│    AASService | SubmodelService | AuthService       │
+│              AASXConvertModule | AWSS3Service       │
+└─────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────┐
+│                   Domain Layer                       │
+│  AASDomain | SubmodelDomain | ConceptDescriptionDomain│
+│         AASRepository | SubmodelRepository          │
+└─────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────┐
+│                  Infrastructure                      │
+│        MongoDB | AWS S3 | Eclipse BaSyx             │
+└─────────────────────────────────────────────────────┘
+            </pre>
+        </div>
+        
+        <h2>4. 데이터 플로우 다이어그램</h2>
+        <div class="flow-diagram">
+            <h3>AASX 파일 업로드 프로세스</h3>
+            <div class="flow-step">
+                <strong>1. 사용자</strong>: AASX 파일 선택
+            </div>
+            <div class="flow-step">
+                <strong>2. Frontend</strong>: 파일 유효성 검사 → POST /api/aas/aasx/upload
+            </div>
+            <div class="flow-step">
+                <strong>3. Backend</strong>: 파일 수신 → AWS S3 저장
+            </div>
+            <div class="flow-step">
+                <strong>4. AASXConvertModule</strong>: AASX 파싱 → JSON 변환
+            </div>
+            <div class="flow-step">
+                <strong>5. Service Layer</strong>: 데이터 검증 → MongoDB 저장
+            </div>
+            <div class="flow-step">
+                <strong>6. Response</strong>: 성공/실패 응답 → Frontend 표시
+            </div>
+        </div>
+        
+        <h2>5. 배포 아키텍처</h2>
+        <div class="architecture-diagram">
+            <div class="arch-component">
+                <h4>CDN</h4>
+                <p>Netlify/Vercel<br/>Vue.js Static Files</p>
+            </div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-component">
+                <h4>Load Balancer</h4>
+                <p>AWS ALB</p>
+            </div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-component">
+                <h4>Application Servers</h4>
+                <p>EC2 Instances<br/>Spring Boot</p>
+            </div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-component">
+                <h4>Data Layer</h4>
+                <p>MongoDB Cluster<br/>AWS S3 Bucket</p>
+            </div>
+        </div>
+        
+        <h2>6. 보안 아키텍처</h2>
+        <div class="diagram-box">
+            <div class="diagram-title">Security Layers</div>
+            <pre>
+사용자
+  ↓
+Frontend Security
+  - CORS Policy
+  - XSS Protection
+  - Content Security Policy
+  ↓
+API Gateway
+  - Authentication (세션 기반)
+  - Authorization
+  - Rate Limiting
+  ↓
+Backend Security
+  - Spring Security
+  - Session Management
+  - Input Validation
+  ↓
+Data Security
+  - Encryption at Rest
+  - TLS/SSL
+  - Backup & Recovery
+            </pre>
+        </div>
+        
+        <h2>7. 개발 환경 구성도</h2>
+        <div class="diagram-box">
+            <div class="diagram-title">Development Environment</div>
+            <pre>
+Frontend Dev                    Backend Dev
+├── VS Code                    ├── VS Code/IntelliJ IDEA
+├── Node.js v18+               ├── Java 24
+├── Vite Dev Server :5173      ├── Gradle
+└── Proxy → Backend            └── Spring Boot :8080
+                                    ├── MongoDB :27017
+                                    └── Swagger UI :8080/swagger-ui
+            </pre>
+        </div>
+        
+        <h2>8. CI/CD 파이프라인</h2>
+        <div class="flow-diagram">
+            <h3>지속적 통합/배포 프로세스</h3>
+            <div class="flow-step">
+                <strong>Version Control</strong>: Git Repository
+            </div>
+            <div class="flow-step">
+                <strong>CI Pipeline</strong>: Build → Test → Lint/Format → Security Scan
+            </div>
+            <div class="flow-step">
+                <strong>CD Pipeline</strong>: Staging Deploy → Production Deploy
+            </div>
+            <div class="flow-step">
+                <strong>Monitoring</strong>: Logging → Metrics → Alerts
+            </div>
+        </div>
+        
+        <hr style="margin: 40px 0; border: 1px solid #e2e8f0;">
+        
+        <p style="text-align: center; color: #718096;">
+            <em>이 다이어그램들은 AAS 통합 시스템의 전체적인 구조와 각 컴포넌트 간의 관계를 시각적으로 표현합니다.</em>
+        </p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,819 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAS 통합 시스템 전체 문서</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 헤더 스타일 */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        /* 네비게이션 */
+        nav {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+        
+        nav h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        nav ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        
+        nav a {
+            color: #4a5568;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: block;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        nav a:hover {
+            background: #f7fafc;
+            color: #667eea;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        /* 섹션 스타일 */
+        section {
+            background: white;
+            padding: 40px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        section h2 {
+            color: #2d3748;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        section h3 {
+            color: #4a5568;
+            font-size: 1.6em;
+            margin: 30px 0 20px 0;
+        }
+        
+        section h4 {
+            color: #718096;
+            font-size: 1.3em;
+            margin: 20px 0 15px 0;
+        }
+        
+        /* 테이블 스타일 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            overflow-x: auto;
+            display: block;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        tr:hover {
+            background: #f7fafc;
+        }
+        
+        /* 코드 블록 */
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        code {
+            background: #edf2f7;
+            color: #e53e3e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        
+        /* 리스트 스타일 */
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+        
+        li {
+            margin: 8px 0;
+        }
+        
+        /* 카드 스타일 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .card {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        /* 진행 상태 */
+        .progress-bar {
+            background: #e2e8f0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            transition: width 0.5s ease;
+            width: 90%;
+        }
+        
+        /* 체크리스트 */
+        .checklist {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .checklist li {
+            padding: 10px 0;
+            padding-left: 35px;
+            position: relative;
+        }
+        
+        .checklist li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 10px;
+            width: 25px;
+            height: 25px;
+            background: #48bb78;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .checklist li.pending:before {
+            content: '○';
+            background: #e2e8f0;
+            color: #a0aec0;
+        }
+        
+        .checklist li.in-progress:before {
+            content: '◐';
+            background: #f6ad55;
+            color: white;
+        }
+        
+        /* 다이어그램 박스 */
+        .diagram-box {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+        
+        .diagram-title {
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        /* 아키텍처 다이어그램 */
+        .architecture-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .arch-component {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px 30px;
+            text-align: center;
+            min-width: 150px;
+            position: relative;
+        }
+        
+        .arch-component h5 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .arch-arrow {
+            font-size: 2em;
+            color: #a0aec0;
+        }
+        
+        /* 알림 박스 */
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: #ebf8ff;
+            border-color: #3182ce;
+            color: #2c5282;
+        }
+        
+        .alert-success {
+            background: #f0fff4;
+            border-color: #48bb78;
+            color: #276749;
+        }
+        
+        .alert-warning {
+            background: #fffaf0;
+            border-color: #f6ad55;
+            color: #975a16;
+        }
+        
+        /* 푸터 */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #718096;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 60px;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            section {
+                padding: 20px;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+            
+            nav {
+                position: static;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+        }
+        
+        /* 프린트 스타일 */
+        @media print {
+            nav {
+                display: none;
+            }
+            
+            section {
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #e2e8f0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>AAS 통합 시스템 전체 문서</h1>
+            <p>Asset Administration Shell Management Platform</p>
+            <p>경남대학교 AAS 개발팀 | 2025-09-28</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav>
+            <h2>📑 전체 문서 목차</h2>
+            <ul>
+                <li><a href="#doc1">문서 1: 시스템 전체 문서</a></li>
+                <li><a href="#doc2">문서 2: 시스템 아키텍처 다이어그램</a></li>
+                <li><a href="#doc3">문서 3: 기술 가이드 및 설치 매뉴얼</a></li>
+                <li><a href="#doc4">문서 4: 프로젝트 요약</a></li>
+                <li><a href="#doc5">문서 5: 프론트엔드 상세 분석</a></li>
+                <li><a href="#doc6">문서 6: 백엔드 상세 분석</a></li>
+            </ul>
+        </nav>
+
+        <!-- 문서 1: 시스템 전체 문서 -->
+        <section id="doc1">
+            <h2>📄 문서 1: AAS 시스템 전체 문서</h2>
+            
+            <h3>1. 시스템 개요</h3>
+            <h4>1.1 프로젝트 소개</h4>
+            <p>AAS 통합 시스템은 제조업 디지털 트윈을 위한 Asset Administration Shell 관리 플랫폼입니다.</p>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <h4>aas-app</h4>
+                    <p>Vue.js 기반 프론트엔드 애플리케이션</p>
+                </div>
+                <div class="card">
+                    <h4>kyungnam_aas_server</h4>
+                    <p>Spring Boot 기반 백엔드 API 서버</p>
+                </div>
+            </div>
+
+            <h4>1.2 시스템 목적</h4>
+            <ul>
+                <li>제조 장비, 재료, 프로세스의 디지털 트윈 정보를 AAS 형식으로 관리</li>
+                <li>AASX 파일 업로드 및 변환 기능 제공</li>
+                <li>AAS, Submodel, ConceptDescription 데이터의 검색 및 조회</li>
+                <li>웹 기반 사용자 인터페이스를 통한 직관적인 데이터 접근</li>
+            </ul>
+
+            <h3>2. 시스템 아키텍처</h3>
+            <div class="diagram-box">
+                <div class="diagram-title">전체 구조도</div>
+                <pre>
+┌─────────────────┐     ┌─────────────────────┐     ┌──────────────────┐
+│   사용자 브라우저  │────▶│   aas-app (Vue.js)  │────▶│ kyungnam_aas_server│
+│                 │     │   - Vue Router      │     │  (Spring Boot)    │
+└─────────────────┘     │   - Pinia Store     │     │                  │
+                       │   - Axios Client    │     │  - REST API      │
+                       │   - Chart.js        │     │  - MongoDB       │
+                       └─────────────────────┘     │  - AWS S3        │
+                                                  │  - BaSyx AAS4J   │
+                                                  └──────────────────┘
+                </pre>
+            </div>
+
+            <h3>3. 주요 기능 및 API</h3>
+            <h4>3.1 AAS 관리 API</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>엔드포인트</th>
+                        <th>메소드</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>/api/aas</td>
+                        <td>GET</td>
+                        <td>전체 AAS 조회 (페이징, 키워드 검색 지원)</td>
+                    </tr>
+                    <tr>
+                        <td>/api/aas/{aasId}</td>
+                        <td>GET</td>
+                        <td>특정 AAS 정보 조회</td>
+                    </tr>
+                    <tr>
+                        <td>/api/aas/{aasId}</td>
+                        <td>DELETE</td>
+                        <td>AAS 삭제</td>
+                    </tr>
+                    <tr>
+                        <td>/api/aas/submodel/{aasId}</td>
+                        <td>GET</td>
+                        <td>AAS의 서브모델 조회</td>
+                    </tr>
+                    <tr>
+                        <td>/api/aas/aasx/upload</td>
+                        <td>POST</td>
+                        <td>AASX 파일 업로드</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>4. 데이터 모델</h3>
+            <h4>4.1 AAS (Asset Administration Shell)</h4>
+            <pre>
+{
+  "id": "string",
+  "idShort": "string",
+  "description": "string",
+  "administration": {},
+  "assetInformation": {},
+  "submodels": []
+}
+            </pre>
+
+            <h3>5. 현재 진척도</h3>
+            <div class="progress-bar">
+                <div class="progress-fill">90% 완료</div>
+            </div>
+            
+            <h4>5.1 완료된 기능 ✅</h4>
+            <ul class="checklist">
+                <li>기본 프로젝트 구조 설정</li>
+                <li>Vue.js 프론트엔드 프레임워크 구축</li>
+                <li>Spring Boot 백엔드 API 서버 구축</li>
+                <li>MongoDB 연동</li>
+                <li>대시보드 UI 구현</li>
+                <li>AAS/Submodel/ConceptDescription CRUD API</li>
+                <li>AASX 파일 업로드 기능</li>
+                <li>검색 기능 (키워드, 카테고리별)</li>
+                <li>사용자 인증 시스템</li>
+                <li>Swagger API 문서화</li>
+            </ul>
+
+            <h4>5.2 진행 중인 기능 🔄</h4>
+            <ul class="checklist">
+                <li class="in-progress">AWS S3 파일 업로드 최적화</li>
+                <li class="in-progress">고급 검색 필터 기능</li>
+                <li class="in-progress">실시간 데이터 업데이트</li>
+                <li class="in-progress">성능 최적화</li>
+            </ul>
+        </section>
+
+        <!-- 문서 2: 시스템 아키텍처 다이어그램 -->
+        <section id="doc2">
+            <h2>🏗️ 문서 2: 시스템 아키텍처 다이어그램</h2>
+            
+            <h3>1. 시스템 전체 구조도 (C4 Model - Context Diagram)</h3>
+            <div class="diagram-box">
+                <div class="diagram-title">시스템 컨텍스트 다이어그램</div>
+                <div class="architecture-diagram">
+                    <div class="arch-component">
+                        <h5>사용자</h5>
+                        <p>User</p>
+                    </div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-component">
+                        <h5>프론트엔드</h5>
+                        <p>aas-app<br/>Vue.js</p>
+                    </div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-component">
+                        <h5>백엔드</h5>
+                        <p>kyungnam_aas_server<br/>Spring Boot</p>
+                    </div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-component">
+                        <h5>데이터 저장소</h5>
+                        <p>MongoDB<br/>AWS S3</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>2. 프론트엔드 컴포넌트 구조도</h3>
+            <div class="diagram-box">
+                <div class="diagram-title">Vue.js 컴포넌트 계층 구조</div>
+                <pre>
+App.vue (루트 컴포넌트)
+├── TopBar.vue
+├── Router Views
+│   ├── MainDashboard.vue
+│   ├── SearchPage.vue
+│   ├── AasxUploadPage.vue
+│   ├── SignupPage.vue
+│   └── UserManagementPage.vue
+├── Components
+│   ├── Layout
+│   │   ├── Sidebar.vue
+│   │   ├── DynamicSidebar.vue
+│   │   └── Footer.vue
+│   ├── Common
+│   │   ├── TreeView.vue
+│   │   └── TreeNode.vue
+│   └── Features
+│       ├── LoginModal.vue
+│       ├── DashboardCharts.vue
+│       ├── SearchFilters.vue
+│       └── EquipmentDetail.vue
+└── State Management (Pinia)
+    ├── aas.js
+    ├── auth.js
+    └── ui.js
+                </pre>
+            </div>
+
+            <h3>3. 백엔드 레이어 아키텍처</h3>
+            <div class="diagram-box">
+                <div class="diagram-title">Spring Boot 레이어드 아키텍처</div>
+                <pre>
+┌─────────────────────────────────────────────────────┐
+│                 Presentation Layer                   │
+│  AASController | SubmodelController | AuthController │
+└─────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────┐
+│                   Service Layer                      │
+│    AASService | SubmodelService | AuthService       │
+│              AASXConvertModule | AWSS3Service       │
+└─────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────┐
+│                   Domain Layer                       │
+│  AASDomain | SubmodelDomain | ConceptDescriptionDomain│
+│         AASRepository | SubmodelRepository          │
+└─────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────┐
+│                  Infrastructure                      │
+│        MongoDB | AWS S3 | Eclipse BaSyx             │
+└─────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+
+            <h3>4. 데이터 플로우 다이어그램</h3>
+            <div class="diagram-box">
+                <div class="diagram-title">AASX 파일 업로드 시퀀스</div>
+                <pre>
+사용자 → Frontend → Backend → S3/MongoDB
+  │        │          │           │
+  │ 파일선택 │          │           │
+  │───────→│          │           │
+  │        │ 유효성검사 │           │
+  │        │───────→│           │
+  │        │        │ 파일저장    │
+  │        │        │─────────→│
+  │        │        │           │
+  │        │        │ AASX파싱   │
+  │        │        │ JSON변환   │
+  │        │        │           │
+  │        │        │ 데이터저장  │
+  │        │        │─────────→│
+  │        │        │           │
+  │        │ 성공응답 │           │
+  │←───────│←───────│           │
+                </pre>
+            </div>
+
+            <h3>5. 배포 아키텍처</h3>
+            <div class="architecture-diagram">
+                <div class="arch-component">
+                    <h5>CDN</h5>
+                    <p>Netlify/Vercel<br/>Vue.js Static Files</p>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-component">
+                    <h5>Load Balancer</h5>
+                    <p>AWS ALB</p>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-component">
+                    <h5>Application Servers</h5>
+                    <p>EC2 Instances<br/>Spring Boot</p>
+                </div>
+                <span class="arch-arrow">→</span>
+                <div class="arch-component">
+                    <h5>Data Layer</h5>
+                    <p>MongoDB Cluster<br/>AWS S3 Bucket</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 문서 3: 기술 가이드 및 설치 매뉴얼 -->
+        <section id="doc3">
+            <h2>🛠️ 문서 3: 기술 가이드 및 설치 매뉴얼</h2>
+            
+            <h3>1. 시스템 요구사항</h3>
+            <h4>1.1 하드웨어 요구사항</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>구분</th>
+                        <th>최소 사양</th>
+                        <th>권장 사양</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CPU</td>
+                        <td>2 Core 이상</td>
+                        <td>4 Core 이상</td>
+                    </tr>
+                    <tr>
+                        <td>RAM</td>
+                        <td>4GB 이상</td>
+                        <td>8GB 이상</td>
+                    </tr>
+                    <tr>
+                        <td>Storage</td>
+                        <td>20GB 이상</td>
+                        <td>50GB 이상 (SSD 권장)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>1.2 소프트웨어 요구사항</h4>
+            <ul>
+                <li><strong>운영체제</strong>: Windows 10/11, macOS, Linux</li>
+                <li><strong>Node.js</strong>: v18.0.0 이상</li>
+                <li><strong>Java</strong>: JDK 24</li>
+                <li><strong>MongoDB</strong>: v5.0 이상</li>
+                <li><strong>Git</strong>: 최신 버전</li>
+            </ul>
+
+            <h3>2. 개발 환경 설정</h3>
+            <h4>2.1 프론트엔드 (aas-app) 설정</h4>
+            <pre>
+# 의존성 설치
+cd aas-app
+npm install
+
+# 환경 변수 설정 (.env 파일 생성)
+VITE_API_BASE_URL=http://localhost:8080
+VITE_APP_TITLE=AAS Management System
+
+# 개발 서버 실행
+npm run dev
+# 접속 주소: http://localhost:5173
+
+# 프로덕션 빌드
+npm run build
+            </pre>
+
+            <h4>2.2 백엔드 (kyungnam_aas_server) 설정</h4>
+            <pre>
+# MongoDB 실행
+# Windows
+mongod --dbpath C:\data\db
+
+# macOS/Linux
+sudo mongod --dbpath /data/db
+
+# 프로젝트 빌드 및 실행
+cd kyungnam_aas_server
+./gradlew build
+./gradlew bootRun
+
+# 또는 JAR 파일로 실행
+java -jar build/libs/aas_server.jar
+            </pre>
+
+            <h3>3. API 사용 가이드</h3>
+            <h4>3.1 인증 API 예제</h4>
+            <pre>
+// 로그인 요청
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "password123"
+}
+
+// 응답
+{
+  "status": "success",
+  "code": 200,
+  "message": {
+    "userId": 1,
+    "username": "admin",
+    "role": "ADMIN"
+  }
+}
+            </pre>
+
+            <h4>3.2 AAS 조회 API 예제</h4>
+            <pre>
+// 전체 AAS 조회
+GET /api/aas?page=1&keyword=Robot
+
+// 응답
+{
+  "status": "success",
+  "code": 200,
+  "message": [
+    {
+      "id": "https://example.com/aas/robot001",
+      "idShort": "Robot001",
+      "description": "Industrial Robot",
+      "assetInformation": {...},
+      "submodels": [...]
+    }
+  ],
+  "totalCount": 150,
+  "currentPage": 1,
+  "totalPages": 3
+}
+            </pre>
+
+            <h3>4. 트러블슈팅</h3>
+            <div class="alert alert-warning">
+                <h4>CORS 에러 해결</h4>
+                <pre>
+# application.yml에 추가
+spring:
+  web:
+    cors:
+      allowed-origins: "http://localhost:5173"
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+      allowed-headers: "*"
+                </pre>
+            </div>
+
+            <div class="alert alert-info">
+                <h4>MongoDB 연결 실패</h4>
+                <pre
