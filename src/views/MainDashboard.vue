@@ -6,7 +6,7 @@
       </h1>
       <p class="dashboard-subtitle">Real-time Data Monitoring & Management</p>
     </div>
-    
+
     <section class="card-grid">
       <div class="stat-card stat-card-primary">
         <div class="stat-card-content">
@@ -20,7 +20,7 @@
         </div>
         <div class="stat-card-bg"></div>
       </div>
-      
+
       <div class="stat-card stat-card-success">
         <div class="stat-card-content">
           <div class="stat-icon-wrapper">
@@ -33,7 +33,7 @@
         </div>
         <div class="stat-card-bg"></div>
       </div>
-      
+
       <div class="stat-card stat-card-warning">
         <div class="stat-card-content">
           <div class="stat-icon-wrapper">
@@ -48,35 +48,49 @@
       </div>
     </section>
 
-    <section class="main-content-grid">
-      <div class="content-box full-width">
+    <section class="main-content-section">
+      <!-- Quick Filters Section -->
+      <div class="content-box">
         <div class="filter-shortcuts">
           <h2 class="section-title">
             <i class="fas fa-filter"></i>
             Quick Filters
           </h2>
           <div class="filter-buttons">
-            <button class="filter-btn" @click="quickSearch('inputpowervoltage', '380')">
-              <i class="fas fa-bolt"></i>
-              <span>Input Voltage 380V</span>
+            <button class="filter-btn" @click="quickSearchByKeyword('CO2Type')">
+              <i class="fas fa-leaf"></i>
+              <span>CO2 Type Equipment</span>
             </button>
-            <button class="filter-btn" @click="quickSearch('numberofphases', 'Three')">
-              <i class="fas fa-wave-square"></i>
-              <span>Three Phase</span>
+            <button class="filter-btn" @click="quickSearchByKeyword('Welding')">
+              <i class="fas fa-fire"></i>
+              <span>Welding Equipment</span>
             </button>
-            <button class="filter-btn" @click="quickSearch('dutycycle', '60')">
-              <i class="fas fa-percentage"></i>
-              <span>Duty Cycle 60%</span>
+            <button class="filter-btn" @click="quickSearchByKeyword('Robot')">
+              <i class="fas fa-robot"></i>
+              <span>Robot Systems</span>
+            </button>
+            <button class="filter-btn" @click="navigateToCategory('equipment')">
+              <i class="fas fa-cogs"></i>
+              <span>All Equipment</span>
+            </button>
+            <button class="filter-btn" @click="navigateToCategory('material')">
+              <i class="fas fa-cube"></i>
+              <span>All Materials</span>
+            </button>
+            <button class="filter-btn" @click="navigateToCategory('process')">
+              <i class="fas fa-sync-alt"></i>
+              <span>All Processes</span>
             </button>
           </div>
         </div>
-
+      </div>
+      <!-- Quick Launch Section -->
+      <div class="content-box">
         <div class="quick-launch-section">
           <h2 class="section-title">
             <i class="fas fa-rocket"></i>
             Quick Launch
           </h2>
-          
           <div class="quick-search-box">
             <i class="fas fa-search search-icon"></i>
             <input
@@ -90,53 +104,54 @@
               <i class="fas fa-arrow-right"></i>
             </button>
           </div>
-          
-          <nav class="action-card-list">
-            <a href="#" @click.prevent="navigateToSearch('equipment')" class="action-card equipment-card">
-              <div class="card-icon">
-                <i class="fas fa-cogs"></i>
-              </div>
-              <div class="card-content">
-                <h4>Equipment Search</h4>
-                <p>Browse manufacturing equipment</p>
-              </div>
-              <i class="fas fa-chevron-right arrow-icon"></i>
-            </a>
-            
-            <a href="#" @click.prevent="navigateToSearch('material')" class="action-card material-card">
-              <div class="card-icon">
-                <i class="fas fa-cube"></i>
-              </div>
-              <div class="card-content">
-                <h4>Material Search</h4>
-                <p>Browse materials and components</p>
-              </div>
-              <i class="fas fa-chevron-right arrow-icon"></i>
-            </a>
-            
-            <a href="#" @click.prevent="navigateToSearch('process')" class="action-card process-card">
-              <div class="card-icon">
-                <i class="fas fa-sync-alt"></i>
-              </div>
-              <div class="card-content">
-                <h4>Process Search</h4>
-                <p>Browse manufacturing processes</p>
-              </div>
-              <i class="fas fa-chevron-right arrow-icon"></i>
-            </a>
-            
-            <a href="#" @click.prevent="navigateToUpload" class="action-card upload-card">
-              <div class="card-icon">
-                <i class="fas fa-upload"></i>
-              </div>
-              <div class="card-content">
-                <h4>AASX Upload</h4>
-                <p>Upload new AAS packages</p>
-              </div>
-              <i class="fas fa-chevron-right arrow-icon"></i>
-            </a>
-          </nav>
         </div>
+      </div>
+      <div class="content-box">
+        <nav class="action-card-list">
+          <a href="#" @click.prevent="navigateToCategory('equipment')" class="action-card equipment-card">
+            <div class="card-icon">
+              <i class="fas fa-cogs"></i>
+            </div>
+            <div class="card-content">
+              <h4>Equipment Search</h4>
+              <p>Browse manufacturing equipment</p>
+            </div>
+            <i class="fas fa-chevron-right arrow-icon"></i>
+          </a>
+
+          <a href="#" @click.prevent="navigateToCategory('material')" class="action-card material-card">
+            <div class="card-icon">
+              <i class="fas fa-cube"></i>
+            </div>
+            <div class="card-content">
+              <h4>Material Search</h4>
+              <p>Browse materials and components</p>
+            </div>
+            <i class="fas fa-chevron-right arrow-icon"></i>
+          </a>
+
+          <a href="#" @click.prevent="navigateToCategory('process')" class="action-card process-card">
+            <div class="card-icon">
+              <i class="fas fa-sync-alt"></i>
+            </div>
+            <div class="card-content">
+              <h4>Process Search</h4>
+              <p>Browse manufacturing processes</p>
+            </div>
+            <i class="fas fa-chevron-right arrow-icon"></i>
+          </a>
+
+          <a href="#" @click.prevent="navigateToUpload" class="action-card upload-card">
+            <div class="card-icon">
+              <i class="fas fa-upload"></i>
+            </div>
+            <div class="card-content">
+              <h4>AASX Upload</h4>
+              <p>Upload new AAS packages</p>
+            </div>
+            <i class="fas fa-chevron-right arrow-icon"></i>
+          </a>
+        </nav>
       </div>
     </section>
   </main>
@@ -157,7 +172,7 @@ const totalSubmodels = ref(0);
 const totalConcepts = ref(0);
 
 // 컴포넌트가 DOM에 마운트(생성)된 직후에 실행될 코드를 등록
-onMounted(() => {  
+onMounted(() => {
   fetchDashboardCounts(); // 대시보드에 필요한 숫자 데이터들을 가져오는 함수를 호출
 });
 
@@ -178,17 +193,13 @@ const fetchDashboardCounts = async () => {
     totalSubmodels.value = submodelResponse.data.totalCount || 0;
     totalConcepts.value = conceptResponse.data.totalCount || 0;
 
+
   } catch (error) {
     console.error("Failed to fetch dashboard counts:", error);
   }
 };
 
-/**
- * 특정 카테고리가 지정된 검색 페이지로 이동하는 함수
- */
-const navigateToSearch = (category) => {
-  router.push({ path: '/search', query: { category: category } });
-};
+
 
 /**
  * AASX 파일 업로드 페이지로 이동하는 함수
@@ -206,22 +217,32 @@ const executeSearch = () => {
     path: '/search',
     query: {
       menu: 'ALL',
-      filterType: 'aas',
-      value: searchKeyword.value
+      keyword: searchKeyword.value
     }
   });
 };
 
 /**
- * 미리 정의된 조건으로 빠른 검색을 실행하는 함수
+ * 키워드로 빠른 검색을 실행하는 함수
  */
-const quickSearch = (filterType, value) => {
+const quickSearchByKeyword = (keyword) => {
   router.push({
     path: '/search',
-    query: { 
-      filterType: filterType,
-      value: value,
-      menu: 'ALL' // '전체 데이터 보기' 컨텍스트에서 검색하도록 지정
+    query: {
+      menu: 'ALL',
+      keyword: keyword
+    }
+  });
+};
+
+/**
+ * 특정 카테고리로 이동하는 함수
+ */
+const navigateToCategory = (category) => {
+  router.push({
+    path: '/search',
+    query: {
+      category: category
     }
   });
 };
@@ -362,9 +383,9 @@ main.dashboard {
 }
 
 /* 메인 콘텐츠 그리드 */
-.main-content-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+.main-content-section {
+    display: flex;
+    flex-direction: column;
     gap: 30px;
 }
 
@@ -373,11 +394,13 @@ main.dashboard {
     padding: 35px;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
 }
 
-.content-box.full-width {
-    grid-column: 1 / -1;
-}
+
+
+
 
 /* 섹션 타이틀 */
 .section-title {
@@ -396,28 +419,30 @@ main.dashboard {
 
 /* 필터 섹션 */
 .filter-shortcuts {
-    margin-bottom: 40px;
+    /* margin-bottom: 40px; */
 }
 
 .filter-buttons {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
 }
 
 .filter-btn {
     background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
     border: 1px solid #e9ecef;
     border-radius: 12px;
-    padding: 12px 20px;
-    font-size: 0.95em;
+    padding: 12px 16px;
+    font-size: 0.9em;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     color: #4a5568;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .filter-btn:hover {
@@ -434,7 +459,10 @@ main.dashboard {
 
 /* 빠른 실행 섹션 */
 .quick-launch-section {
-    margin-top: 40px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    /* margin-top: 40px; */
 }
 
 /* 검색 박스 */
@@ -618,26 +646,23 @@ main.dashboard {
     main.dashboard {
         padding: 20px;
     }
-    
+
     .dashboard-title {
         font-size: 2em;
     }
-    
+
     .card-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .filter-buttons {
-        flex-direction: column;
+        grid-template-columns: 1fr;
     }
-    
-    .filter-btn {
-        width: 100%;
-    }
-    
+
     .action-card-list {
         grid-template-columns: 1fr;
     }
+
 }
 
 /* 애니메이션 */
@@ -667,4 +692,5 @@ main.dashboard {
 .content-box {
     animation: fadeIn 0.6s ease-out 0.3s both;
 }
+
 </style>

@@ -388,12 +388,12 @@ export default {
     padding: 4px 8px;
     min-height: 32px;
   }
-  
+
   .node-type-badge {
     padding: 2px 8px;
     font-size: 10px;
   }
-  
+
   .tree-node-name {
     font-size: 13px;
   }

@@ -1,41 +1,35 @@
 <template>
   <div>
     <!-- 모바일 오버레이 -->
-    <div 
+    <div
       v-if="showSidebar && isOpen && isMobile"
       class="sidebar-overlay"
       @click="$emit('close-sidebar')"
     ></div>
-    
+
     <!-- 사이드바 본체 -->
-    <div 
-      class="dynamic-sidebar" 
+    <div
+      class="dynamic-sidebar"
       v-if="showSidebar"
       :class="{ 'is-open': isOpen, 'is-mobile': isMobile }"
     >
       <!-- 모바일 닫기 버튼 -->
-      <button 
-        v-if="isMobile"
-        class="mobile-close-btn"
-        @click="$emit('close-sidebar')"
-      >
+      <button v-if="isMobile" class="mobile-close-btn" @click="$emit('close-sidebar')">
         <i class="fas fa-times"></i>
       </button>
-      
+
       <div class="sidebar-header">
         <i class="fas" :class="getCategoryIcon()"></i>
         <span class="header-title">{{ getCategoryTitle() }}</span>
-        <button
-          class="sidebar-collapse-btn"
-          @click="$emit('close-sidebar')"
-          title="Hide sidebar"
-        >
+        <button class="sidebar-collapse-btn" @click="$emit('close-sidebar')" title="Hide sidebar">
           <i class="fas fa-times"></i>
         </button>
       </div>
-   
+
       <nav class="sidebar-nav">
+        <!-- Equipment Category -->
         <template v-if="activeCategory === 'equipment'">
+          <!-- Welding Submenu -->
           <a
             class="nav-link d-flex align-items-center"
             href="#"
@@ -48,20 +42,21 @@
             </span>
             <i class="fas fa-chevron-down ms-auto"></i>
           </a>
-          
+
           <div class="submenu" :class="{ show: expandedMenus.welding }">
             <a
               v-for="item in weldingItems"
-              :key="item"
+              :key="item.value"
               class="nav-link submenu-item"
-              :class="{ active: activeMenu === item }"
-              @click="selectMenu(item)"
+              :class="{ active: activeMenu === item.value }"
+              @click="selectMenu(item.value)"
             >
               <i class="fas fa-circle"></i>
-              {{ item }}
+              {{ item.label }}
             </a>
           </div>
 
+          <!-- CNC Submenu -->
           <a
             class="nav-link d-flex align-items-center"
             href="#"
@@ -74,19 +69,130 @@
             </span>
             <i class="fas fa-chevron-down ms-auto"></i>
           </a>
-          
+
           <div class="submenu" :class="{ show: expandedMenus.cnc }">
-            <a class="nav-link submenu-item">
+            <a
+              v-for="item in cncItems"
+              :key="item.value"
+              class="nav-link submenu-item"
+              :class="{ active: activeMenu === item.value }"
+              @click="selectMenu(item.value)"
+            >
               <i class="fas fa-circle"></i>
-              CNC Machine 1
+              {{ item.label }}
             </a>
-            <a class="nav-link submenu-item">
+          </div>
+
+          <!-- Press Submenu -->
+          <a
+            class="nav-link d-flex align-items-center"
+            href="#"
+            :class="{ expanded: expandedMenus.press }"
+            @click.prevent="toggleMenu('press')"
+          >
+            <span>
+              <i class="fas fa-compress"></i>
+              Press
+            </span>
+            <i class="fas fa-chevron-down ms-auto"></i>
+          </a>
+
+          <div class="submenu" :class="{ show: expandedMenus.press }">
+            <a
+              v-for="item in pressItems"
+              :key="item.value"
+              class="nav-link submenu-item"
+              :class="{ active: activeMenu === item.value }"
+              @click="selectMenu(item.value)"
+            >
               <i class="fas fa-circle"></i>
-              CNC Machine 2
+              {{ item.label }}
+            </a>
+          </div>
+
+          <!-- AMR Submenu -->
+          <a
+            class="nav-link d-flex align-items-center"
+            href="#"
+            :class="{ expanded: expandedMenus.amr }"
+            @click.prevent="toggleMenu('amr')"
+          >
+            <span>
+              <i class="fas fa-truck"></i>
+              AMR
+            </span>
+            <i class="fas fa-chevron-down ms-auto"></i>
+          </a>
+
+          <div class="submenu" :class="{ show: expandedMenus.amr }">
+            <a
+              v-for="item in amrItems"
+              :key="item.value"
+              class="nav-link submenu-item"
+              :class="{ active: activeMenu === item.value }"
+              @click="selectMenu(item.value)"
+            >
+              <i class="fas fa-circle"></i>
+              {{ item.label }}
+            </a>
+          </div>
+
+          <!-- Boring Submenu -->
+          <a
+            class="nav-link d-flex align-items-center"
+            href="#"
+            :class="{ expanded: expandedMenus.boring }"
+            @click.prevent="toggleMenu('boring')"
+          >
+            <span>
+              <i class="fas fa-cog"></i>
+              Boring
+            </span>
+            <i class="fas fa-chevron-down ms-auto"></i>
+          </a>
+
+          <div class="submenu" :class="{ show: expandedMenus.boring }">
+            <a
+              v-for="item in boringItems"
+              :key="item.value"
+              class="nav-link submenu-item"
+              :class="{ active: activeMenu === item.value }"
+              @click="selectMenu(item.value)"
+            >
+              <i class="fas fa-circle"></i>
+              {{ item.label }}
+            </a>
+          </div>
+
+          <!-- Robot Submenu -->
+          <a
+            class="nav-link d-flex align-items-center"
+            href="#"
+            :class="{ expanded: expandedMenus.robot }"
+            @click.prevent="toggleMenu('robot')"
+          >
+            <span>
+              <i class="fas fa-industry"></i>
+              Robot
+            </span>
+            <i class="fas fa-chevron-down ms-auto"></i>
+          </a>
+
+          <div class="submenu" :class="{ show: expandedMenus.robot }">
+            <a
+              v-for="item in robotItems"
+              :key="item.value"
+              class="nav-link submenu-item"
+              :class="{ active: activeMenu === item.value }"
+              @click="selectMenu(item.value)"
+            >
+              <i class="fas fa-circle"></i>
+              {{ item.label }}
             </a>
           </div>
         </template>
 
+        <!-- Material Category -->
         <template v-if="activeCategory === 'material'">
           <a
             v-for="item in materialItems"
@@ -100,16 +206,59 @@
           </a>
         </template>
 
+        <!-- Process Category -->
         <template v-if="activeCategory === 'process'">
           <a
             v-for="item in processItems"
-            :key="item"
+            :key="item.value"
             class="nav-link"
-            :class="{ active: activeMenu === item }"
-            @click="selectMenu(item)"
+            :class="{ active: activeMenu === item.value }"
+            @click="selectMenu(item.value)"
           >
             <i class="fas fa-circle"></i>
-            {{ item }}
+            {{ item.label }}
+          </a>
+        </template>
+
+        <!-- Operation Category -->
+        <template v-if="activeCategory === 'operation'">
+          <a
+            v-for="item in operationItems"
+            :key="item.value"
+            class="nav-link"
+            :class="{ active: activeMenu === item.value }"
+            @click="selectMenu(item.value)"
+          >
+            <i class="fas fa-circle"></i>
+            {{ item.label }}
+          </a>
+        </template>
+
+        <!-- Quality Category -->
+        <template v-if="activeCategory === 'quality'">
+          <a
+            v-for="item in qualityItems"
+            :key="item.value"
+            class="nav-link"
+            :class="{ active: activeMenu === item.value }"
+            @click="selectMenu(item.value)"
+          >
+            <i class="fas fa-circle"></i>
+            {{ item.label }}
+          </a>
+        </template>
+
+        <!-- Production Category -->
+        <template v-if="activeCategory === 'production'">
+          <a
+            v-for="item in productionItems"
+            :key="item.value"
+            class="nav-link"
+            :class="{ active: activeMenu === item.value }"
+            @click="selectMenu(item.value)"
+          >
+            <i class="fas fa-circle"></i>
+            {{ item.label }}
           </a>
         </template>
       </nav>
@@ -123,65 +272,141 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 export default {
   // 컴포넌트의 이름 정의
   name: 'DynamicSidebar',
-  
+
   // 부모 컴포넌트로부터 전달받는 데이터(속성) 정의
   props: {
     // 현재 활성화된 주 카테고리 (예: 'equipment', 'material')
     activeCategory: {
       type: String,
-      default: 'equipment'
+      default: 'equipment',
     },
     // 각 메뉴 항목 옆에 표시될 숫자 카운트
     menuCounts: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
     // 사이드바가 열려있는지 여부
     isOpen: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
-  
+
   // 부모 컴포넌트로 이벤트를 전달하기 위한 'emits' 정의
   emits: ['menu-selected', 'close-sidebar'],
-  
+
   // Vue 3 Composition API의 진입점
   setup(props, { emit }) {
     // --- 상태 관리 (Reactive State) ---
 
     // 현재 활성화(선택)된 서브 메뉴를 저장 (기본값: 'CO2')
-    const activeMenu = ref('CO2') 
-    
+    const activeMenu = ref('CO2')
+
     // 확장 가능한 메뉴들의 열림/닫힘 상태를 관리하는 객체
     const expandedMenus = reactive({
       welding: true, // 'welding' 메뉴는 기본적으로 열린 상태
-      cnc: false   // 'cnc' 메뉴는 기본적으로 닫힌 상태
+      cnc: false, // 'cnc' 메뉴는 기본적으로 닫힌 상태
+      press: false, // 'press' 메뉴는 기본적으로 닫힌 상태
+      amr: false, // 'amr' 메뉴는 기본적으로 닫힌 상태
+      boring: false, // 'boring' 메뉴는 기본적으로 닫힌 상태
+      robot: false, // 'robot' 메뉴는 기본적으로 닫힌 상태
     })
-    
+
     // 현재 화면이 모바일 크기인지 여부를 저장
     const isMobile = ref(false)
 
     // --- 메뉴 데이터 ---
 
     // 'Equipment' 카테고리의 'Welding' 서브 메뉴 아이템 목록
-    const weldingItems = ['CO2', 'EBW', 'FW', 'MAG', 'MIG', 'OAW', 'PW', 'RSEW', 'RSW', 'SAW', 'SMAW', 'Sold', 'SW', 'TIG', 'UW']
-    
+    const weldingItems = [
+      { value: 'CO2', label: 'CO2' },
+      { value: 'EBW', label: 'EBW' },
+      { value: 'FW', label: 'FW' },
+      { value: 'MAG', label: 'MAG' },
+      { value: 'MIG', label: 'MIG' },
+      { value: 'OAW', label: 'OAW' },
+      { value: 'PW', label: 'PW' },
+      { value: 'RSEW', label: 'RSEW' },
+      { value: 'RSW', label: 'RSW' },
+      { value: 'SAW', label: 'SAW' },
+      { value: 'SMAW', label: 'SMAW' },
+      { value: 'Sold', label: 'Sold' },
+      { value: 'SW', label: 'SW' },
+      { value: 'TIG', label: 'TIG' },
+      { value: 'UW', label: 'UW' },
+    ]
+
+    // 'Equipment' 카테고리의 'CNC' 서브 메뉴 아이템 목록
+    const cncItems = [
+      { value: 'CNC_Milling', label: 'CNC Milling' },
+      { value: 'CNC_Turning', label: 'CNC Turning' },
+      { value: 'CNC_Drilling', label: 'CNC Drilling' },
+    ]
+
+    // 'Equipment' 카테고리의 'Press' 서브 메뉴 아이템 목록
+    const pressItems = [
+      { value: 'Press_Stamping', label: 'Press Stamping' },
+      { value: 'Press_Forming', label: 'Press Forming' },
+      { value: 'Press_Bending', label: 'Press Bending' },
+      { value: 'Press_Line', label: 'Press Line' },
+    ]
+
+    // 'Equipment' 카테고리의 'AMR' 서브 메뉴 아이템 목록
+    const amrItems = [{ value: 'AMR', label: 'AMR' }]
+
+    // 'Equipment' 카테고리의 'Boring' 서브 메뉴 아이템 목록
+    const boringItems = [{ value: 'Boring', label: 'Boring' }]
+
+    // 'Equipment' 카테고리의 'Robot' 서브 메뉴 아이템 목록
+    const robotItems = [{ value: 'Robot', label: 'Robot' }]
+
     // 'Material' 카테고리의 서브 메뉴 아이템 목록
     const materialItems = [
       { value: 'Steel', label: 'Steel' },
       { value: 'Aluminum', label: 'Aluminum' },
-      { value: 'Stainless Steel', label: 'Stainless Steel' }
+      { value: 'Stainless Steel', label: 'Stainless Steel' },
     ]
-    
+
     // 'Process' 카테고리의 서브 메뉴 아이템 목록
-    const processItems = ['Welding', 'Cutting', 'Brazing']
+    const processItems = [
+      { value: 'Welding', label: 'Welding' },
+      { value: 'Cutting', label: 'Cutting' },
+      { value: 'Brazing', label: 'Brazing' },
+    ]
+
+    // 'Operation' 카테고리의 서브 메뉴 아이템 목록
+    const operationItems = [
+      { value: 'Operation_Planning', label: 'Operation Planning' },
+      { value: 'Operation_Monitoring', label: 'Operation Monitoring' },
+      { value: 'Operation_Control', label: 'Operation Control' },
+    ]
+
+    // 'Quality' 카테고리의 서브 메뉴 아이템 목록
+    const qualityItems = [
+      { value: 'Quality_Inspection', label: 'Quality Inspection' },
+      { value: 'Quality_Control', label: 'Quality Control' },
+      { value: 'Quality_Assurance', label: 'Quality Assurance' },
+    ]
+
+    // 'Production' 카테고리의 서브 메뉴 아이템 목록
+    const productionItems = [
+      { value: 'Production_Planning', label: 'Production Planning' },
+      { value: 'Production_Tracking', label: 'Production Tracking' },
+      { value: 'Production_Analysis', label: 'Production Analysis' },
+    ]
 
     // --- 계산된 속성 (Computed Properties) ---
 
     // 서브 메뉴가 있는 특정 카테고리일 때만 사이드바 내용을 보여주기 위한 computed 속성
     const showSidebar = computed(() => {
-      const categoriesWithSubmenu = ['equipment', 'material', 'process']
+      const categoriesWithSubmenu = [
+        'equipment',
+        'material',
+        'process',
+        'operation',
+        'quality',
+        'production',
+      ]
       return categoriesWithSubmenu.includes(props.activeCategory)
     })
 
@@ -195,7 +420,7 @@ export default {
         process: 'fa-sync-alt',
         operation: 'fa-tachometer-alt',
         quality: 'fa-check-circle',
-        production: 'fa-industry'
+        production: 'fa-industry',
       }
       return iconMap[props.activeCategory] || 'fa-folder' // 매핑되는 아이콘이 없으면 기본 아이콘 반환
     }
@@ -208,7 +433,7 @@ export default {
         process: 'Process',
         operation: 'Operation',
         quality: 'Quality',
-        production: 'Production'
+        production: 'Production',
       }
       return titleMap[props.activeCategory] || 'Menu' // 매핑되는 제목이 없으면 기본 제목 반환
     }
@@ -222,7 +447,7 @@ export default {
     const selectMenu = (menuName) => {
       activeMenu.value = menuName // 선택된 메뉴를 활성 상태로 변경
       emit('menu-selected', menuName) // 부모 컴포넌트에 'menu-selected' 이벤트를 전달
-      
+
       // 모바일 화면에서는 메뉴를 선택하면 자동으로 사이드바를 닫도록 이벤트를 전달
       if (isMobile.value) {
         emit('close-sidebar')
@@ -252,16 +477,24 @@ export default {
       activeMenu,
       expandedMenus,
       weldingItems,
+      cncItems,
+      pressItems,
+      amrItems,
+      boringItems,
+      robotItems,
       materialItems,
       processItems,
+      operationItems,
+      qualityItems,
+      productionItems,
       showSidebar,
       getCategoryIcon,
       getCategoryTitle,
       toggleMenu,
       selectMenu,
-      isMobile
+      isMobile,
     }
-  }
+  },
 }
 </script>
 
@@ -271,7 +504,7 @@ export default {
   position: fixed;
   left: 0;
   top: 56px;
-  bottom: 0;
+  bottom: 56px; /* 푸터 높이만큼 여백 추가 */
   width: 260px;
   background-color: #ffffff;
   border-right: 1px solid #e1e4e8;
@@ -292,14 +525,15 @@ export default {
 @media (max-width: 768px) {
   .dynamic-sidebar {
     top: 52px;
+    bottom: 56px; /* 모바일에서도 푸터 높이만큼 여백 추가 */
     transform: translateX(-100%);
-    box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
   }
-  
+
   .dynamic-sidebar.is-open {
     transform: translateX(0);
   }
-  
+
   /* 모바일 오버레이 */
   .sidebar-overlay {
     position: fixed;
@@ -310,7 +544,7 @@ export default {
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 999;
   }
-  
+
   /* 모바일 닫기 버튼 */
   .mobile-close-btn {
     position: absolute;
@@ -330,7 +564,7 @@ export default {
     transition: all 0.2s ease;
     z-index: 1;
   }
-  
+
   .mobile-close-btn:hover {
     background: #e1e4e8;
     color: #24292e;
@@ -460,6 +694,7 @@ export default {
 .submenu.show {
   max-height: 600px;
   overflow-y: auto;
+  padding-bottom: 8px; /* 마지막 아이템이 잘리지 않도록 여백 추가 */
 }
 
 /* 서브메뉴 아이템 */
@@ -537,7 +772,7 @@ export default {
     position: relative;
     overflow: hidden;
   }
-  
+
   .nav-link::after {
     content: '';
     position: absolute;
@@ -549,7 +784,7 @@ export default {
     transform: translateX(-100%);
     transition: transform 0.2s ease;
   }
-  
+
   .nav-link:hover::after,
   .nav-link.active::after,
   .nav-link.expanded::after {

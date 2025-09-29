@@ -30,7 +30,10 @@
 
       <div class="detail-body">
         <!-- AAS Information -->
-        <div v-if="selectedNode.type === 'equipment' || selectedNode.type === 'aas'" class="info-section">
+        <div
+          v-if="selectedNode.type === 'equipment' || selectedNode.type === 'aas'"
+          class="info-section"
+        >
           <div class="section-header">
             <i class="fas fa-server"></i>
             <h3>AAS Information</h3>
@@ -43,7 +46,9 @@
               </div>
               <div class="info-item">
                 <label>Short ID</label>
-                <span class="info-value">{{ selectedNode.data?.idShort || selectedNode.name }}</span>
+                <span class="info-value">{{
+                  selectedNode.data?.idShort || selectedNode.name
+                }}</span>
               </div>
             </div>
           </div>
@@ -63,7 +68,9 @@
               </div>
               <div class="info-item">
                 <label>Short ID</label>
-                <span class="info-value">{{ selectedNode.data?.idShort || selectedNode.name }}</span>
+                <span class="info-value">{{
+                  selectedNode.data?.idShort || selectedNode.name
+                }}</span>
               </div>
               <div class="info-item">
                 <label>Model Type</label>
@@ -71,33 +78,40 @@
               </div>
             </div>
           </div>
-          
-          <div v-if="selectedNode.children && selectedNode.children.length > 0" class="elements-section">
+
+          <div
+            v-if="selectedNode.children && selectedNode.children.length > 0"
+            class="elements-section"
+          >
             <div class="section-header">
               <i class="fas fa-list"></i>
               <h3>Elements</h3>
               <span class="element-count">{{ selectedNode.children.length }}</span>
             </div>
             <div class="elements-list">
-              <div
-                v-for="element in selectedNode.children"
-                :key="element.id"
-                class="element-card"
-              >
+              <div v-for="element in selectedNode.children" :key="element.id" class="element-card">
                 <div class="element-header">
                   <span class="element-badge" :class="getNodeIconClass(element.type)">
                     {{ getNodeTypeChar(element.type) }}
                   </span>
                   <span class="element-name">
                     {{ element.name }}
-                    <span v-if="element.type === 'collection' && element.data?.value" class="element-meta">
+                    <span
+                      v-if="element.type === 'collection' && element.data?.value"
+                      class="element-meta"
+                    >
                       {{ element.data.value.length }} items
                     </span>
                   </span>
                 </div>
-                <div v-if="element.data?.value !== undefined && element.type !== 'collection'" class="element-value">
+                <div
+                  v-if="element.data?.value !== undefined && element.type !== 'collection'"
+                  class="element-value"
+                >
                   <span class="value-label">Value:</span>
-                  <span class="value-content">{{ formatValue(element.data.value, element.data.modelType) }}</span>
+                  <span class="value-content">{{
+                    formatValue(element.data.value, element.data.modelType)
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -118,7 +132,9 @@
               </div>
               <div class="info-item">
                 <label>Short ID</label>
-                <span class="info-value">{{ selectedNode.data?.idShort || selectedNode.name }}</span>
+                <span class="info-value">{{
+                  selectedNode.data?.idShort || selectedNode.name
+                }}</span>
               </div>
               <div class="info-item">
                 <label>Total Elements</label>
@@ -129,7 +145,12 @@
         </div>
 
         <!-- Property Information -->
-        <div v-else-if="selectedNode.type === 'property' || selectedNode.type === 'multilanguageproperty'" class="info-section">
+        <div
+          v-else-if="
+            selectedNode.type === 'property' || selectedNode.type === 'multilanguageproperty'
+          "
+          class="info-section"
+        >
           <div class="section-header">
             <i class="fas fa-tag"></i>
             <h3>Property Details</h3>
@@ -142,11 +163,15 @@
               </div>
               <div class="info-item">
                 <label>Short ID</label>
-                <span class="info-value">{{ selectedNode.data?.idShort || selectedNode.name }}</span>
+                <span class="info-value">{{
+                  selectedNode.data?.idShort || selectedNode.name
+                }}</span>
               </div>
               <div class="info-item">
                 <label>Current Value</label>
-                <span class="info-value highlight">{{ formatValue(selectedNode.data?.value, selectedNode.data?.modelType) }}</span>
+                <span class="info-value highlight">{{
+                  formatValue(selectedNode.data?.value, selectedNode.data?.modelType)
+                }}</span>
               </div>
               <div class="info-item">
                 <label>Data Type</label>
@@ -183,7 +208,9 @@
               </div>
               <div class="info-item">
                 <label>Short ID</label>
-                <span class="info-value">{{ selectedNode.data?.idShort || selectedNode.name }}</span>
+                <span class="info-value">{{
+                  selectedNode.data?.idShort || selectedNode.name
+                }}</span>
               </div>
               <div class="info-item">
                 <label>MIME Type</label>
@@ -207,7 +234,9 @@
               </div>
               <div class="info-item">
                 <label>Short ID</label>
-                <span class="info-value">{{ selectedNode.data?.idShort || selectedNode.name }}</span>
+                <span class="info-value">{{
+                  selectedNode.data?.idShort || selectedNode.name
+                }}</span>
               </div>
             </div>
           </div>
@@ -227,7 +256,9 @@
               </div>
               <div class="info-item">
                 <label>Short ID</label>
-                <span class="info-value">{{ selectedNode.data?.idShort || selectedNode.name }}</span>
+                <span class="info-value">{{
+                  selectedNode.data?.idShort || selectedNode.name
+                }}</span>
               </div>
               <div class="info-item">
                 <label>Min Value</label>
@@ -242,7 +273,10 @@
         </div>
 
         <!-- Element Information (Generic) -->
-        <div v-else-if="selectedNode.type === 'element' || selectedNode.type === 'blob'" class="info-section">
+        <div
+          v-else-if="selectedNode.type === 'element' || selectedNode.type === 'blob'"
+          class="info-section"
+        >
           <div class="section-header">
             <i class="fas fa-cube"></i>
             <h3>Element Details</h3>
@@ -255,11 +289,92 @@
               </div>
               <div class="info-item">
                 <label>Short ID</label>
-                <span class="info-value">{{ selectedNode.data?.idShort || selectedNode.name }}</span>
+                <span class="info-value">{{
+                  selectedNode.data?.idShort || selectedNode.name
+                }}</span>
               </div>
               <div class="info-item">
                 <label>Type</label>
                 <span class="info-value">{{ selectedNode.type }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Concept Description Information -->
+        <div v-else-if="selectedNode.type === 'concept'" class="info-section">
+          <div class="section-header">
+            <i class="fas fa-book"></i>
+            <h3>Concept Description</h3>
+          </div>
+          <div class="info-content">
+            <div class="info-grid">
+              <div class="info-item full-width">
+                <label>ID</label>
+                <span class="info-value">{{ selectedNode.id }}</span>
+              </div>
+              <div class="info-item">
+                <label>Short ID</label>
+                <span class="info-value">{{
+                  selectedNode.data?.idShort || selectedNode.name
+                }}</span>
+              </div>
+            </div>
+
+            <!-- Data Specifications -->
+            <div
+              v-if="selectedNode.data?.embeddedDataSpecifications?.length > 0"
+              class="spec-section"
+            >
+              <h4 class="spec-title">Data Specifications</h4>
+              <div
+                v-for="(spec, index) in selectedNode.data.embeddedDataSpecifications"
+                :key="index"
+                class="spec-content"
+              >
+                <div v-if="spec.dataSpecificationContent">
+                  <div v-if="spec.dataSpecificationContent.preferredName" class="spec-item">
+                    <label>Preferred Name</label>
+                    <div class="lang-values">
+                      <div
+                        v-for="(name, idx) in spec.dataSpecificationContent.preferredName"
+                        :key="idx"
+                        class="lang-item"
+                      >
+                        <span class="lang-code">{{ name.language }}</span>
+                        <span class="lang-text">{{ name.text }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div v-if="spec.dataSpecificationContent.definition" class="spec-item">
+                    <label>Definition</label>
+                    <div class="lang-values">
+                      <div
+                        v-for="(def, idx) in spec.dataSpecificationContent.definition"
+                        :key="idx"
+                        class="lang-item"
+                      >
+                        <span class="lang-code">{{ def.language }}</span>
+                        <span class="lang-text definition">{{ def.text }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div v-if="spec.dataSpecificationContent.dataType" class="spec-item">
+                    <label>Data Type</label>
+                    <span class="info-value highlight">{{
+                      spec.dataSpecificationContent.dataType
+                    }}</span>
+                  </div>
+
+                  <div v-if="spec.dataSpecificationContent.unit !== undefined" class="spec-item">
+                    <label>Unit</label>
+                    <span class="info-value">{{
+                      spec.dataSpecificationContent.unit || 'No unit'
+                    }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -316,43 +431,60 @@
                   </div>
                 </div>
               </div>
-              
+
               <!-- Data Specifications -->
-              <div v-if="conceptData.embeddedDataSpecifications?.length > 0" class="concept-section">
+              <div
+                v-if="conceptData.embeddedDataSpecifications?.length > 0"
+                class="concept-section"
+              >
                 <h3>
                   <i class="fas fa-database"></i>
                   Data Specifications
                 </h3>
-                
-                <div v-for="(spec, index) in conceptData.embeddedDataSpecifications" :key="index" class="spec-card">
+
+                <div
+                  v-for="(spec, index) in conceptData.embeddedDataSpecifications"
+                  :key="index"
+                  class="spec-card"
+                >
                   <div v-if="spec.dataSpecificationContent?.dataType" class="spec-item">
                     <label>Data Type</label>
                     <span class="spec-badge">{{ spec.dataSpecificationContent.dataType }}</span>
                   </div>
-                  
+
                   <div v-if="spec.dataSpecificationContent?.preferredName" class="spec-item">
                     <label>Preferred Names</label>
                     <div class="lang-values">
-                      <div v-for="(name, idx) in spec.dataSpecificationContent.preferredName" :key="idx" class="lang-item">
+                      <div
+                        v-for="(name, idx) in spec.dataSpecificationContent.preferredName"
+                        :key="idx"
+                        class="lang-item"
+                      >
                         <span class="lang-code">{{ name.language }}</span>
                         <span class="lang-text">{{ name.text }}</span>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div v-if="spec.dataSpecificationContent?.definition" class="spec-item">
                     <label>Definitions</label>
                     <div class="lang-values">
-                      <div v-for="(def, idx) in spec.dataSpecificationContent.definition" :key="idx" class="definition-block">
+                      <div
+                        v-for="(def, idx) in spec.dataSpecificationContent.definition"
+                        :key="idx"
+                        class="definition-block"
+                      >
                         <span class="lang-code">{{ def.language }}</span>
                         <p class="definition-text">{{ def.text }}</p>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div v-if="spec.dataSpecificationContent?.unit !== undefined" class="spec-item">
                     <label>Unit</label>
-                    <span class="spec-badge">{{ spec.dataSpecificationContent.unit || 'No unit' }}</span>
+                    <span class="spec-badge">{{
+                      spec.dataSpecificationContent.unit || 'No unit'
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -379,13 +511,13 @@ export default {
     // 트리 뷰에서 선택된 노드 객체
     selectedNode: {
       type: Object,
-      default: null
+      default: null,
     },
     // (현재 코드에서는 사용되지 않음) 상세 데이터를 별도로 받을 경우를 위한 prop
     detailData: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
   setup(props) {
     // --- 상태 관리 (Reactive State) ---
@@ -401,118 +533,138 @@ export default {
     // 노드 타입에 따라 표시할 약어(문자)를 반환 - 아이콘 스타일
     const getNodeTypeChar = (type) => {
       const charMap = {
-        'equipment': 'A', 'aas': 'A', 'submodel': 'S', 'collection': 'C', 'property': 'P',
-        'multilanguageproperty': 'M', 'file': 'F', 'reference': 'R', 'range': 'R', 'blob': 'B', 'element': 'E'
-      };
-      return charMap[type] || '•'; // 매핑되는 타입이 없으면 기본 문자 반환
+        equipment: 'A',
+        aas: 'A',
+        submodel: 'S',
+        collection: 'C',
+        property: 'P',
+        multilanguageproperty: 'M',
+        file: 'F',
+        reference: 'R',
+        range: 'R',
+        blob: 'B',
+        element: 'E',
+        concept: 'D',
+      }
+      return charMap[type] || '•' // 매핑되는 타입이 없으면 기본 문자 반환
     }
 
     // 노드 타입에 따라 적용할 CSS 클래스를 반환 (아이콘 색상 결정)
     const getNodeIconClass = (type) => {
       const classMap = {
-        'equipment': 'badge-equipment', 'aas': 'badge-equipment', 'submodel': 'badge-submodel',
-        'collection': 'badge-collection', 'property': 'badge-property', 'multilanguageproperty': 'badge-multilanguage',
-        'file': 'badge-file', 'reference': 'badge-reference', 'range': 'badge-range', 'blob': 'badge-blob',
-        'element': 'badge-element'
-      };
-      return classMap[type] || 'badge-default';
+        equipment: 'badge-equipment',
+        aas: 'badge-equipment',
+        submodel: 'badge-submodel',
+        collection: 'badge-collection',
+        property: 'badge-property',
+        multilanguageproperty: 'badge-multilanguage',
+        file: 'badge-file',
+        reference: 'badge-reference',
+        range: 'badge-range',
+        blob: 'badge-blob',
+        element: 'badge-element',
+        concept: 'badge-concept',
+      }
+      return classMap[type] || 'badge-default'
     }
 
     // Semantic ID 객체에서 실제 ID 값을 추출
     const getSemanticId = (semanticId) => {
       if (!semanticId || !semanticId.keys || !semanticId.keys.length) {
-        return 'N/A';
+        return 'N/A'
       }
-      return semanticId.keys[0].value || 'N/A';
+      return semanticId.keys[0].value || 'N/A'
     }
 
     // 다국어 속성(MultiLanguageProperty) 값에서 영어 또는 첫 번째 값을 추출
     const getMultiLanguageValue = (value) => {
-      if (!Array.isArray(value) || value.length === 0) return null;
-      const enValue = value.find(v => v.language === 'en'); // 영어 값 우선
-      if (enValue) return enValue.text;
-      return value[0].text; // 영어가 없으면 첫 번째 값
+      if (!Array.isArray(value) || value.length === 0) return null
+      const enValue = value.find((v) => v.language === 'en') // 영어 값 우선
+      if (enValue) return enValue.text
+      return value[0].text // 영어가 없으면 첫 번째 값
     }
 
     // 다양한 타입의 값을 화면에 표시하기 좋은 문자열로 포맷팅
     const formatValue = (value, modelType) => {
-      if (value === null || value === undefined) return 'N/A';
-      
+      if (value === null || value === undefined) return 'N/A'
+
       // 다국어 속성이면 해당 함수로 처리
       if (modelType === 'MultiLanguageProperty') {
-        return getMultiLanguageValue(value);
+        return getMultiLanguageValue(value)
       }
-      
-      if (Array.isArray(value)) return `Array (${value.length} items)`;
-      if (typeof value === 'object' && value !== null) return JSON.stringify(value);
-      return value;
+
+      if (Array.isArray(value)) return `Array (${value.length} items)`
+      if (typeof value === 'object' && value !== null) return JSON.stringify(value)
+      return value
     }
 
     // --- 비동기 메소드 (API 호출) ---
 
     // 'View Concept' 버튼 클릭 시, Semantic ID에 해당하는 Concept Description 정보를 API로 요청
     const showConceptDescription = async (semanticId) => {
-      if (!semanticId || !semanticId.keys || !semanticId.keys.length) return;
-      
-      const conceptId = semanticId.keys[0].value;
-      if (!conceptId) return;
-      
+      if (!semanticId || !semanticId.keys || !semanticId.keys.length) return
+
+      const conceptId = semanticId.keys[0].value
+      if (!conceptId) return
+
       // 모달과 로딩 상태 활성화
-      showConcept.value = true;
-      loadingConcept.value = true;
-      conceptData.value = null;
-      
+      showConcept.value = true
+      loadingConcept.value = true
+      conceptData.value = null
+
       try {
-        const lowercaseId = conceptId.toLowerCase(); // ID를 소문자로 변환
-        const encodedId = btoa(lowercaseId); // ID를 Base64로 인코딩하여 URL에 사용
-        const response = await apiClient.get(`/concept/description/${encodedId}`);
-        
+        const lowercaseId = conceptId.toLowerCase() // ID를 소문자로 변환
+        const encodedId = btoa(lowercaseId) // ID를 Base64로 인코딩하여 URL에 사용
+        const response = await apiClient.get(`/concept/description/${encodedId}`)
+
         // 응답 데이터 처리 (API 응답이 배열일 경우 첫 번째 요소 사용)
         if (response.data && response.data.message) {
-          const message = Array.isArray(response.data.message) ? response.data.message[0] : response.data.message;
-          conceptData.value = message;
+          const message = Array.isArray(response.data.message)
+            ? response.data.message[0]
+            : response.data.message
+          conceptData.value = message
         } else {
-          conceptData.value = null;
+          conceptData.value = null
         }
       } catch (error) {
-        console.error('Failed to load concept description:', error);
-        conceptData.value = null;
+        console.error('Failed to load concept description:', error)
+        conceptData.value = null
       } finally {
         // API 호출 성공/실패 여부와 관계없이 로딩 상태 비활성화
-        loadingConcept.value = false;
+        loadingConcept.value = false
       }
     }
 
     // 모달 닫기
     const closeConcept = () => {
-      showConcept.value = false;
-      conceptData.value = null;
+      showConcept.value = false
+      conceptData.value = null
     }
 
     // JSON 데이터 클립보드에 복사
     const copyJsonData = async () => {
       try {
-        const jsonText = JSON.stringify(props.selectedNode.data, null, 2);
-        await navigator.clipboard.writeText(jsonText);
-        
+        const jsonText = JSON.stringify(props.selectedNode.data, null, 2)
+        await navigator.clipboard.writeText(jsonText)
+
         // 복사 성공 시 버튼 텍스트와 아이콘 변경
-        copyButtonText.value = 'Copied!';
-        copyButtonIcon.value = 'fas fa-check';
-        
+        copyButtonText.value = 'Copied!'
+        copyButtonIcon.value = 'fas fa-check'
+
         // 2초 후 원래 상태로 복원
         setTimeout(() => {
-          copyButtonText.value = 'Copy';
-          copyButtonIcon.value = 'fas fa-copy';
-        }, 2000);
+          copyButtonText.value = 'Copy'
+          copyButtonIcon.value = 'fas fa-copy'
+        }, 2000)
       } catch (error) {
-        console.error('Failed to copy:', error);
-        copyButtonText.value = 'Failed';
-        copyButtonIcon.value = 'fas fa-times';
-        
+        console.error('Failed to copy:', error)
+        copyButtonText.value = 'Failed'
+        copyButtonIcon.value = 'fas fa-times'
+
         setTimeout(() => {
-          copyButtonText.value = 'Copy';
-          copyButtonIcon.value = 'fas fa-copy';
-        }, 2000);
+          copyButtonText.value = 'Copy'
+          copyButtonIcon.value = 'fas fa-copy'
+        }, 2000)
       }
     }
 
@@ -530,9 +682,9 @@ export default {
       formatValue,
       showConceptDescription,
       closeConcept,
-      copyJsonData
+      copyJsonData,
     }
-  }
+  },
 }
 </script>
 
@@ -944,6 +1096,79 @@ export default {
   background: #f3f4f6;
   color: #6b7280;
   border: 1px solid #e5e7eb;
+}
+
+.badge-concept {
+  background: #fef3e2;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+/* Spec section styles */
+.spec-section {
+  margin-top: 20px;
+}
+
+.spec-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #24292e;
+  margin-bottom: 12px;
+}
+
+.spec-content {
+  background: #f6f8fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.spec-item {
+  margin-bottom: 16px;
+}
+
+.spec-item:last-child {
+  margin-bottom: 0;
+}
+
+.spec-item label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #586069;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.lang-values {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lang-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.lang-code {
+  font-size: 11px;
+  font-weight: 600;
+  color: #586069;
+  text-transform: uppercase;
+  min-width: 30px;
+  padding-top: 2px;
+}
+
+.lang-text {
+  font-size: 14px;
+  color: #24292e;
+  flex: 1;
+}
+
+.lang-text.definition {
+  line-height: 1.5;
 }
 
 /* JSON 섹션 */
