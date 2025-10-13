@@ -9,12 +9,15 @@
         </transition>
       </router-view>
     </div>
+
+    <AppFooter />
   </div>
 </template>
 
 <script setup>
-import TopBar from '@/components/layout/TopBar.vue';
-import { RouterView } from 'vue-router';
+import TopBar from '@/components/layout/TopBar.vue'
+import AppFooter from '@/components/layout/Footer.vue'
+import { RouterView } from 'vue-router'
 </script>
 
 <style>
@@ -26,7 +29,7 @@ import { RouterView } from 'vue-router';
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: #f8f9fa;
 }
 
@@ -36,11 +39,12 @@ body {
   overflow: hidden;
 }
 
-/* TopBar 높이(50px)를 제외한 나머지 영역을 페이지 컨텐츠로 설정 */
+/* TopBar 높이(50px)와 Footer 높이(50px)를 제외한 나머지 영역을 페이지 컨텐츠로 설정 */
 .page-content-wrapper {
   margin-top: 50px;
-  height: calc(100vh - 50px);
+  height: calc(100vh - 100px); /* TopBar(50px) + Footer(50px) = 100px */
   overflow-y: auto; /* 페이지 내용이 길어지면 스크롤 */
+  padding-bottom: 20px; /* Footer와의 여백 */
 }
 
 /* 페이지 전환 효과 */

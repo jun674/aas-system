@@ -2,15 +2,16 @@
  * 메뉴별 AAS 필터링 유틸리티
  */
 
-// 메뉴 타입 정의 (기존과 동일)
+// 메뉴 타입 정의
 export const MENU_TYPES = {
-  // Equipment
+  // Equipment 카테고리 - Welding 장비들
   EQUIPMENT: {
     CO2: 'CO2',
+    TIG: 'TIG',
+    MIG: 'MIG',
+    MAG: 'MAG',
     EBW: 'EBW',
     FW: 'FW',
-    MAG: 'MAG',
-    MIG: 'MIG',
     OAW: 'OAW',
     PW: 'PW',
     RSEW: 'RSEW',
@@ -19,74 +20,134 @@ export const MENU_TYPES = {
     SMAW: 'SMAW',
     Sold: 'Sold',
     SW: 'SW',
-    TIG: 'TIG',
-    UW: 'UW'
+    UW: 'UW',
+    // CNC 장비들
+    CNC_MILLING: 'CNC_Milling',
+    CNC_TURNING: 'CNC_Turning',
+    CNC_DRILLING: 'CNC_Drilling',
+    // Press 장비들
+    PRESS_STAMPING: 'Press_Stamping',
+    PRESS_FORMING: 'Press_Forming',
+    PRESS_BENDING: 'Press_Bending',
+    PRESS_LINE: 'Press_Line',
+    // AMR (Autonomous Mobile Robot)
+    AMR: 'AMR',
+    // Boring
+    BORING: 'Boring',
+    // Robot
+    ROBOT: 'Robot',
   },
-  // Material
+  // Material 카테고리
   MATERIAL: {
     STEEL: 'Steel',
     ALUMINUM: 'Aluminum',
-    STAINLESS_STEEL: 'Stainless Steel'
+    STAINLESS_STEEL: 'Stainless Steel',
   },
-  // Process
+  // Process 카테고리
   PROCESS: {
     WELDING: 'Welding',
     CUTTING: 'Cutting',
-    BRAZING: 'Brazing'
+    BRAZING: 'Brazing',
   },
-  // Management
-  MANAGEMENT: {
-    OPERATION: 'Operation',
-    QUALITY: 'Quality',
-    PRODUCTION: 'Production'
+  // Operation 카테고리
+  OPERATION: {
+    PLANNING: 'Operation_Planning',
+    MONITORING: 'Operation_Monitoring',
+    CONTROL: 'Operation_Control',
+  },
+  // Quality 카테고리
+  QUALITY: {
+    INSPECTION: 'Quality_Inspection',
+    CONTROL: 'Quality_Control',
+    ASSURANCE: 'Quality_Assurance',
+  },
+  // Production 카테고리
+  PRODUCTION: {
+    PLANNING: 'Production_Planning',
+    TRACKING: 'Production_Tracking',
+    ANALYSIS: 'Production_Analysis',
   },
   // Special
   SPECIAL: {
     ALL: 'ALL',
-    AASX: 'AASX'
-  }
+    AASX: 'AASX',
+  },
 }
 
 // 설비 타입별 필터링 키워드
 export const EQUIPMENT_KEYWORDS = {
+  // Welding 장비 키워드
   [MENU_TYPES.EQUIPMENT.CO2]: ['CO2Type'],
-  [MENU_TYPES.EQUIPMENT.EBW]: ['ElectronBeamWeldingType'],
-  [MENU_TYPES.EQUIPMENT.FW]: ['FlasfButtType'],
-  [MENU_TYPES.EQUIPMENT.MAG]: ['MetalActiveGasType'],
+  [MENU_TYPES.EQUIPMENT.TIG]: ['TungstenInsertGasType'],
   [MENU_TYPES.EQUIPMENT.MIG]: ['MetalInsertGasType'],
+  [MENU_TYPES.EQUIPMENT.MAG]: ['MetalActiveGasType'],
+  [MENU_TYPES.EQUIPMENT.EBW]: ['ElectronBeamWeldingType'],
+  [MENU_TYPES.EQUIPMENT.FW]: ['FrictionWeldingType'],
   [MENU_TYPES.EQUIPMENT.OAW]: ['OxyAcetyleneWeldingType'],
   [MENU_TYPES.EQUIPMENT.PW]: ['ProjectionWeldingType'],
   [MENU_TYPES.EQUIPMENT.RSEW]: ['ResistanceSeamWeldingType'],
-  [MENU_TYPES.EQUIPMENT.RSW]: ['ResistanceSeamWeldingType'],
-  [MENU_TYPES.EQUIPMENT.SAW]: ['SubmergedArcWeldType'],
+  [MENU_TYPES.EQUIPMENT.RSW]: ['ResistanceSpotWeldingType'],
+  [MENU_TYPES.EQUIPMENT.SAW]: ['SubmergedArcWeldingType'],
   [MENU_TYPES.EQUIPMENT.SMAW]: ['ShieldedMetalArcWeldingType'],
-  [MENU_TYPES.EQUIPMENT.Sold]: ['SoldringWeldingType'],
+  [MENU_TYPES.EQUIPMENT.Sold]: ['SolderingType'],
   [MENU_TYPES.EQUIPMENT.SW]: ['StudWeldingType'],
-  [MENU_TYPES.EQUIPMENT.TIG]: ['TungstenInsertGasType'],
-  [MENU_TYPES.EQUIPMENT.UW]: ['UpsetWelderType']
+  [MENU_TYPES.EQUIPMENT.UW]: ['UltrasonicWeldingType'],
+
+  // CNC 장비 키워드 - globalAssetId API 사용으로 더 이상 필요 없음
+  [MENU_TYPES.EQUIPMENT.CNC_MILLING]: [],
+  [MENU_TYPES.EQUIPMENT.CNC_TURNING]: [],
+  [MENU_TYPES.EQUIPMENT.CNC_DRILLING]: [],
+
+  // Press 장비 키워드
+  [MENU_TYPES.EQUIPMENT.PRESS_STAMPING]: [],
+  [MENU_TYPES.EQUIPMENT.PRESS_FORMING]: [],
+  [MENU_TYPES.EQUIPMENT.PRESS_BENDING]: [],
+  [MENU_TYPES.EQUIPMENT.PRESS_LINE]: ['PressMachineTP75'],
+
+  // AMR 키워드
+  [MENU_TYPES.EQUIPMENT.AMR]: ['HD1500', 'LD90', 'MD650', 'AMR'],
+
+  // Boring 키워드
+  [MENU_TYPES.EQUIPMENT.BORING]: ['DBC130', 'Boring'],
+
+  // Robot 키워드
+  [MENU_TYPES.EQUIPMENT.ROBOT]: ['HH4', 'Robot'],
 }
 
 // 재료 타입별 필터링 키워드
 export const MATERIAL_KEYWORDS = {
-  [MENU_TYPES.MATERIAL.STEEL]: ['steel', 'Steel', 'carbon steel', 'mild steel'],
-  [MENU_TYPES.MATERIAL.ALUMINUM]: ['aluminum', 'Aluminum', 'aluminium', 'Al'],
-  [MENU_TYPES.MATERIAL.STAINLESS_STEEL]: ['stainless', 'Stainless', 'stainless steel', 'SS']
+  [MENU_TYPES.MATERIAL.STEEL]: ['Steel'],
+  [MENU_TYPES.MATERIAL.ALUMINUM]: ['Aluminum'],
+  [MENU_TYPES.MATERIAL.STAINLESS_STEEL]: ['Stainless Steel'],
 }
 
 // 프로세스 타입별 필터링 키워드
 export const PROCESS_KEYWORDS = {
-  [MENU_TYPES.PROCESS.WELDING]: ['welding', 'Welding', 'weld', 'arc welding'],
-  [MENU_TYPES.PROCESS.CUTTING]: ['cutting', 'Cutting', 'cut', 'plasma cutting'],
-  [MENU_TYPES.PROCESS.BRAZING]: ['brazing', 'Brazing', 'braze', 'soldering']
+  [MENU_TYPES.PROCESS.WELDING]: ['Welding'],
+  [MENU_TYPES.PROCESS.CUTTING]: ['Cutting'],
+  [MENU_TYPES.PROCESS.BRAZING]: ['Brazing'],
 }
 
-// 관리(Management) 타입별 필터링 키워드
-export const MANAGEMENT_KEYWORDS = {
-  [MENU_TYPES.MANAGEMENT.OPERATION]: ['operation'],
-  [MENU_TYPES.MANAGEMENT.QUALITY]: ['quality'],
-  [MENU_TYPES.MANAGEMENT.PRODUCTION]: ['production']
-};
+// 운영 타입별 필터링 키워드
+export const OPERATION_KEYWORDS = {
+  [MENU_TYPES.OPERATION.PLANNING]: ['Operation_Planning'],
+  [MENU_TYPES.OPERATION.MONITORING]: ['Operation_Monitoring'],
+  [MENU_TYPES.OPERATION.CONTROL]: ['Operation_Control'],
+}
 
+// 품질 타입별 필터링 키워드
+export const QUALITY_KEYWORDS = {
+  [MENU_TYPES.QUALITY.INSPECTION]: ['Quality_Inspection'],
+  [MENU_TYPES.QUALITY.CONTROL]: ['Quality_Control'],
+  [MENU_TYPES.QUALITY.ASSURANCE]: ['Quality_Assurance'],
+}
+
+// 생산 타입별 필터링 키워드
+export const PRODUCTION_KEYWORDS = {
+  [MENU_TYPES.PRODUCTION.PLANNING]: ['Production_Planning'],
+  [MENU_TYPES.PRODUCTION.TRACKING]: ['Production_Tracking'],
+  [MENU_TYPES.PRODUCTION.ANALYSIS]: ['Production_Analysis'],
+}
 
 /**
  * AAS 데이터에서 특정 키워드 배열 중 하나라도 포함하는지 확인하는 헬퍼 함수
@@ -100,16 +161,16 @@ function hasKeywords(aas, keywords) {
     aas.idShort,
     aas.assetInformation?.globalAssetId,
     aas.assetInformation?.assetKind,
-    ...(aas.description?.map(d => d.text) || [])
+    ...(aas.description?.map((d) => d.text) || []),
   ]
 
   const searchText = searchFields
-    .filter(field => field)
+    .filter((field) => field)
     .join(' ')
     .toLowerCase()
 
-  const found = keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
-  return found;
+  const found = keywords.some((keyword) => searchText.includes(keyword.toLowerCase()))
+  return found
 }
 
 /**
@@ -117,14 +178,13 @@ function hasKeywords(aas, keywords) {
  */
 export function isExcludedComponentAAS(aas) {
   // trim()을써 공백이 있는 경우도 처리
-  const idShortLower = (aas.idShort || '').trim().toLowerCase();
-  
-  if (idShortLower === 'component') {
-      return true; // idShort가 'component'이면 제외
-  }
-  return false;
-}
+  const idShortLower = (aas.idShort || '').trim().toLowerCase()
 
+  if (idShortLower === 'component') {
+    return true // idShort가 'component'이면 제외
+  }
+  return false
+}
 
 /**
  * 주어진 AAS가 속하는 모든 메뉴 카테고리(들)을 반환합니다.
@@ -133,39 +193,52 @@ export function isExcludedComponentAAS(aas) {
  * @returns {Array<string>} - AAS가 속하는 메뉴 카테고리(들)의 배열
  */
 export function getAASCategories(aas) {
-    const categories = [];
+  const categories = []
 
-    // Equipment
-    Object.values(MENU_TYPES.EQUIPMENT).forEach(type => {
-        if (hasKeywords(aas, EQUIPMENT_KEYWORDS[type])) {
-            categories.push(type);
-        }
-    });
+  // Equipment 카테고리 처리
+  Object.values(MENU_TYPES.EQUIPMENT).forEach((type) => {
+    if (hasKeywords(aas, EQUIPMENT_KEYWORDS[type])) {
+      categories.push(type)
+    }
+  })
 
-    // Material
-    Object.values(MENU_TYPES.MATERIAL).forEach(type => {
-        if (hasKeywords(aas, MATERIAL_KEYWORDS[type])) {
-            categories.push(type);
-        }
-    });
+  // Material 카테고리 처리
+  Object.values(MENU_TYPES.MATERIAL).forEach((type) => {
+    if (hasKeywords(aas, MATERIAL_KEYWORDS[type])) {
+      categories.push(type)
+    }
+  })
 
-    // Process
-    Object.values(MENU_TYPES.PROCESS).forEach(type => {
-        if (hasKeywords(aas, PROCESS_KEYWORDS[type])) {
-            categories.push(type);
-        }
-    });
+  // Process 카테고리 처리
+  Object.values(MENU_TYPES.PROCESS).forEach((type) => {
+    if (hasKeywords(aas, PROCESS_KEYWORDS[type])) {
+      categories.push(type)
+    }
+  })
 
-    // Management
-    Object.values(MENU_TYPES.MANAGEMENT).forEach(type => {
-        if (hasKeywords(aas, MANAGEMENT_KEYWORDS[type])) {
-            categories.push(type);
-        }
-    });
+  // Operation 카테고리 처리
+  Object.values(MENU_TYPES.OPERATION).forEach((type) => {
+    if (hasKeywords(aas, OPERATION_KEYWORDS[type])) {
+      categories.push(type)
+    }
+  })
 
-    return categories;
+  // Quality 카테고리 처리
+  Object.values(MENU_TYPES.QUALITY).forEach((type) => {
+    if (hasKeywords(aas, QUALITY_KEYWORDS[type])) {
+      categories.push(type)
+    }
+  })
+
+  // Production 카테고리 처리
+  Object.values(MENU_TYPES.PRODUCTION).forEach((type) => {
+    if (hasKeywords(aas, PRODUCTION_KEYWORDS[type])) {
+      categories.push(type)
+    }
+  })
+
+  return categories
 }
-
 
 /**
  * AAS 데이터를 한 번만 순회하여 메뉴별 그룹과 카운트를 계산하는 최적화된 함수
@@ -174,45 +247,46 @@ export function getAASCategories(aas) {
  */
 export function processAASData(allAAS) {
   if (!allAAS || !Array.isArray(allAAS)) {
-    return { aasList: {}, menuCounts: {} };
+    return { aasList: {}, menuCounts: {} }
   }
 
-  const aasList = {};
-  const menuCounts = {};
+  const aasList = {}
+  const menuCounts = {}
 
   // 모든 메뉴 타입 목록 생성 및 카운트 초기화
   const allMenuTypes = [
     ...Object.values(MENU_TYPES.EQUIPMENT),
     ...Object.values(MENU_TYPES.MATERIAL),
     ...Object.values(MENU_TYPES.PROCESS),
-    ...Object.values(MENU_TYPES.MANAGEMENT)
-  ];
+    ...Object.values(MENU_TYPES.OPERATION),
+    ...Object.values(MENU_TYPES.QUALITY),
+    ...Object.values(MENU_TYPES.PRODUCTION),
+  ]
 
-  allMenuTypes.forEach(type => {
-    aasList[type] = [];
-    menuCounts[type] = 0;
-  });
+  allMenuTypes.forEach((type) => {
+    aasList[type] = []
+    menuCounts[type] = 0
+  })
 
-  const processedAAS = allAAS.filter(aas => !isExcludedComponentAAS(aas));
+  const processedAAS = allAAS.filter((aas) => !isExcludedComponentAAS(aas))
 
-  processedAAS.forEach(aas => {
-    const categories = getAASCategories(aas);
-    categories.forEach(category => {
+  processedAAS.forEach((aas) => {
+    const categories = getAASCategories(aas)
+    categories.forEach((category) => {
       if (aasList[category]) {
-        aasList[category].push(aas);
-        menuCounts[category]++;
+        aasList[category].push(aas)
+        menuCounts[category]++
       }
-    });
-  });
+    })
+  })
 
   // 'ALL' 메뉴에 대한 데이터와 카운트 추가
-  aasList[MENU_TYPES.SPECIAL.ALL] = processedAAS;
-  menuCounts[MENU_TYPES.SPECIAL.ALL] = processedAAS.length;
-  
-  console.log('Processed AAS Data:', { aasList, menuCounts });
-  return { aasList, menuCounts };
-}
+  aasList[MENU_TYPES.SPECIAL.ALL] = processedAAS
+  menuCounts[MENU_TYPES.SPECIAL.ALL] = processedAAS.length
 
+  console.log('Processed AAS Data:', { aasList, menuCounts })
+  return { aasList, menuCounts }
+}
 
 /**
  * 메뉴 타입에 따라 AAS 필터링 (최적화된 함수 사용)
@@ -221,8 +295,8 @@ export function processAASData(allAAS) {
  * @returns {Array} - 필터링된 AAS 배열
  */
 export function filterAASByMenuType(allAAS, menuType) {
-  const { aasList } = processAASData(allAAS);
-  return aasList[menuType] || [];
+  const { aasList } = processAASData(allAAS)
+  return aasList[menuType] || []
 }
 
 /**
@@ -231,8 +305,8 @@ export function filterAASByMenuType(allAAS, menuType) {
  * @returns {Object} - 메뉴별 카운트 객체
  */
 export function calculateMenuCounts(allAAS) {
-  const { menuCounts } = processAASData(allAAS);
-  return menuCounts;
+  const { menuCounts } = processAASData(allAAS)
+  return menuCounts
 }
 
 /**
@@ -247,10 +321,12 @@ export function filterSearchResults(searchResults, currentMenu) {
 
   return {
     ...searchResults,
-    message: [{
-      ...searchResults.message[0],
-      aas: filteredAAS
-    }]
+    message: [
+      {
+        ...searchResults.message[0],
+        aas: filteredAAS,
+      },
+    ],
   }
 }
 
@@ -261,32 +337,71 @@ export function filterSearchResults(searchResults, currentMenu) {
  */
 export function getMenuDisplayName(menuType) {
   const displayNames = {
-    [MENU_TYPES.EQUIPMENT.CO2]: 'CO2 Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.EBW]: 'EBW Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.FW]: 'FW Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.MAG]: 'MAG Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.MIG]: 'MIG Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.OAW]: 'OAW Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.PW]: 'PW Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.RSEW]: 'RSEW Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.RSW]: 'RSW Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.SAW]: 'SAW Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.SMAW]: 'SMAW Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.Sold]: 'Soldering Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.SW]: 'SW Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.TIG]: 'TIG Welding Equipment',
-    [MENU_TYPES.EQUIPMENT.UW]: 'UW Welding Equipment',
-    [MENU_TYPES.MATERIAL.STEEL]: 'Steel Material',
-    [MENU_TYPES.MATERIAL.ALUMINUM]: 'Aluminum Material',
-    [MENU_TYPES.MATERIAL.STAINLESS_STEEL]: 'Stainless Steel Material',
-    [MENU_TYPES.PROCESS.WELDING]: 'Welding Process',
-    [MENU_TYPES.PROCESS.CUTTING]: 'Cutting Process',
-    [MENU_TYPES.PROCESS.BRAZING]: 'Brazing Process',
-    [MENU_TYPES.MANAGEMENT.OPERATION]: 'Operation Management',
-    [MENU_TYPES.MANAGEMENT.QUALITY]: 'Quality Control',
-    [MENU_TYPES.MANAGEMENT.PRODUCTION]: 'Production Management',
+    // Equipment - Welding
+    [MENU_TYPES.EQUIPMENT.CO2]: 'CO2 Welding',
+    [MENU_TYPES.EQUIPMENT.TIG]: 'TIG Welding',
+    [MENU_TYPES.EQUIPMENT.MIG]: 'MIG Welding',
+    [MENU_TYPES.EQUIPMENT.MAG]: 'MAG Welding',
+    [MENU_TYPES.EQUIPMENT.EBW]: 'EBW Welding',
+    [MENU_TYPES.EQUIPMENT.FW]: 'FW Welding',
+    [MENU_TYPES.EQUIPMENT.OAW]: 'OAW Welding',
+    [MENU_TYPES.EQUIPMENT.PW]: 'PW Welding',
+    [MENU_TYPES.EQUIPMENT.RSEW]: 'RSEW Welding',
+    [MENU_TYPES.EQUIPMENT.RSW]: 'RSW Welding',
+    [MENU_TYPES.EQUIPMENT.SAW]: 'SAW Welding',
+    [MENU_TYPES.EQUIPMENT.SMAW]: 'SMAW Welding',
+    [MENU_TYPES.EQUIPMENT.Sold]: 'Soldering',
+    [MENU_TYPES.EQUIPMENT.SW]: 'SW Welding',
+    [MENU_TYPES.EQUIPMENT.UW]: 'UW Welding',
+
+    // Equipment - CNC
+    [MENU_TYPES.EQUIPMENT.CNC_MILLING]: 'CNC Milling',
+    [MENU_TYPES.EQUIPMENT.CNC_TURNING]: 'CNC Turning',
+    [MENU_TYPES.EQUIPMENT.CNC_DRILLING]: 'CNC Drilling',
+
+    // Equipment - Press
+    [MENU_TYPES.EQUIPMENT.PRESS_STAMPING]: 'Press Stamping',
+    [MENU_TYPES.EQUIPMENT.PRESS_FORMING]: 'Press Forming',
+    [MENU_TYPES.EQUIPMENT.PRESS_BENDING]: 'Press Bending',
+    [MENU_TYPES.EQUIPMENT.PRESS_LINE]: 'Press Line',
+
+    // Equipment - AMR
+    [MENU_TYPES.EQUIPMENT.AMR]: 'AMR',
+
+    // Equipment - Boring
+    [MENU_TYPES.EQUIPMENT.BORING]: 'Boring',
+
+    // Equipment - Robot
+    [MENU_TYPES.EQUIPMENT.ROBOT]: 'Robot',
+
+    // Material
+    [MENU_TYPES.MATERIAL.STEEL]: 'Steel',
+    [MENU_TYPES.MATERIAL.ALUMINUM]: 'Aluminum',
+    [MENU_TYPES.MATERIAL.STAINLESS_STEEL]: 'Stainless Steel',
+
+    // Process
+    [MENU_TYPES.PROCESS.WELDING]: 'Welding',
+    [MENU_TYPES.PROCESS.CUTTING]: 'Cutting',
+    [MENU_TYPES.PROCESS.BRAZING]: 'Brazing',
+
+    // Operation
+    [MENU_TYPES.OPERATION.PLANNING]: 'Operation Planning',
+    [MENU_TYPES.OPERATION.MONITORING]: 'Operation Monitoring',
+    [MENU_TYPES.OPERATION.CONTROL]: 'Operation Control',
+
+    // Quality
+    [MENU_TYPES.QUALITY.INSPECTION]: 'Quality Inspection',
+    [MENU_TYPES.QUALITY.CONTROL]: 'Quality Control',
+    [MENU_TYPES.QUALITY.ASSURANCE]: 'Quality Assurance',
+
+    // Production
+    [MENU_TYPES.PRODUCTION.PLANNING]: 'Production Planning',
+    [MENU_TYPES.PRODUCTION.TRACKING]: 'Production Tracking',
+    [MENU_TYPES.PRODUCTION.ANALYSIS]: 'Production Analysis',
+
+    // Special
     [MENU_TYPES.SPECIAL.ALL]: 'All AAS Data',
-    [MENU_TYPES.SPECIAL.AASX]: 'AASX File Upload'
+    [MENU_TYPES.SPECIAL.AASX]: 'AASX File Upload',
   }
 
   return displayNames[menuType] || menuType

@@ -4,7 +4,7 @@
       <div class="loading-spinner">
         <i class="fas fa-circle-notch fa-spin"></i>
       </div>
-      <p class="loading-text">Loading data...</p>
+      <p class="loading-text">Loading...</p>
     </div>
     <div v-else-if="error" class="error-state">
       <div class="error-container">
@@ -20,7 +20,7 @@
       <div class="empty-container">
         <i class="fas fa-search empty-icon"></i>
         <h3>No Data Available</h3>
-        <p>Start searching to explore the AAS system</p>
+        <p v-if="!loading">Start searching to explore the AAS system</p>
       </div>
     </div>
     <div v-else class="tree-container">
@@ -45,32 +45,32 @@ import { nextTick } from 'vue'
 export default {
   name: 'TreeView',
   components: {
-    TreeNode  // 컴포넌트 등록
+    TreeNode, // 컴포넌트 등록
   },
   props: {
     treeData: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     error: {
       type: String,
-      default: null
-    }
+      default: null,
+    },
   },
   emits: ['node-toggle', 'node-select', 'retry', 'scrolled-to-bottom'],
   setup(props, { emit }) {
     const onToggle = (nodeId) => {
-      console.log('TreeView onToggle 호출:', nodeId)  // 디버깅 로그
+      console.log('TreeView onToggle 호출:', nodeId) // 디버깅 로그
       // 현재 스크롤 위치 저장
       const treeContent = document.querySelector('.tree-content')
       const scrollTop = treeContent ? treeContent.scrollTop : 0
-      
+
       emit('node-toggle', nodeId)
-      
+
       // 스크롤 위치 복원 (다음 렌더링 사이클에)
       nextTick(() => {
         if (treeContent) {
@@ -83,19 +83,19 @@ export default {
     }
 
     const handleScroll = (event) => {
-      const { scrollTop, scrollHeight, clientHeight } = event.target;
+      const { scrollTop, scrollHeight, clientHeight } = event.target
       // 사용자가 스크롤을 거의 끝까지 내렸을 때 이벤트를 발생시킵니다.
       if (scrollHeight > clientHeight && scrollHeight - scrollTop <= clientHeight + 200) {
-        emit('scrolled-to-bottom');
+        emit('scrolled-to-bottom')
       }
-    };
+    }
 
     return {
       onToggle,
       onSelect,
-      handleScroll
+      handleScroll,
     }
-  }
+  },
 }
 </script>
 
@@ -164,9 +164,18 @@ export default {
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; transform: scale(0.95); }
-  50% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0.6; transform: scale(0.95); }
+  0% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
 }
 
 .loading-text {
