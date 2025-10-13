@@ -327,11 +327,11 @@ export function useSearch() {
         'CNC_Milling': 'ComputerNumericalControlProcess',
         'CNC_Turning': 'ComputerNumericalControlProcess',
         'CNC_Drilling': 'ComputerNumericalControlProcess',
-        // Press 장비들
+        // Press 장비들 - 실제 globalAssetId 패턴에 맞게 설정
         'Press_Stamping': 'PressProcessMachine',
-        'Press_Forming': 'PressProcessMachine',
-        'Press_Bending': 'PressProcessMachine',
-        'Press_Line': 'PressProcessMachine',
+        'Press_Forming': 'PressProcess',
+        'Press_Bending': 'MechanicalType',  // 특별 처리를 위해 직접 MechanicalType 사용
+        'Press_Line': 'PressProcess',
         // 기타 장비들
         'AMR': 'AMR',
         'Boring': 'Boring',
@@ -347,6 +347,13 @@ export function useSearch() {
 
           // Welding 메뉴들은 combined API 사용
           const weldingMenus = ['CO2', 'TIG', 'MIG', 'MAG', 'EBW', 'FW', 'OAW', 'PW', 'RSEW', 'RSW', 'SAW', 'SMAW', 'Sold', 'SW', 'UW']
+
+          // Press 메뉴들도 combined API 사용
+          const pressMenus = ['Press_Stamping', 'Press_Forming', 'Press_Bending', 'Press_Line']
+
+          // CNC 메뉴들도 combined API 사용
+          const cncMenus = ['CNC_Milling', 'CNC_Turning', 'CNC_Drilling']
+
           if (weldingMenus.includes(currentMenu.value)) {
             // 각 타입별 keyword 매핑
             const weldingKeywords = {
@@ -368,6 +375,47 @@ export function useSearch() {
             }
 
             const typeKeyword = weldingKeywords[currentMenu.value]
+            response = await apiClient.get('/aas/search/combined', {
+              params: {
+                globalAssetId: globalAssetIdKeyword,
+                keyword: typeKeyword,
+                page
+              }
+            })
+          } else if (pressMenus.includes(currentMenu.value)) {
+            // Press 메뉴들도 combined API 사용하여 정확한 필터링
+            const pressKeywords = {
+              'Press_Stamping': 'Cutoff',
+              'Press_Forming': 'HydraulicType',
+              'Press_Bending': 'MechanicalType',
+              'Press_Line': 'ServoType'
+            }
+
+            const typeKeyword = pressKeywords[currentMenu.value]
+            const globalAssetIdPattern = 'PressProcess'
+
+            console.log('Press Menu Debug:', {
+              currentMenu: currentMenu.value,
+              globalAssetIdPattern,
+              typeKeyword
+            })
+
+            response = await apiClient.get('/aas/search/combined', {
+              params: {
+                globalAssetId: globalAssetIdPattern,
+                keyword: typeKeyword,
+                page
+              }
+            })
+          } else if (cncMenus.includes(currentMenu.value)) {
+            // CNC 타입별 keyword 매핑
+            const cncKeywords = {
+              'CNC_Milling': 'A600',
+              'CNC_Turning': 'Lynx',
+              'CNC_Drilling': 'XD'
+            }
+
+            const typeKeyword = cncKeywords[currentMenu.value]
             response = await apiClient.get('/aas/search/combined', {
               params: {
                 globalAssetId: globalAssetIdKeyword,
@@ -397,61 +445,6 @@ export function useSearch() {
               console.error('Unexpected response structure:', response.data.message)
             }
 
-            // CNC 메뉴들도 combined API 사용
-            const cncMenus = ['CNC_Milling', 'CNC_Turning', 'CNC_Drilling']
-            if (cncMenus.includes(currentMenu.value)) {
-              // CNC 타입별 keyword 매핑
-              const cncKeywords = {
-                'CNC_Milling': 'A600',  // A600, H6, XV 중 대표값
-                'CNC_Turning': 'Lynx',
-                'CNC_Drilling': 'XD'    // XD, XP 중 대표값
-              }
-
-              const typeKeyword = cncKeywords[currentMenu.value]
-              response = await apiClient.get('/aas/search/combined', {
-                params: {
-                  globalAssetId: globalAssetIdKeyword,
-                  keyword: typeKeyword,
-                  page
-                }
-              })
-
-              // response가 이미 설정되었으므로 다시 가져올 필요 없음
-              if (response.data && response.data.message) {
-                let pageItems = []
-                if (response.data.message.content) {
-                  pageItems = response.data.message.content || []
-                  pagination.hasMorePages = !response.data.message.last
-                } else if (Array.isArray(response.data.message)) {
-                  pageItems = response.data.message
-                  pagination.hasMorePages = pageItems.length >= 10
-                }
-
-                if (pageItems.length > 0) {
-                  const newTreeNodes = transformApiToTree(pageItems, [])
-                  if (page === 1) {
-                    treeData.value = newTreeNodes
-                  } else {
-                    treeData.value.push(...newTreeNodes)
-                  }
-                  pagination.currentPage = page
-                } else {
-                  if (page === 1) {
-                    error.value = `${getMenuDisplayName(currentMenu.value)}: No data found.`
-                  }
-                }
-              }
-
-              // CNC 처리 완료 후 return으로 중복 실행 방지
-              return
-            }
-
-            // Press 메뉴들도 combined API 사용 (필요시)
-            const pressMenus = ['Press_Stamping', 'Press_Forming', 'Press_Bending', 'Press_Line']
-            if (pressMenus.includes(currentMenu.value)) {
-              // Press는 현재 모든 데이터가 동일하므로 기존 API 사용
-              // 나중에 구분이 필요하면 combined API로 전환
-            }
 
             if (pageItems.length > 0) {
               const newTreeNodes = transformApiToTree(pageItems, [])

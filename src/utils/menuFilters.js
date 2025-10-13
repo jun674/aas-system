@@ -174,14 +174,21 @@ function hasKeywords(aas, keywords) {
 }
 
 /**
- * AAS가 제외되어야 할 'Component' 타입인지 판단하는 함수
+ * AAS가 제외되어야 할 타입인지 판단하는 함수
  */
 export function isExcludedComponentAAS(aas) {
   // trim()을써 공백이 있는 경우도 처리
   const idShortLower = (aas.idShort || '').trim().toLowerCase()
 
-  if (idShortLower === 'component') {
-    return true // idShort가 'component'이면 제외
+  // 제외할 idShort 목록
+  const excludedIdShorts = [
+    'component',
+    'safetydevice',
+    'accessories'
+  ]
+
+  if (excludedIdShorts.includes(idShortLower)) {
+    return true // 제외 목록에 있으면 제외
   }
   return false
 }

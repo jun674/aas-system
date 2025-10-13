@@ -335,8 +335,32 @@ export function transformApiToTree(aasData, submodelDataList, searchValue = null
       ? [submodelDataList]
       : []
 
+  // Component, SafetyDevice, CutOffMiddleAndSmallType, Accessories 제외
+  const filteredAasData = aasData.filter((equipment) => {
+    const idShortLower = (equipment.idShort || '').toLowerCase().trim()
+    const idLower = (equipment.id || '').toLowerCase()
+
+    // 제외할 항목들
+    if (idShortLower === 'component' ||
+        idShortLower === 'safetydevice' ||
+        idShortLower === 'cutoffmiddleandsmalltype' ||
+        idShortLower === 'accessories') {
+      return false
+    }
+
+    // ID에도 포함되어 있는지 확인
+    if (idLower.includes('/component/') ||
+        idLower.includes('/safetydevice/') ||
+        idLower.includes('/cutoffmiddleandsmalltype/') ||
+        idLower.includes('/accessories/')) {
+      return false
+    }
+
+    return true
+  })
+
   // 각 AAS(장비) 데이터를 순회하며 트리 노드를 생성
-  return aasData.map((equipment) => {
+  return filteredAasData.map((equipment) => {
     let equipmentName = equipment.idShort || 'Unknown AAS'
     let additionalInfo = '' // 장비 이름에 추가될 부가 정보 (모델명, 설비명 등)
 

@@ -11,26 +11,26 @@
         <i class="fas fa-cloud-upload-alt upload-icon"></i>
         <h5 class="upload-title">Drag and drop AASX files here</h5>
         <p class="upload-subtitle">or click the buttons below to select files</p>
-        
-        <input 
-          type="file" 
-          ref="fileInput" 
-          @change="handleFileSelect" 
-          accept=".aasx" 
+
+        <input
+          type="file"
+          ref="fileInput"
+          @change="handleFileSelect"
+          accept=".aasx"
           multiple
           style="display: none;"
         >
-        
-        <input 
-          type="file" 
-          ref="folderInput" 
-          @change="handleFolderSelect" 
+
+        <input
+          type="file"
+          ref="folderInput"
+          @change="handleFolderSelect"
           webkitdirectory
           directory
           multiple
           style="display: none;"
         >
-        
+
         <div class="upload-buttons">
           <button
             class="upload-btn"
@@ -40,7 +40,7 @@
             <i class="fas fa-file"></i>
             <span>Select Files</span>
           </button>
-          
+
           <button
             class="upload-btn"
             @click="$refs.folderInput.click()"
@@ -100,9 +100,9 @@
             <div class="row">
               <div class="col-md-6">
                 <label class="form-label">Batch Size (Files per upload)</label>
-                <input 
-                  type="number" 
-                  class="form-control" 
+                <input
+                  type="number"
+                  class="form-control"
                   v-model.number="batchSize"
                   min="1"
                   max="50"
@@ -112,9 +112,9 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label">Max Retries</label>
-                <input 
-                  type="number" 
-                  class="form-control" 
+                <input
+                  type="number"
+                  class="form-control"
                   v-model.number="maxRetries"
                   min="0"
                   max="5"
@@ -158,11 +158,11 @@
             </button>
           </div>
         </div>
-        
+
         <div v-show="showFileList" class="file-list-wrapper">
           <div class="file-list">
-            <div 
-              v-for="(file, index) in paginatedFiles"
+            <div
+              v-for="file in paginatedFiles"
               :key="file.id"
               class="file-item"
               :class="'status-' + file.status"
@@ -196,7 +196,7 @@
               </div>
             </div>
           </div>
-          
+
           <div v-if="totalPages > 1" class="pagination-wrapper">
             <div class="pagination">
               <button
@@ -250,7 +250,7 @@
             Uploading...
           </span>
         </button>
-        
+
         <button
           class="control-btn warning"
           @click="pauseUpload"
@@ -259,7 +259,7 @@
           <i class="fas fa-pause"></i>
           Pause
         </button>
-        
+
         <button
           class="control-btn info"
           @click="resumeUpload"
@@ -268,7 +268,7 @@
           <i class="fas fa-play"></i>
           Resume
         </button>
-        
+
         <button
           class="control-btn danger"
           @click="cancelUpload"
@@ -292,7 +292,7 @@
             </div>
           </div>
         </div>
-        
+
         <div v-if="uploading && currentBatchProgress > 0" class="progress-item">
           <h6 class="progress-title">Current Batch ({{ currentBatchFiles.length }} files)</h6>
           <div class="progress-bar-wrapper">
@@ -341,19 +341,19 @@ export default {
     const uploadLogs = ref([]) // 시간 순으로 기록되는 업로드 로그
     const isDragging = ref(false) // 파일 드래그 중인지 여부 (UI 스타일링용)
     const showFileList = ref(true) // 파일 목록을 보여줄지 여부
-    
+
     // --- 배치 업로드 설정 ---
     const batchSize = ref(10) // 한 번에 업로드할 파일 개수
     const maxRetries = ref(3) // 실패 시 최대 재시도 횟수
     const currentBatchFiles = ref([]) // 현재 업로드 중인 배치 파일 목록
     const currentBatchProgress = ref(0) // 현재 배치 업로드 진행률 (%)
-    
+
     // --- 페이지네이션 설정 ---
     const currentPage = ref(1) // 현재 파일 목록 페이지
     const filesPerPage = ref(20) // 페이지 당 보여줄 파일 개수
-    
+
     // --- 업로드 제어 변수 ---
-    let uploadController = null 
+    let uploadController = null
     let isUploading = false
 
     // --- 계산된 속성 (Computed Properties) ---
@@ -412,7 +412,7 @@ export default {
       if (uploadLogs.value.length > 100) {
         uploadLogs.value = uploadLogs.value.slice(-100)
       }
-      
+
       // 새 로그가 추가되면 로그 컨테이너를 맨 아래로 스크롤
       nextTick(() => {
         const logContainer = document.querySelector('.log-container')
@@ -425,38 +425,38 @@ export default {
     // 파일 선택 input에서 파일이 선택됐을 때 호출
     const handleFileSelect = (event) => {
       const files = Array.from(event.target.files)
-      addFiles(files, 'file')
+      addFiles(files)
     }
 
     // 폴더 선택 input에서 폴더가 선택됐을 때 호출
     const handleFolderSelect = (event) => {
       const files = Array.from(event.target.files)
       const aasxFiles = files.filter(file => file.name.endsWith('.aasx'))
-      
+
       if (aasxFiles.length === 0) {
         alert('No AASX files found in the selected folder.')
         return
       }
-      
+
       addLog(`Found ${aasxFiles.length} AASX files in the folder.`, 'info')
-      addFiles(aasxFiles, 'folder')
+      addFiles(aasxFiles)
     }
 
     // 파일 목록에 파일을 추가
-    const addFiles = (files, source = 'unknown') => {
+    const addFiles = (files) => {
       const aasxFiles = files.filter(file => file.name.endsWith('.aasx'))
       const nonAasxFiles = files.filter(file => !file.name.endsWith('.aasx'))
-      
+
       if (nonAasxFiles.length > 0) {
         addLog(`${nonAasxFiles.length} non-AASX files excluded.`, 'warning')
       }
-      
+
       let addedCount = 0
       aasxFiles.forEach(file => {
-        const exists = selectedFiles.value.find(f => 
+        const exists = selectedFiles.value.find(f =>
           f.name === file.name && f.size === file.size
         )
-        
+
         if (!exists) {
           const fileObj = {
             id: generateFileId(),
@@ -472,7 +472,7 @@ export default {
           addedCount++
         }
       })
-      
+
       addLog(`${addedCount} files added (Total: ${selectedFiles.value.length})`, 'success')
     }
 
@@ -508,16 +508,16 @@ export default {
     }
 
     // --- 드래그 앤 드롭 이벤트 핸들러 ---
-    const onDragOver = (e) => {
+    const onDragOver = () => {
       isDragging.value = true
     }
-    const onDragLeave = (e) => {
+    const onDragLeave = () => {
       isDragging.value = false
     }
     const onDrop = (e) => {
       isDragging.value = false
       const files = Array.from(e.dataTransfer.files)
-      addFiles(files, 'drag')
+      addFiles(files)
     }
 
     // --- UI 헬퍼 메소드 ---
@@ -547,17 +547,17 @@ export default {
     // 한 배치의 파일을 업로드하는 함수
     const uploadBatch = async (batch) => {
       const formData = new FormData()
-      
+
       batch.forEach(fileObj => {
         formData.append('files', fileObj.file) // 'files'라는 키로 파일 추가
         fileObj.status = 'uploading'
       })
-      
+
       formData.append('adminId', '1') // Example: Add admin ID
-      
+
       try {
         uploadController = new AbortController() // 취소를 위한 컨트롤러 생성
-        
+
         const response = await axios.post('/api/aas/aasx/upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
@@ -567,16 +567,106 @@ export default {
             currentBatchProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
           }
         })
-        
-        // 업로드 성공 처리
-        batch.forEach(fileObj => {
-          fileObj.status = 'completed'
-          uploadedCount.value++
-        })
-        
-        addLog(`Batch upload successful: ${batch.length} files`, 'success')
-        return true
-        
+
+        // 응답 데이터 확인 - SuccessResponse의 경우 message 필드에 실제 데이터가 있음
+        const responseData = response.data.message || response.data
+
+        // 에러가 있는 경우 처리
+        if (responseData.hasErrors && responseData.files) {
+          let hasSuccess = false
+
+          responseData.files.forEach(fileResult => {
+            const fileObj = batch.find(f => f.name === fileResult.filename)
+            if (fileObj) {
+              if (fileResult.status === 'error') {
+                fileObj.status = 'failed'
+                fileObj.error = fileResult.message || 'Upload failed'
+                failedFiles.value.push(fileObj)
+
+                // 상세한 에러 로그 추가
+                addLog(`Failed: ${fileResult.filename}`, 'error')
+                if (fileResult.errorType) {
+                  addLog(`  Error Type: ${fileResult.errorType}`, 'error')
+                }
+                if (fileResult.details) {
+                  addLog(`  Details: ${fileResult.details}`, 'error')
+                }
+              } else if (fileResult.status === 'warning') {
+                // 중복 파일 처리
+                fileObj.status = 'completed'
+                uploadedCount.value++
+                hasSuccess = true
+
+                addLog(`Warning: ${fileResult.filename}`, 'warning')
+                addLog(`  ${fileResult.message}`, 'warning')
+                if (fileResult.duplicateDetails) {
+                  const dup = fileResult.duplicateDetails
+                  if (dup.aas > 0) addLog(`    - AAS 중복: ${dup.aas}개`, 'warning')
+                  if (dup.submodel > 0) addLog(`    - Submodel 중복: ${dup.submodel}개`, 'warning')
+                  if (dup.conceptDescription > 0) addLog(`    - ConceptDescription 중복: ${dup.conceptDescription}개`, 'warning')
+                }
+              } else {
+                fileObj.status = 'completed'
+                uploadedCount.value++
+                hasSuccess = true
+              }
+            }
+          })
+
+          if (hasSuccess) {
+            addLog(`Batch upload partially successful`, 'warning')
+          } else {
+            addLog(`Batch upload failed: All files had errors`, 'error')
+          }
+          return hasSuccess
+        } else {
+          // 응답 데이터에서 파일별 결과 확인
+          if (responseData && responseData.files) {
+            responseData.files.forEach(fileResult => {
+              const fileObj = batch.find(f => f.name === fileResult.filename)
+              if (fileObj) {
+                if (fileResult.status === 'warning') {
+                  // 중복이 있는 경우
+                  addLog(`${fileResult.filename}: ${fileResult.message}`, 'warning')
+                  if (fileResult.duplicateDetails) {
+                    const dup = fileResult.duplicateDetails
+                    if (dup.aas > 0) addLog(`  - AAS 중복: ${dup.aas}개`, 'warning')
+                    if (dup.submodel > 0) addLog(`  - Submodel 중복: ${dup.submodel}개`, 'warning')
+                    if (dup.conceptDescription > 0) addLog(`  - ConceptDescription 중복: ${dup.conceptDescription}개`, 'warning')
+                  }
+                } else {
+                  if (fileResult.registrationDetails) {
+                    // 등록 상세 정보가 있는 경우
+                    const details = fileResult.registrationDetails
+                    addLog(`${fileResult.filename}: 성공적으로 업로드됨`, 'success')
+                    if (details.aas) {
+                      addLog(`  - AAS: 신규 ${details.aas.success}개, 중복 ${details.aas.duplicate}개`, 'info')
+                    }
+                    if (details.submodel) {
+                      addLog(`  - Submodel: 신규 ${details.submodel.success}개, 중복 ${details.submodel.duplicate}개`, 'info')
+                    }
+                    if (details.conceptDescription) {
+                      addLog(`  - ConceptDescription: 신규 ${details.conceptDescription.success}개, 중복 ${details.conceptDescription.duplicate}개`, 'info')
+                    }
+                  } else {
+                    addLog(`${fileResult.filename}: 성공적으로 업로드됨`, 'success')
+                  }
+                }
+                fileObj.status = 'completed'
+                uploadedCount.value++
+              }
+            })
+          } else {
+            // 기존 방식 (파일별 정보가 없는 경우)
+            batch.forEach(fileObj => {
+              fileObj.status = 'completed'
+              uploadedCount.value++
+            })
+            addLog(`Batch upload successful: ${batch.length} files`, 'success')
+          }
+          return true
+        }
+
       } catch (error) { // 업로드 취소된 경우
         if (error.name === 'CanceledError') {
           batch.forEach(fileObj => {
@@ -587,16 +677,28 @@ export default {
           addLog('Upload cancelled.', 'warning')
           return false
         }
-        
+
         // 그 외 에러 처리
+        const errorMessage = error.response?.data?.message || error.message
+
         batch.forEach(fileObj => {
           fileObj.status = 'failed'
-          fileObj.error = error.response?.data?.message || error.message
+          fileObj.error = errorMessage
           fileObj.retries++
           failedFiles.value.push(fileObj)
         })
-        
-        addLog(`Batch upload failed: ${error.message}`, 'error')
+
+        addLog(`Batch upload failed: ${errorMessage}`, 'error')
+
+        // 응답에 상세 정보가 있는 경우 추가 로그
+        if (error.response?.data?.files) {
+          error.response.data.files.forEach(fileResult => {
+            if (fileResult.status === 'error') {
+              addLog(`  ${fileResult.filename}: ${fileResult.message}`, 'error')
+            }
+          })
+        }
+
         return false
       }
     }
@@ -608,55 +710,55 @@ export default {
       isUploading = true
       uploadedCount.value = 0
       failedFiles.value = []
-      
+
       addLog(`Starting upload - Total ${selectedFiles.value.length} files`, 'info')
-      
+
       // '대기' 상태이거나, 재시도 횟수가 남은 '실패' 상태의 파일만 필터링
-      const pendingFiles = selectedFiles.value.filter(f => 
+      const pendingFiles = selectedFiles.value.filter(f =>
         f.status === 'pending' || (f.status === 'failed' && f.retries < maxRetries.value)
       )
-      
+
       // 필터링된 파일들을 배치 크기만큼 잘라서 순차적으로 처리
       for (let i = 0; i < pendingFiles.length; i += batchSize.value) {
         if (!isUploading || isPaused.value) break // 중단 또는 일시정지 시 루프 탈출
-        
+
         const batch = pendingFiles.slice(i, i + batchSize.value)
         currentBatchFiles.value = batch
         currentBatchProgress.value = 0
-        
+
         addLog(`Processing batch ${Math.floor(i / batchSize.value) + 1} (${batch.length} files)`, 'info')
-        
+
         const success = await uploadBatch(batch)
-        
+
         // Retry failed files
         if (!success && !isPaused.value) {
-          const retryFiles = batch.filter(f => 
+          const retryFiles = batch.filter(f =>
             f.status === 'failed' && f.retries < maxRetries.value
           )
-          
+
           if (retryFiles.length > 0) {
             addLog(`Retrying ${retryFiles.length} files...`, 'warning')
             await uploadBatch(retryFiles) // 한 배치 업로드 실행
           }
         }
-        
+
         // 서버 과부하 방지를 위해 배치 사이에 잠시 대기
         if (i + batchSize.value < pendingFiles.length && isUploading) {
           await new Promise(resolve => setTimeout(resolve, 1000))
         }
       }
-      
+
       uploading.value = false
       isUploading = false
       currentBatchFiles.value = []
       currentBatchProgress.value = 0
-      
+
       // 최종 결과 로그 출력
       const successCount = selectedFiles.value.filter(f => f.status === 'completed').length
       const failCount = selectedFiles.value.filter(f => f.status === 'failed').length
-      
+
       // 업로드 일시정지
-      addLog(`Upload completed - Success: ${successCount}, Failed: ${failCount}`, 
+      addLog(`Upload completed - Success: ${successCount}, Failed: ${failCount}`,
         failCount > 0 ? 'warning' : 'success')
     }
 
@@ -684,14 +786,14 @@ export default {
       if (uploadController) {
         uploadController.abort()
       }
-      
+
       // '업로드중'이던 파일들을 다시 '대기' 상태로 되돌림
       selectedFiles.value.forEach(file => {
         if (file.status === 'uploading') {
           file.status = 'pending'
         }
       })
-      
+
       currentBatchFiles.value = []
       currentBatchProgress.value = 0
       addLog('Upload cancelled.', 'warning')
@@ -707,7 +809,7 @@ export default {
       // refs
       fileInput,
       folderInput,
-      
+
       // State
       selectedFiles,
       uploading,
@@ -723,7 +825,7 @@ export default {
       currentBatchProgress,
       currentPage,
       filesPerPage,
-      
+
       // Computed Properties
       totalSize,
       uploadStatus,
@@ -731,7 +833,7 @@ export default {
       allFilesProcessed,
       totalPages,
       paginatedFiles,
-      
+
       // Methods
       handleFileSelect,
       handleFolderSelect,
@@ -1429,11 +1531,11 @@ export default {
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .upload-controls {
     flex-wrap: wrap;
   }
-  
+
   .control-btn {
     flex: 1;
     min-width: 120px;
