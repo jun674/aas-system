@@ -28,3 +28,10 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Documentation and guide files (except README.md)
+*_Guide.md
+*_Analysis.md
+*_Proposal.md
+*_Implementation.md
+docs/*.md
