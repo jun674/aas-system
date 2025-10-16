@@ -574,6 +574,7 @@ export default {
         // 에러가 있는 경우 처리
         if (responseData.hasErrors && responseData.files) {
           let hasSuccess = false
+          let hasFailure = false
 
           responseData.files.forEach(fileResult => {
             const fileObj = batch.find(f => f.name === fileResult.filename)
@@ -582,14 +583,24 @@ export default {
                 fileObj.status = 'failed'
                 fileObj.error = fileResult.message || 'Upload failed'
                 failedFiles.value.push(fileObj)
+                hasFailure = true
 
                 // 상세한 에러 로그 추가
-                addLog(`Failed: ${fileResult.filename}`, 'error')
+                addLog(`❌ Failed: ${fileResult.filename}`, 'error')
                 if (fileResult.errorType) {
-                  addLog(`  Error Type: ${fileResult.errorType}`, 'error')
+                  addLog(`  📋 Error Type: ${fileResult.errorType}`, 'error')
                 }
                 if (fileResult.details) {
-                  addLog(`  Details: ${fileResult.details}`, 'error')
+                  addLog(`  📝 Details: ${fileResult.details}`, 'error')
+                }
+
+                // 에러 타입별 추가 안내
+                if (fileResult.errorType === 'VALIDATION_ERROR') {
+                  addLog(`  💡 Tip: AASX 파일 형식이 올바른지 확인해주세요.`, 'error')
+                } else if (fileResult.errorType === 'PROCESSING_ERROR') {
+                  addLog(`  💡 Tip: 파일이 손상되었거나 읽을 수 없는 형식일 수 있습니다.`, 'error')
+                } else if (fileResult.errorType === 'UPLOAD_ERROR') {
+                  addLog(`  💡 Tip: 네트워크 연결을 확인하고 다시 시도해주세요.`, 'error')
                 }
               } else if (fileResult.status === 'warning') {
                 // 중복 파일 처리
@@ -597,13 +608,15 @@ export default {
                 uploadedCount.value++
                 hasSuccess = true
 
-                addLog(`Warning: ${fileResult.filename}`, 'warning')
+                addLog(`⚠️ Warning: ${fileResult.filename}`, 'warning')
                 addLog(`  ${fileResult.message}`, 'warning')
                 if (fileResult.duplicateDetails) {
                   const dup = fileResult.duplicateDetails
-                  if (dup.aas > 0) addLog(`    - AAS 중복: ${dup.aas}개`, 'warning')
-                  if (dup.submodel > 0) addLog(`    - Submodel 중복: ${dup.submodel}개`, 'warning')
-                  if (dup.conceptDescription > 0) addLog(`    - ConceptDescription 중복: ${dup.conceptDescription}개`, 'warning')
+                  addLog(`  📊 중복 항목 상세:`, 'warning')
+                  if (dup.aas > 0) addLog(`    • AAS: ${dup.aas}개 중복 (기존 데이터 유지)`, 'warning')
+                  if (dup.submodel > 0) addLog(`    • Submodel: ${dup.submodel}개 중복 (기존 데이터 유지)`, 'warning')
+                  if (dup.conceptDescription > 0) addLog(`    • ConceptDescription: ${dup.conceptDescription}개 중복 (기존 데이터 유지)`, 'warning')
+                  addLog(`  💡 Tip: 중복된 항목은 건너뛰고 새로운 항목만 등록되었습니다.`, 'info')
                 }
               } else {
                 fileObj.status = 'completed'
@@ -613,56 +626,87 @@ export default {
             }
           })
 
-          if (hasSuccess) {
-            addLog(`Batch upload partially successful`, 'warning')
-          } else {
-            addLog(`Batch upload failed: All files had errors`, 'error')
+          if (hasSuccess && hasFailure) {
+            addLog(`📊 Batch upload partially successful`, 'warning')
+          } else if (hasFailure && !hasSuccess) {
+            addLog(`❌ Batch upload failed: All files had errors`, 'error')
           }
           return hasSuccess
         } else {
           // 응답 데이터에서 파일별 결과 확인
           if (responseData && responseData.files) {
+            let totalNewItems = 0
+            let totalDuplicates = 0
+
             responseData.files.forEach(fileResult => {
               const fileObj = batch.find(f => f.name === fileResult.filename)
               if (fileObj) {
-                if (fileResult.status === 'warning') {
+                if (fileResult.status === 'error') {
+                  fileObj.status = 'failed'
+                  fileObj.error = fileResult.message || 'Upload failed'
+                  failedFiles.value.push(fileObj)
+
+                  addLog(`❌ Failed: ${fileResult.filename}`, 'error')
+                  if (fileResult.errorType) {
+                    addLog(`  📋 Error Type: ${fileResult.errorType}`, 'error')
+                  }
+                  if (fileResult.details) {
+                    addLog(`  📝 Details: ${fileResult.details}`, 'error')
+                  }
+                } else if (fileResult.status === 'warning') {
                   // 중복이 있는 경우
-                  addLog(`${fileResult.filename}: ${fileResult.message}`, 'warning')
+                  addLog(`⚠️ ${fileResult.filename}: ${fileResult.message}`, 'warning')
                   if (fileResult.duplicateDetails) {
                     const dup = fileResult.duplicateDetails
-                    if (dup.aas > 0) addLog(`  - AAS 중복: ${dup.aas}개`, 'warning')
-                    if (dup.submodel > 0) addLog(`  - Submodel 중복: ${dup.submodel}개`, 'warning')
-                    if (dup.conceptDescription > 0) addLog(`  - ConceptDescription 중복: ${dup.conceptDescription}개`, 'warning')
+                    addLog(`  📊 중복 항목:`, 'warning')
+                    if (dup.aas > 0) addLog(`    • AAS: ${dup.aas}개`, 'warning')
+                    if (dup.submodel > 0) addLog(`    • Submodel: ${dup.submodel}개`, 'warning')
+                    if (dup.conceptDescription > 0) addLog(`    • ConceptDescription: ${dup.conceptDescription}개`, 'warning')
+                    totalDuplicates += (dup.aas + dup.submodel + dup.conceptDescription)
                   }
+                  fileObj.status = 'completed'
+                  uploadedCount.value++
                 } else {
                   if (fileResult.registrationDetails) {
                     // 등록 상세 정보가 있는 경우
                     const details = fileResult.registrationDetails
-                    addLog(`${fileResult.filename}: 성공적으로 업로드됨`, 'success')
+                    addLog(`✅ ${fileResult.filename}: 성공적으로 업로드됨`, 'success')
+                    addLog(`  📊 등록 결과:`, 'info')
                     if (details.aas) {
-                      addLog(`  - AAS: 신규 ${details.aas.success}개, 중복 ${details.aas.duplicate}개`, 'info')
+                      addLog(`    • AAS: 신규 ${details.aas.success}개, 중복 ${details.aas.duplicate}개`, 'info')
+                      totalNewItems += details.aas.success
+                      totalDuplicates += details.aas.duplicate
                     }
                     if (details.submodel) {
-                      addLog(`  - Submodel: 신규 ${details.submodel.success}개, 중복 ${details.submodel.duplicate}개`, 'info')
+                      addLog(`    • Submodel: 신규 ${details.submodel.success}개, 중복 ${details.submodel.duplicate}개`, 'info')
+                      totalNewItems += details.submodel.success
+                      totalDuplicates += details.submodel.duplicate
                     }
                     if (details.conceptDescription) {
-                      addLog(`  - ConceptDescription: 신규 ${details.conceptDescription.success}개, 중복 ${details.conceptDescription.duplicate}개`, 'info')
+                      addLog(`    • ConceptDescription: 신규 ${details.conceptDescription.success}개, 중복 ${details.conceptDescription.duplicate}개`, 'info')
+                      totalNewItems += details.conceptDescription.success
+                      totalDuplicates += details.conceptDescription.duplicate
                     }
                   } else {
-                    addLog(`${fileResult.filename}: 성공적으로 업로드됨`, 'success')
+                    addLog(`✅ ${fileResult.filename}: 성공적으로 업로드됨`, 'success')
                   }
+                  fileObj.status = 'completed'
+                  uploadedCount.value++
                 }
-                fileObj.status = 'completed'
-                uploadedCount.value++
               }
             })
+
+            // 배치 요약 정보
+            if (totalNewItems > 0 || totalDuplicates > 0) {
+              addLog(`📊 Batch 요약: 신규 등록 ${totalNewItems}개, 중복 건너뛰기 ${totalDuplicates}개`, 'info')
+            }
           } else {
             // 기존 방식 (파일별 정보가 없는 경우)
             batch.forEach(fileObj => {
               fileObj.status = 'completed'
               uploadedCount.value++
             })
-            addLog(`Batch upload successful: ${batch.length} files`, 'success')
+            addLog(`✅ Batch upload successful: ${batch.length} files`, 'success')
           }
           return true
         }

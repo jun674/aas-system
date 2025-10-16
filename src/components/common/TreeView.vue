@@ -16,6 +16,7 @@
         </button>
       </div>
     </div>
+    <!-- 데이터가 없을 때는 빈 상태를 표시하지 않음 (자동 로딩이 있을 수 있으므로) -->
     <div v-else-if="!treeData || treeData.length === 0" class="empty-state">
       <div class="empty-container">
         <i class="fas fa-search empty-icon"></i>

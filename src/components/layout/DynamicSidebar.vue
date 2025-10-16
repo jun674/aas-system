@@ -56,32 +56,15 @@
             </a>
           </div>
 
-          <!-- CNC Submenu -->
+          <!-- CNC - 단일 메뉴 -->
           <a
-            class="nav-link d-flex align-items-center"
-            href="#"
-            :class="{ expanded: expandedMenus.cnc }"
-            @click.prevent="toggleMenu('cnc')"
+            class="nav-link"
+            :class="{ active: activeMenu === 'CNC' }"
+            @click="selectMenu('CNC')"
           >
-            <span>
-              <i class="fas fa-tools"></i>
-              CNC
-            </span>
-            <i class="fas fa-chevron-down ms-auto"></i>
+            <i class="fas fa-tools"></i>
+            CNC
           </a>
-
-          <div class="submenu" :class="{ show: expandedMenus.cnc }">
-            <a
-              v-for="item in cncItems"
-              :key="item.value"
-              class="nav-link submenu-item"
-              :class="{ active: activeMenu === item.value }"
-              @click="selectMenu(item.value)"
-            >
-              <i class="fas fa-circle"></i>
-              {{ item.label }}
-            </a>
-          </div>
 
           <!-- Press Submenu -->
           <a
@@ -110,86 +93,35 @@
             </a>
           </div>
 
-          <!-- AMR Submenu -->
+          <!-- AMR - 단일 메뉴 -->
           <a
-            class="nav-link d-flex align-items-center"
-            href="#"
-            :class="{ expanded: expandedMenus.amr }"
-            @click.prevent="toggleMenu('amr')"
+            class="nav-link"
+            :class="{ active: activeMenu === 'AMR' }"
+            @click="selectMenu('AMR')"
           >
-            <span>
-              <i class="fas fa-truck"></i>
-              AMR
-            </span>
-            <i class="fas fa-chevron-down ms-auto"></i>
+            <i class="fas fa-truck"></i>
+            AMR
           </a>
 
-          <div class="submenu" :class="{ show: expandedMenus.amr }">
-            <a
-              v-for="item in amrItems"
-              :key="item.value"
-              class="nav-link submenu-item"
-              :class="{ active: activeMenu === item.value }"
-              @click="selectMenu(item.value)"
-            >
-              <i class="fas fa-circle"></i>
-              {{ item.label }}
-            </a>
-          </div>
-
-          <!-- Boring Submenu -->
+          <!-- Boring - 단일 메뉴 -->
           <a
-            class="nav-link d-flex align-items-center"
-            href="#"
-            :class="{ expanded: expandedMenus.boring }"
-            @click.prevent="toggleMenu('boring')"
+            class="nav-link"
+            :class="{ active: activeMenu === 'Boring' }"
+            @click="selectMenu('Boring')"
           >
-            <span>
-              <i class="fas fa-cog"></i>
-              Boring
-            </span>
-            <i class="fas fa-chevron-down ms-auto"></i>
+            <i class="fas fa-cog"></i>
+            Boring
           </a>
 
-          <div class="submenu" :class="{ show: expandedMenus.boring }">
-            <a
-              v-for="item in boringItems"
-              :key="item.value"
-              class="nav-link submenu-item"
-              :class="{ active: activeMenu === item.value }"
-              @click="selectMenu(item.value)"
-            >
-              <i class="fas fa-circle"></i>
-              {{ item.label }}
-            </a>
-          </div>
-
-          <!-- Robot Submenu -->
+          <!-- Robot - 단일 메뉴 -->
           <a
-            class="nav-link d-flex align-items-center"
-            href="#"
-            :class="{ expanded: expandedMenus.robot }"
-            @click.prevent="toggleMenu('robot')"
+            class="nav-link"
+            :class="{ active: activeMenu === 'Robot' }"
+            @click="selectMenu('Robot')"
           >
-            <span>
-              <i class="fas fa-industry"></i>
-              Robot
-            </span>
-            <i class="fas fa-chevron-down ms-auto"></i>
+            <i class="fas fa-industry"></i>
+            Robot
           </a>
-
-          <div class="submenu" :class="{ show: expandedMenus.robot }">
-            <a
-              v-for="item in robotItems"
-              :key="item.value"
-              class="nav-link submenu-item"
-              :class="{ active: activeMenu === item.value }"
-              @click="selectMenu(item.value)"
-            >
-              <i class="fas fa-circle"></i>
-              {{ item.label }}
-            </a>
-          </div>
         </template>
 
         <!-- Material Category -->
@@ -305,11 +237,7 @@ export default {
     // 확장 가능한 메뉴들의 열림/닫힘 상태를 관리하는 객체
     const expandedMenus = reactive({
       welding: true, // 'welding' 메뉴는 기본적으로 열린 상태
-      cnc: false, // 'cnc' 메뉴는 기본적으로 닫힌 상태
       press: false, // 'press' 메뉴는 기본적으로 닫힌 상태
-      amr: false, // 'amr' 메뉴는 기본적으로 닫힌 상태
-      boring: false, // 'boring' 메뉴는 기본적으로 닫힌 상태
-      robot: false, // 'robot' 메뉴는 기본적으로 닫힌 상태
     })
 
     // 현재 화면이 모바일 크기인지 여부를 저장
@@ -336,29 +264,13 @@ export default {
       { value: 'UW', label: 'UW' },
     ]
 
-    // 'Equipment' 카테고리의 'CNC' 서브 메뉴 아이템 목록
-    const cncItems = [
-      { value: 'CNC_Milling', label: 'CNC Milling' },
-      { value: 'CNC_Turning', label: 'CNC Turning' },
-      { value: 'CNC_Drilling', label: 'CNC Drilling' },
-    ]
-
-    // 'Equipment' 카테고리의 'Press' 서브 메뉴 아이템 목록
+    // 'Equipment' 카테고리의 'Press' 서브 메뉴 아이템 목록 - 폴더명대로
     const pressItems = [
-      { value: 'Press_Stamping', label: 'Press Stamping' },
-      { value: 'Press_Forming', label: 'Press Forming' },
-      { value: 'Press_Bending', label: 'Press Bending' },
-      { value: 'Press_Line', label: 'Press Line' },
+      { value: 'Press_Cutting', label: 'Cutting' },
+      { value: 'Press_Hydr', label: 'Hydr' },
+      { value: 'Press_Mechanical_Type', label: 'Mechanical Type' },
+      { value: 'Press_Servo', label: 'Servo' },
     ]
-
-    // 'Equipment' 카테고리의 'AMR' 서브 메뉴 아이템 목록
-    const amrItems = [{ value: 'AMR', label: 'AMR' }]
-
-    // 'Equipment' 카테고리의 'Boring' 서브 메뉴 아이템 목록
-    const boringItems = [{ value: 'Boring', label: 'Boring' }]
-
-    // 'Equipment' 카테고리의 'Robot' 서브 메뉴 아이템 목록
-    const robotItems = [{ value: 'Robot', label: 'Robot' }]
 
     // 'Material' 카테고리의 서브 메뉴 아이템 목록
     const materialItems = [
@@ -477,11 +389,7 @@ export default {
       activeMenu,
       expandedMenus,
       weldingItems,
-      cncItems,
       pressItems,
-      amrItems,
-      boringItems,
-      robotItems,
       materialItems,
       processItems,
       operationItems,

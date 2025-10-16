@@ -55,7 +55,7 @@ export function useSearch() {
       ]
     }
 
-    // Welding Equipment 필터
+    // Welding Equipment 필터 - 백엔드 API에 맞춰 수정
     const weldingMenus = [
       'CO2',
       'TIG',
@@ -85,8 +85,7 @@ export function useSearch() {
     }
 
     // CNC Equipment 필터
-    const cncMenus = ['CNC_Milling', 'CNC_Turning', 'CNC_Drilling']
-    if (cncMenus.includes(currentMenu.value)) {
+    if (currentMenu.value === 'CNC') {
       return [
         { value: 'spindlespeed', label: 'Spindle Speed' },
         { value: 'feedrate', label: 'Feed Rate' },
@@ -98,7 +97,7 @@ export function useSearch() {
     }
 
     // Press Equipment 필터
-    const pressMenus = ['Press_Stamping', 'Press_Forming', 'Press_Bending']
+    const pressMenus = ['Press_Cutting', 'Press_Hydr', 'Press_Mechanical_Type', 'Press_Servo']
     if (pressMenus.includes(currentMenu.value)) {
       return [
         { value: 'pressforce', label: 'Press Force' },
@@ -287,6 +286,86 @@ export function useSearch() {
   }
 
   /**
+   * 통합된 검색 함수 - 모든 메뉴에서 일관된 페이징 지원
+   */
+  const searchWithKeywords = async (keywords, apiEndpoint, globalAssetId, currentPage) => {
+    let allResults = []
+    const uniqueIds = new Set()
+
+    console.log(`Searching with keywords: ${keywords.join(', ')}, API: ${apiEndpoint}, GlobalAssetId: ${globalAssetId}`)
+
+    // 모든 키워드로 검색하여 결과 수집
+    for (const keyword of keywords) {
+      let page = 1
+      let hasMore = true
+      let keywordResults = 0
+
+      // 각 키워드별로 모든 페이지 가져오기 (최대 20페이지)
+      while (hasMore && page <= 20) {
+        try {
+          const res = await apiClient.get(apiEndpoint, {
+            params: {
+              ...(globalAssetId && { globalAssetId }),
+              keyword: keyword,
+              page: page
+            }
+          })
+
+          if (res.data && res.data.message) {
+            let items = []
+            if (res.data.message.content) {
+              // 페이징 응답
+              items = res.data.message.content || []
+              hasMore = !res.data.message.last
+            } else if (Array.isArray(res.data.message)) {
+              // 배열 응답
+              items = res.data.message
+              hasMore = items.length >= 10
+            }
+
+            items.forEach(item => {
+              if (item.id && !uniqueIds.has(item.id)) {
+                uniqueIds.add(item.id)
+                allResults.push(item)
+                keywordResults++
+              }
+            })
+
+            if (items.length === 0) {
+              hasMore = false
+            }
+            page++
+          } else {
+            hasMore = false
+          }
+        } catch (err) {
+          console.log(`Failed to fetch ${keyword} page ${page}:`, err)
+          hasMore = false
+        }
+      }
+      console.log(`Keyword "${keyword}" found ${keywordResults} results`)
+    }
+
+    // 결과를 페이지 크기로 나누어 반환
+    const pageSize = 10
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    const pageResults = allResults.slice(startIndex, endIndex)
+
+    console.log(`Total unique results: ${allResults.length}, Current page: ${currentPage}, Showing: ${startIndex}-${endIndex}`)
+
+    return {
+      data: {
+        message: {
+          content: pageResults,
+          last: endIndex >= allResults.length,
+          totalElements: allResults.length
+        }
+      }
+    }
+  }
+
+  /**
    * 현재 선택된 메뉴에 해당하는 데이터를 화면에 표시
    */
   const displayCurrentMenuData = async (page = 1) => {
@@ -294,6 +373,8 @@ export function useSearch() {
       loading.value = true
       treeData.value = []
       error.value = null
+      pagination.currentPage = 1
+      pagination.hasMorePages = true
     } else {
       pagination.isLoadingMore = true
     }
@@ -323,15 +404,13 @@ export function useSearch() {
         'Sold': 'WeldingProcess',
         'SW': 'WeldingProcess',
         'UW': 'WeldingProcess',
-        // CNC 장비들
-        'CNC_Milling': 'ComputerNumericalControlProcess',
-        'CNC_Turning': 'ComputerNumericalControlProcess',
-        'CNC_Drilling': 'ComputerNumericalControlProcess',
-        // Press 장비들 - 실제 globalAssetId 패턴에 맞게 설정
-        'Press_Stamping': 'PressProcessMachine',
-        'Press_Forming': 'PressProcess',
-        'Press_Bending': 'MechanicalType',  // 특별 처리를 위해 직접 MechanicalType 사용
-        'Press_Line': 'PressProcess',
+        // CNC 장비 - 통합
+        'CNC': 'ComputerNumericalControlProcess',
+        // Press 장비들 - 폴더명대로
+        'Press_Cutting': 'PressProcess',
+        'Press_Hydr': 'PressProcess',
+        'Press_Mechanical_Type': 'PressProcess',
+        'Press_Servo': 'PressProcess',
         // 기타 장비들
         'AMR': 'AMR',
         'Boring': 'Boring',
@@ -345,86 +424,51 @@ export function useSearch() {
         try {
           let response
 
-          // Welding 메뉴들은 combined API 사용
-          const weldingMenus = ['CO2', 'TIG', 'MIG', 'MAG', 'EBW', 'FW', 'OAW', 'PW', 'RSEW', 'RSW', 'SAW', 'SMAW', 'Sold', 'SW', 'UW']
+          // 메뉴별 키워드 정의 - 실제 DB의 idShort 값과 매칭
+          const menuKeywords = {
+            // Welding 키워드 - DB의 실제 classify 값들
+            'CO2': ['CO2Type-classify', 'CO2Type', 'CO2'],
+            'TIG': ['TungstenInsertGasType-classify', 'TIG', 'TungstenInsertGas'],
+            'MIG': ['MetalInsertGasType-classify', 'MIG', 'MetalInsertGas'],
+            'MAG': ['MetalActiveGasType-classify', 'MAG', 'MetalActiveGas'],
+            'EBW': ['ElectronBeamWeldingType-classify', 'EBW', 'ElectronBeam'],
+            'FW': ['FlasfButtType', 'FrictionWeldingType-classify', 'FW', 'Friction'],
+            'OAW': ['OxyAcetyleneWeldingType-classify', 'OAW', 'OxyAcetylene'],
+            'PW': ['ProjectionWeldingType-classify', 'PW', 'Projection'],
+            'RSEW': ['ResistanceSeamWeldingType-classify', 'RSEW', 'ResistanceSeam'],
+            'RSW': ['ResistanceSpotWeldingType-classify', 'RSW', 'ResistanceSpot'],
+            'SAW': ['SubmergedArcWeldingType-classify', 'SAW', 'SubmergedArc'],
+            'SMAW': ['ShieldedMetalArcType-classify', 'SMAW', 'ShieldedMetal'],
+            'Sold': ['SolderingType-classify', 'Sold', 'Soldering'],
+            'SW': ['StudWeldingType-classify', 'SW', 'Stud'],
+            'UW': ['UltrasonicWeldingType-classify', 'UW', 'Ultrasonic'],
+            // CNC 키워드
+            'CNC': ['CNCMechanics', 'CNC', 'ComputerNumericalControl'],
+            // Press 키워드
+            'Press_Cutting': ['Shearing', 'PressMachineShearing', 'Cutting', 'CuttingType', 'Cutoff'],
+            'Press_Hydr': ['Hydr', 'HydraulicType', 'Hydraulic'],
+            'Press_Mechanical_Type': ['MechanicalType', 'Mechanical'],
+            'Press_Servo': ['Servo', 'ServoType'],
+            // 기타 장비 키워드
+            'AMR': ['AMR', 'HD1500', 'LD90', 'MD650'],
+            'Boring': ['Boring', 'DBC130', 'BoringMachine'],
+            'Robot': ['Robot', 'HH4', 'IndustrialRobot']
+          }
 
-          // Press 메뉴들도 combined API 사용
-          const pressMenus = ['Press_Stamping', 'Press_Forming', 'Press_Bending', 'Press_Line']
+          const keywords = menuKeywords[currentMenu.value]
 
-          // CNC 메뉴들도 combined API 사용
-          const cncMenus = ['CNC_Milling', 'CNC_Turning', 'CNC_Drilling']
+          if (keywords) {
+            // combined API를 사용하는 메뉴들
+            const combinedApiMenus = ['CO2', 'TIG', 'MIG', 'MAG', 'EBW', 'FW', 'OAW', 'PW', 'RSEW', 'RSW', 'SAW', 'SMAW', 'Sold', 'SW', 'UW', 'CNC', 'Press_Cutting', 'Press_Hydr', 'Press_Mechanical_Type', 'Press_Servo']
 
-          if (weldingMenus.includes(currentMenu.value)) {
-            // 각 타입별 keyword 매핑
-            const weldingKeywords = {
-              'CO2': 'CO2',
-              'TIG': 'TIG',
-              'MIG': 'MIG',
-              'MAG': 'MAG',
-              'EBW': 'ElectronBeam',  // EBW는 ElectronBeamWeldingType 형태
-              'FW': 'FW',
-              'OAW': 'OAW',
-              'PW': 'PW',
-              'RSEW': 'RSEW',
-              'RSW': 'RSW',
-              'SAW': 'SAW',
-              'SMAW': 'SMAW',
-              'Sold': 'Sold',
-              'SW': 'SW',
-              'UW': 'UW'
+            if (combinedApiMenus.includes(currentMenu.value)) {
+              response = await searchWithKeywords(keywords, '/aas/search/combined', globalAssetIdKeyword, page)
+            } else {
+              // globalAssetId API 사용 (AMR, Boring, Robot)
+              response = await searchWithKeywords(keywords, '/aas/search/globalAssetId', null, page)
             }
-
-            const typeKeyword = weldingKeywords[currentMenu.value]
-            response = await apiClient.get('/aas/search/combined', {
-              params: {
-                globalAssetId: globalAssetIdKeyword,
-                keyword: typeKeyword,
-                page
-              }
-            })
-          } else if (pressMenus.includes(currentMenu.value)) {
-            // Press 메뉴들도 combined API 사용하여 정확한 필터링
-            const pressKeywords = {
-              'Press_Stamping': 'Cutoff',
-              'Press_Forming': 'HydraulicType',
-              'Press_Bending': 'MechanicalType',
-              'Press_Line': 'ServoType'
-            }
-
-            const typeKeyword = pressKeywords[currentMenu.value]
-            const globalAssetIdPattern = 'PressProcess'
-
-            console.log('Press Menu Debug:', {
-              currentMenu: currentMenu.value,
-              globalAssetIdPattern,
-              typeKeyword
-            })
-
-            response = await apiClient.get('/aas/search/combined', {
-              params: {
-                globalAssetId: globalAssetIdPattern,
-                keyword: typeKeyword,
-                page
-              }
-            })
-          } else if (cncMenus.includes(currentMenu.value)) {
-            // CNC 타입별 keyword 매핑
-            const cncKeywords = {
-              'CNC_Milling': 'A600',
-              'CNC_Turning': 'Lynx',
-              'CNC_Drilling': 'XD'
-            }
-
-            const typeKeyword = cncKeywords[currentMenu.value]
-            response = await apiClient.get('/aas/search/combined', {
-              params: {
-                globalAssetId: globalAssetIdKeyword,
-                keyword: typeKeyword,
-                page
-              }
-            })
           } else {
-            // 다른 메뉴들은 기존 globalAssetId API 사용
+            // 키워드가 정의되지 않은 경우 기본 검색
             response = await apiClient.get('/aas/search/globalAssetId', {
               params: { keyword: globalAssetIdKeyword, page }
             })
@@ -433,6 +477,7 @@ export function useSearch() {
           if (response.data && response.data.message) {
             // 페이징 응답인 경우 content 필드에서 데이터 추출
             let pageItems = []
+
             if (response.data.message.content) {
               // 페이징 응답 구조
               pageItems = response.data.message.content || []
@@ -445,7 +490,6 @@ export function useSearch() {
               console.error('Unexpected response structure:', response.data.message)
             }
 
-
             if (pageItems.length > 0) {
               const newTreeNodes = transformApiToTree(pageItems, [])
               if (page === 1) {
@@ -454,12 +498,9 @@ export function useSearch() {
                 treeData.value.push(...newTreeNodes)
               }
               pagination.currentPage = page
-              // hasMorePages는 위에서 이미 설정됨
-            } else {
-              if (page === 1) {
-                error.value = `${getMenuDisplayName(currentMenu.value)}: No data found.`
-              }
             }
+            // 에러 설정 부분을 완전히 제거
+            // 자동 페이지 로딩이 있으므로 첫 페이지가 비어있어도 문제없음
           }
         } catch (err) {
           console.error('globalAssetId search failed:', err)
@@ -502,6 +543,22 @@ export function useSearch() {
     } finally {
       loading.value = false
       pagination.isLoadingMore = false
+
+      // 첫 페이지 로드 후 자동으로 추가 페이지 로드 (최대 10페이지까지)
+      if (page === 1 && pagination.hasMorePages) {
+        // 약간의 지연 후 추가 페이지 로드
+        setTimeout(async () => {
+          for (let i = 2; i <= 10; i++) {
+            if (pagination.hasMorePages) {
+              await displayCurrentMenuData(i)
+              // 데이터가 있으면 에러 메시지 제거
+              if (treeData.value.length > 0) {
+                error.value = null
+              }
+            }
+          }
+        }, 100)
+      }
     }
   }
 
@@ -557,8 +614,8 @@ export function useSearch() {
               treeData.value.push(...newTreeNodes) // 이후 페이지는 추가
             }
             pagination.currentPage = page
-            // 60개 이상이면 다음 페이지가 있을 가능성이 높음
-            pagination.hasMorePages = pageItems.length >= 60
+            // 10개 이상이면 다음 페이지가 있을 가능성이 있음 (페이지 크기가 10이므로)
+            pagination.hasMorePages = pageItems.length >= 10
           } else {
             pagination.hasMorePages = false
             if (page === 1) {
@@ -571,6 +628,21 @@ export function useSearch() {
         } finally {
           if (page === 1) {
             loading.value = false
+
+            // 첫 페이지 로드 후 자동으로 추가 페이지 로드 (최대 10페이지까지)
+            if (pagination.hasMorePages) {
+              setTimeout(async () => {
+                for (let i = 2; i <= 10; i++) {
+                  if (pagination.hasMorePages) {
+                    await performSearch(i)
+                    // 데이터가 있으면 에러 메시지 제거
+                    if (treeData.value.length > 0) {
+                      error.value = null
+                    }
+                  }
+                }
+              }, 100)
+            }
           } else {
             pagination.isLoadingMore = false
           }
@@ -600,8 +672,11 @@ export function useSearch() {
       let results = []
       let submodelsFromAPI = [] // Only used in specific cases
 
+      // ALL 메뉴 검색
       if (currentMenu.value === MENU_TYPES.SPECIAL.ALL) {
         const searchValue = searchFilters.filterValue
+        console.log(`All AAS 검색 - filterType: ${searchFilters.filterType}, searchValue: ${searchValue}, page: ${page}`)
+
         const response = await searchAPI.searchByKeyword(
           searchFilters.filterType,
           searchValue,
@@ -610,6 +685,8 @@ export function useSearch() {
 
         if (response && response.code === 200) {
           results = response.message || []
+          console.log(`All AAS 검색 결과 - page ${page}: ${results.length}개`)
+
           // Fallback for conceptdescription on the first page
           if (
             page === 1 &&
@@ -625,7 +702,8 @@ export function useSearch() {
             results = fallbackResponse.message || []
           }
         }
-      } else {
+      } else if (currentMenu.value !== MENU_TYPES.SPECIAL.ALL) {
+        // 기타 메뉴들의 기존 검색 로직 (All AAS 메뉴가 아닌 경우에만)
         const response = await searchAPI.searchByFilter(
           searchFilters.filterType,
           searchFilters.filterValue,
@@ -661,7 +739,9 @@ export function useSearch() {
           treeData.value.push(...newTreeNodes) // 이후 페이지는 추가
         }
         pagination.currentPage = page
-        pagination.hasMorePages = true
+        // 검색 결과가 10개 이상이면 다음 페이지가 있을 가능성
+        pagination.hasMorePages = results.length >= 10
+        console.log(`페이지 ${page} 처리 완료 - hasMorePages: ${pagination.hasMorePages}`)
       } else {
         pagination.hasMorePages = false
         if (page === 1) {
@@ -672,8 +752,27 @@ export function useSearch() {
       error.value = err.message || 'An error occurred during the search.'
       if (page === 1) treeData.value = []
     } finally {
-      if (page === 1) loading.value = false
-      pagination.isLoadingMore = false
+      if (page === 1) {
+        loading.value = false
+
+        // 첫 페이지 로드 후 자동으로 추가 페이지 로드 (검색 모드에서도)
+        if (pagination.hasMorePages && searchFilters.filterValue) {
+          console.log('검색 모드에서 추가 페이지 자동 로드 시작')
+          setTimeout(async () => {
+            for (let i = 2; i <= 10; i++) {
+              if (pagination.hasMorePages) {
+                await performSearch(i)
+                // 데이터가 있으면 에러 메시지 제거
+                if (treeData.value.length > 0) {
+                  error.value = null
+                }
+              }
+            }
+          }, 100)
+        }
+      } else {
+        pagination.isLoadingMore = false
+      }
     }
   }
 
@@ -767,7 +866,13 @@ export function useSearch() {
   }
 
   // --- 반환 (Return) --- //
+  let lastLoadMoreCall = 0 // 마지막 loadMore 호출 시간 추적
   const loadMore = () => {
+    // 중복 호출 방지: 500ms 이내 재호출 차단
+    const now = Date.now()
+    if (now - lastLoadMoreCall < 500) return
+    lastLoadMoreCall = now
+
     if (!pagination.hasMorePages || pagination.isLoadingMore || loading.value) return
 
     // All AAS 메뉴에서 AAS 필터 선택하고 검색어가 없는 경우 (전체 AAS 검색)
@@ -802,31 +907,9 @@ export function useSearch() {
     searchFilters.filterValue = ''
   })
 
-  // 자동 페이지 로딩 - 페이지 1 로드 후 자동으로 페이지 2, 3 로드
-  watch(
-    treeData,
-    (newData) => {
-      // Automatically load up to page 3.
-      const loadNextPage = (page) => {
-        if (
-          pagination.currentPage === page - 1 &&
-          pagination.hasMorePages &&
-          !pagination.isLoadingMore
-        ) {
-          console.log(`Auto-loading page ${page}...`)
-          loadMore()
-        }
-      }
-
-      if (pagination.currentPage === 1 && newData.length > 0) {
-        setTimeout(() => loadNextPage(2), 500)
-      }
-      if (pagination.currentPage === 2 && newData.length > 0) {
-        setTimeout(() => loadNextPage(3), 500)
-      }
-    },
-    { deep: true },
-  )
+  // 자동 페이지 로딩 비활성화 - 중복 호출 문제 해결
+  // CNC Drilling 등에서 여러 키워드 검색 시 중복 호출되는 문제가 있어 제거
+  // 필요시 사용자가 수동으로 "Load More" 버튼을 클릭하도록 변경
 
   return {
     loading,

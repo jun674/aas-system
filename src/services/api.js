@@ -80,12 +80,9 @@ export const dataAPI = {
     console.log(`>> 전체 AAS 조회 시작 (page: ${page}, keyword: ${keyword})`)
     const response = await apiClient.get('/aas', { params })
 
-    // 🔧 Component 필터링
+    // Component 필터링 제거 - All AAS에서는 모든 데이터를 보여줘야 함
     if (response.data.message && Array.isArray(response.data.message)) {
-      response.data.message = response.data.message.filter(aas =>
-        aas.idShort !== 'Component'
-      )
-      console.log(`Component 필터링 후: ${response.data.message.length}개`)
+      console.log(`조회된 AAS: ${response.data.message.length}개`)
     }
 
     return response.data

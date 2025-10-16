@@ -77,6 +77,7 @@
           @search="performSearch"
           @reset="clearSearch"
           @filter-type-change="onFilterTypeChange"
+          @update:filters="onUpdateFilters"
         />
 
         <div class="search-results" :class="{ 'mobile-view': isMobile }">
@@ -225,6 +226,11 @@ const onMenuSelected = async (menuName) => {
 // SearchFilters 컴포넌트에서 필터 타입이 변경될 때 호출
 const onFilterTypeChange = () => {
   searchFilters.filterValue = '' // 필터 값이 남아있지 않도록 초기화
+}
+
+// SearchFilters 컴포넌트에서 필터가 업데이트될 때 호출
+const onUpdateFilters = (newFilters) => {
+  Object.assign(searchFilters, newFilters)
 }
 
 // 사이드바를 토글(열고/닫고)

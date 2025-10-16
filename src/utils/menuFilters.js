@@ -21,15 +21,13 @@ export const MENU_TYPES = {
     Sold: 'Sold',
     SW: 'SW',
     UW: 'UW',
-    // CNC 장비들
-    CNC_MILLING: 'CNC_Milling',
-    CNC_TURNING: 'CNC_Turning',
-    CNC_DRILLING: 'CNC_Drilling',
-    // Press 장비들
-    PRESS_STAMPING: 'Press_Stamping',
-    PRESS_FORMING: 'Press_Forming',
-    PRESS_BENDING: 'Press_Bending',
-    PRESS_LINE: 'Press_Line',
+    // CNC 장비 - 통합
+    CNC: 'CNC',
+    // Press 장비들 - 폴더명대로
+    PRESS_CUTTING: 'Press_Cutting',
+    PRESS_HYDR: 'Press_Hydr',
+    PRESS_MECHANICAL_TYPE: 'Press_Mechanical_Type',
+    PRESS_SERVO: 'Press_Servo',
     // AMR (Autonomous Mobile Robot)
     AMR: 'AMR',
     // Boring
@@ -93,16 +91,14 @@ export const EQUIPMENT_KEYWORDS = {
   [MENU_TYPES.EQUIPMENT.SW]: ['StudWeldingType'],
   [MENU_TYPES.EQUIPMENT.UW]: ['UltrasonicWeldingType'],
 
-  // CNC 장비 키워드 - globalAssetId API 사용으로 더 이상 필요 없음
-  [MENU_TYPES.EQUIPMENT.CNC_MILLING]: [],
-  [MENU_TYPES.EQUIPMENT.CNC_TURNING]: [],
-  [MENU_TYPES.EQUIPMENT.CNC_DRILLING]: [],
+  // CNC 장비 키워드 - globalAssetId API 사용
+  [MENU_TYPES.EQUIPMENT.CNC]: [],
 
-  // Press 장비 키워드
-  [MENU_TYPES.EQUIPMENT.PRESS_STAMPING]: [],
-  [MENU_TYPES.EQUIPMENT.PRESS_FORMING]: [],
-  [MENU_TYPES.EQUIPMENT.PRESS_BENDING]: [],
-  [MENU_TYPES.EQUIPMENT.PRESS_LINE]: ['PressMachineTP75'],
+  // Press 장비 키워드 - globalAssetId API 사용
+  [MENU_TYPES.EQUIPMENT.PRESS_CUTTING]: ['Shearing', 'PressMachineShearing', 'PressProcess/Shearing'],
+  [MENU_TYPES.EQUIPMENT.PRESS_HYDR]: [],
+  [MENU_TYPES.EQUIPMENT.PRESS_MECHANICAL_TYPE]: [],
+  [MENU_TYPES.EQUIPMENT.PRESS_SERVO]: [],
 
   // AMR 키워드
   [MENU_TYPES.EQUIPMENT.AMR]: ['HD1500', 'LD90', 'MD650', 'AMR'],
@@ -362,15 +358,13 @@ export function getMenuDisplayName(menuType) {
     [MENU_TYPES.EQUIPMENT.UW]: 'UW Welding',
 
     // Equipment - CNC
-    [MENU_TYPES.EQUIPMENT.CNC_MILLING]: 'CNC Milling',
-    [MENU_TYPES.EQUIPMENT.CNC_TURNING]: 'CNC Turning',
-    [MENU_TYPES.EQUIPMENT.CNC_DRILLING]: 'CNC Drilling',
+    [MENU_TYPES.EQUIPMENT.CNC]: 'CNC',
 
     // Equipment - Press
-    [MENU_TYPES.EQUIPMENT.PRESS_STAMPING]: 'Press Stamping',
-    [MENU_TYPES.EQUIPMENT.PRESS_FORMING]: 'Press Forming',
-    [MENU_TYPES.EQUIPMENT.PRESS_BENDING]: 'Press Bending',
-    [MENU_TYPES.EQUIPMENT.PRESS_LINE]: 'Press Line',
+    [MENU_TYPES.EQUIPMENT.PRESS_CUTTING]: 'Press Cutting',
+    [MENU_TYPES.EQUIPMENT.PRESS_HYDR]: 'Press Hydr',
+    [MENU_TYPES.EQUIPMENT.PRESS_MECHANICAL_TYPE]: 'Press Mechanical Type',
+    [MENU_TYPES.EQUIPMENT.PRESS_SERVO]: 'Press Servo',
 
     // Equipment - AMR
     [MENU_TYPES.EQUIPMENT.AMR]: 'AMR',

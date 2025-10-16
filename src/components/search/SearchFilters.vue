@@ -4,9 +4,9 @@
       <div class="filter-group">
         <label class="filter-label">Please select</label>
         <select
-          v-model="filters.filterType"
+          :value="filters.filterType"
           class="form-select"
-          @change="$emit('filter-type-change')"
+          @change="$emit('update:filters', { ...filters, filterType: $event.target.value }); $emit('filter-type-change')"
           :disabled="loading"
         >
           <option v-if="currentMenu !== 'ALL'" value="" disabled>-- Please Select --</option>
@@ -19,10 +19,11 @@
       <div class="filter-group">
         <label class="filter-label">Input a value</label>
         <input
-          v-model="filters.filterValue"
+          :value="filters.filterValue"
           type="text"
           class="form-control"
           :disabled="loading"
+          @input="$emit('update:filters', { ...filters, filterValue: $event.target.value })"
           @keyup.enter="$emit('search')"
           :placeholder="currentPlaceholder"
         />
@@ -46,46 +47,21 @@
     </div>
 
     <div
-      v-if="currentMenu !== 'ALL'"
+      v-if="currentMenu !== 'ALL' && quickSearchButtons.length > 0"
       class="quick-search-section"
       :class="{ 'mobile-quick-search': isMobile }"
     >
       <span class="quick-search-label">Quick Search</span>
       <div class="quick-search-buttons">
         <button
-          @click="quickSearch('inputpowervoltage', '380')"
+          v-for="(btn, index) in quickSearchButtons"
+          :key="index"
+          @click="quickSearch(btn.filterType, btn.value)"
           class="btn btn-outline-info btn-sm"
           :disabled="loading"
         >
-          <span class="mobile-short">380V</span>
-          <span class="desktop-full">Input Power Voltage 380V</span>
-        </button>
-
-        <button
-          @click="quickSearch('numberofphases', 'Three')"
-          class="btn btn-outline-info btn-sm"
-          :disabled="loading"
-        >
-          <span class="mobile-short">3 Phase</span>
-          <span class="desktop-full">Number of Phases Three</span>
-        </button>
-
-        <button
-          @click="quickSearch('dutycycle', '60')"
-          class="btn btn-outline-info btn-sm"
-          :disabled="loading"
-        >
-          <span class="mobile-short">60%</span>
-          <span class="desktop-full">Duty Cycle 60%</span>
-        </button>
-
-        <button
-          @click="quickSearch('inputcapacity/kw', '6.5')"
-          class="btn btn-outline-info btn-sm"
-          :disabled="loading"
-        >
-          <span class="mobile-short">6.5kW</span>
-          <span class="desktop-full">Input Capacity 6.5kW</span>
+          <span class="mobile-short">{{ btn.shortLabel }}</span>
+          <span class="desktop-full">{{ btn.fullLabel }}</span>
         </button>
       </div>
     </div>
@@ -128,7 +104,7 @@ export default {
     },
   },
 
-  emits: ['search', 'reset', 'filter-type-change'],
+  emits: ['search', 'reset', 'filter-type-change', 'update:filters'],
 
   setup(props, { emit }) {
     const isMobile = ref(false)
@@ -136,9 +112,81 @@ export default {
     // currentPlaceholder를 props.placeholder를 직접 사용하도록 변경
     const currentPlaceholder = computed(() => props.placeholder)
 
+    // 메뉴별 Quick Search 버튼 정의
+    const quickSearchButtons = computed(() => {
+      const weldingMenus = ['CO2', 'TIG', 'MIG', 'MAG', 'EBW', 'FW', 'OAW', 'PW', 'RSEW', 'RSW', 'SAW', 'SMAW', 'Sold', 'SW', 'UW']
+      const cncMenu = 'CNC'
+      const pressMenus = ['Press_Cutting', 'Press_Hydr', 'Press_Mechanical_Type', 'Press_Servo']
+
+      // Welding 장비 Quick Search
+      if (weldingMenus.includes(props.currentMenu)) {
+        return [
+          { filterType: 'inputpowervoltage', value: '380', shortLabel: '380V', fullLabel: 'Input Power Voltage 380V' },
+          { filterType: 'ratedoutputcurrent', value: '500', shortLabel: '500A', fullLabel: 'Rated Output Current 500A' },
+          { filterType: 'dutycycle', value: '60', shortLabel: '60%', fullLabel: 'Duty Cycle 60%' },
+          { filterType: 'wirefeedspeed', value: '10', shortLabel: '10m/min', fullLabel: 'Wire Feed Speed 10m/min' }
+        ]
+      }
+
+      // CNC Quick Search
+      if (props.currentMenu === cncMenu) {
+        return [
+          { filterType: 'spindlespeed', value: '8000', shortLabel: '8000rpm', fullLabel: 'Spindle Speed 8000rpm' },
+          { filterType: 'feedrate', value: '5000', shortLabel: '5000mm/min', fullLabel: 'Feed Rate 5000mm/min' },
+          { filterType: 'accuracy', value: '0.01', shortLabel: '±0.01mm', fullLabel: 'Accuracy ±0.01mm' },
+          { filterType: 'workareasize', value: '1000', shortLabel: '1000mm', fullLabel: 'Work Area Size 1000mm' }
+        ]
+      }
+
+      // Press Quick Search
+      if (pressMenus.includes(props.currentMenu)) {
+        return [
+          { filterType: 'pressforce', value: '100', shortLabel: '100ton', fullLabel: 'Press Force 100ton' },
+          { filterType: 'strokelength', value: '300', shortLabel: '300mm', fullLabel: 'Stroke Length 300mm' },
+          { filterType: 'speed', value: '50', shortLabel: '50spm', fullLabel: 'Speed 50spm' },
+          { filterType: 'bedsize', value: '2000', shortLabel: '2000mm', fullLabel: 'Bed Size 2000mm' }
+        ]
+      }
+
+      // AMR Quick Search
+      if (props.currentMenu === 'AMR') {
+        return [
+          { filterType: 'loadcapacity', value: '1500', shortLabel: '1500kg', fullLabel: 'Load Capacity 1500kg' },
+          { filterType: 'speed', value: '1.5', shortLabel: '1.5m/s', fullLabel: 'Speed 1.5m/s' },
+          { filterType: 'batterytype', value: 'Lithium', shortLabel: 'Li-ion', fullLabel: 'Battery Type Lithium' },
+          { filterType: 'navigationtype', value: 'SLAM', shortLabel: 'SLAM', fullLabel: 'Navigation Type SLAM' }
+        ]
+      }
+
+      // Boring Quick Search
+      if (props.currentMenu === 'Boring') {
+        return [
+          { filterType: 'boringdiameter', value: '130', shortLabel: '130mm', fullLabel: 'Boring Diameter 130mm' },
+          { filterType: 'spindlespeed', value: '2000', shortLabel: '2000rpm', fullLabel: 'Spindle Speed 2000rpm' },
+          { filterType: 'feedrate', value: '500', shortLabel: '500mm/min', fullLabel: 'Feed Rate 500mm/min' },
+          { filterType: 'accuracy', value: '0.005', shortLabel: '±0.005mm', fullLabel: 'Accuracy ±0.005mm' }
+        ]
+      }
+
+      // Robot Quick Search
+      if (props.currentMenu === 'Robot') {
+        return [
+          { filterType: 'payload', value: '10', shortLabel: '10kg', fullLabel: 'Payload 10kg' },
+          { filterType: 'reach', value: '1000', shortLabel: '1000mm', fullLabel: 'Reach 1000mm' },
+          { filterType: 'repeatability', value: '0.02', shortLabel: '±0.02mm', fullLabel: 'Repeatability ±0.02mm' },
+          { filterType: 'axes', value: '6', shortLabel: '6-Axis', fullLabel: 'Number of Axes 6' }
+        ]
+      }
+
+      // 기본값 (다른 메뉴들)
+      return []
+    })
+
     const quickSearch = (filterType, value) => {
-      props.filters.filterType = filterType
-      props.filters.filterValue = value
+      emit('update:filters', {
+        filterType: filterType,
+        filterValue: value
+      })
       emit('search')
     }
 
@@ -157,6 +205,7 @@ export default {
 
     return {
       quickSearch,
+      quickSearchButtons,
       currentPlaceholder,
       isMobile,
     }

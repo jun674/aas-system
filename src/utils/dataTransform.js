@@ -335,8 +335,9 @@ export function transformApiToTree(aasData, submodelDataList, searchValue = null
       ? [submodelDataList]
       : []
 
-  // Component, SafetyDevice, CutOffMiddleAndSmallType, Accessories 제외
-  const filteredAasData = aasData.filter((equipment) => {
+  // searchValue가 있을 때만 필터링 적용 (검색 모드)
+  // All AAS 메뉴에서 전체 검색 시에는 필터링하지 않음
+  const filteredAasData = searchValue ? aasData.filter((equipment) => {
     const idShortLower = (equipment.idShort || '').toLowerCase().trim()
     const idLower = (equipment.id || '').toLowerCase()
 
@@ -357,7 +358,7 @@ export function transformApiToTree(aasData, submodelDataList, searchValue = null
     }
 
     return true
-  })
+  }) : aasData
 
   // 각 AAS(장비) 데이터를 순회하며 트리 노드를 생성
   return filteredAasData.map((equipment) => {
