@@ -317,6 +317,10 @@ const updateProfile = async () => {
   cursor: pointer;
   transition: all 0.2s;
   width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .btn-primary {
