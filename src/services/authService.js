@@ -149,6 +149,36 @@ export const authService = {
       console.error('Update profile error:', error)
       throw new Error(error.response?.data?.message || 'Failed to update profile')
     }
+  },
+
+  /**
+   * 모든 사용자 조회 (관리자용)
+   * @returns {Promise<Object>} 사용자 목록
+   */
+  async getAllUsers() {
+    try {
+      const response = await apiClient.get('/auth/users')
+      // 백엔드 응답이 SuccessResponse로 래핑되어 있는 경우
+      return response.data.message || response.data
+    } catch (error) {
+      console.error('Get all users error:', error)
+      throw new Error(error.response?.data?.message || 'Failed to get users')
+    }
+  },
+
+  /**
+   * 사용자 정보 수정 (관리자용)
+   * @param {Object} userData - 수정할 사용자 정보
+   * @returns {Promise<Object>} 수정 결과
+   */
+  async updateUser(userData) {
+    try {
+      const response = await apiClient.put(`/auth/users/${userData.id}`, userData)
+      return response.data
+    } catch (error) {
+      console.error('Update user error:', error)
+      throw new Error(error.response?.data?.message || 'Failed to update user')
+    }
   }
 }
 

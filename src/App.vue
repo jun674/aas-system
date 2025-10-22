@@ -15,9 +15,24 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import TopBar from '@/components/layout/TopBar.vue'
 import AppFooter from '@/components/layout/Footer.vue'
 import { RouterView } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
+
+// 앱 시작 시 인증 상태 확인
+onMounted(async () => {
+  if (authStore.token) {
+    try {
+      await authStore.checkAuth()
+    } catch (error) {
+      console.error('Auth check failed:', error)
+    }
+  }
+})
 </script>
 
 <style>

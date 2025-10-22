@@ -1,288 +1,199 @@
 <template>
   <div class="profile-page">
     <div class="profile-container">
-      <div class="profile-header">
-        <div class="header-content">
-          <div class="user-avatar-large">
-            <i class="fas fa-user"></i>
-          </div>
-          <div class="user-info">
-            <h1>{{ authStore.currentUser?.name || authStore.currentUser?.username }}</h1>
-            <p class="user-role">{{ authStore.currentUser?.role || 'USER' }}</p>
-            <p class="user-email">{{ authStore.currentUser?.email }}</p>
+      <h1 class="page-title">내 정보</h1>
+
+      <div v-if="authStore.currentUser" class="profile-content">
+        <div class="profile-section">
+          <h2>기본 정보</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>사용자명</label>
+              <p>{{ authStore.currentUser.username }}</p>
+            </div>
+            <div class="info-item">
+              <label>이메일</label>
+              <p>{{ authStore.currentUser.email }}</p>
+            </div>
+            <div class="info-item">
+              <label>이름</label>
+              <p>{{ authStore.currentUser.name || '-' }}</p>
+            </div>
+            <div class="info-item">
+              <label>권한</label>
+              <p class="role-badge" :class="authStore.currentUser.role">
+                {{ authStore.currentUser.role === 'ADMIN' ? '관리자' : '일반 사용자' }}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="profile-content">
         <div class="profile-section">
-          <h2>프로필 정보</h2>
-
-          <form @submit.prevent="handleUpdateProfile" class="profile-form">
-            <!-- 이메일 수정 -->
-            <div class="form-group">
-              <label for="email">이메일</label>
-              <input
-                id="email"
-                v-model="formData.email"
-                type="email"
-                class="form-control"
-                placeholder="새 이메일 주소를 입력하세요"
-              />
-            </div>
-
-            <!-- 현재 비밀번호 -->
+          <h2>비밀번호 변경</h2>
+          <form @submit.prevent="changePassword" class="password-form">
             <div class="form-group">
               <label for="currentPassword">현재 비밀번호</label>
               <input
                 id="currentPassword"
-                v-model="formData.currentPassword"
+                v-model="passwordForm.currentPassword"
                 type="password"
-                class="form-control"
-                placeholder="현재 비밀번호를 입력하세요"
+                required
+                class="form-input"
               />
-              <small class="form-text">비밀번호를 변경하거나 이메일을 수정할 때 필요합니다.</small>
             </div>
-
-            <!-- 새 비밀번호 -->
             <div class="form-group">
               <label for="newPassword">새 비밀번호</label>
               <input
                 id="newPassword"
-                v-model="formData.newPassword"
+                v-model="passwordForm.newPassword"
                 type="password"
-                class="form-control"
-                placeholder="새 비밀번호를 입력하세요 (선택사항)"
+                required
+                class="form-input"
               />
-              <small class="form-text">비밀번호를 변경하지 않으려면 비워두세요.</small>
             </div>
-
-            <!-- 새 비밀번호 확인 -->
-            <div v-if="formData.newPassword" class="form-group">
+            <div class="form-group">
               <label for="confirmPassword">새 비밀번호 확인</label>
               <input
                 id="confirmPassword"
-                v-model="formData.confirmPassword"
+                v-model="passwordForm.confirmPassword"
                 type="password"
-                class="form-control"
-                placeholder="새 비밀번호를 다시 입력하세요"
+                required
+                class="form-input"
               />
-              <div v-if="passwordMismatch" class="error-message">
-                <i class="fas fa-exclamation-circle"></i> 비밀번호가 일치하지 않습니다.
-              </div>
             </div>
-
-            <!-- 에러 메시지 -->
-            <div v-if="errorMessage" class="error-message">
-              <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
-            </div>
-
-            <!-- 성공 메시지 -->
-            <div v-if="successMessage" class="success-message">
-              <i class="fas fa-check-circle"></i> {{ successMessage }}
-            </div>
-
-            <!-- 버튼 그룹 -->
-            <div class="button-group">
-              <button type="button" class="btn btn-secondary" @click="resetForm">
-                <i class="fas fa-undo"></i>
-                초기화
-              </button>
-              <button type="submit" class="btn btn-primary" :disabled="!isFormValid || loading">
-                <span v-if="!loading">
-                  <i class="fas fa-save"></i>
-                  저장
-                </span>
-                <span v-else>
-                  <i class="fas fa-spinner fa-spin"></i>
-                  저장 중...
-                </span>
-              </button>
-            </div>
+            <button type="submit" class="btn btn-primary" :disabled="isLoading">
+              {{ isLoading ? '변경 중...' : '비밀번호 변경' }}
+            </button>
           </form>
         </div>
 
-        <!-- 계정 정보 섹션 -->
         <div class="profile-section">
-          <h2>계정 정보</h2>
-          <div class="info-grid">
-            <div class="info-item">
-              <label>사용자 ID</label>
-              <span>{{ authStore.currentUser?.username }}</span>
+          <h2>프로필 수정</h2>
+          <form @submit.prevent="updateProfile" class="profile-form">
+            <div class="form-group">
+              <label for="name">이름</label>
+              <input
+                id="name"
+                v-model="profileForm.name"
+                type="text"
+                required
+                class="form-input"
+              />
             </div>
-            <div class="info-item">
-              <label>이름</label>
-              <span>{{ authStore.currentUser?.name }}</span>
+            <div class="form-group">
+              <label for="email">이메일</label>
+              <input
+                id="email"
+                v-model="profileForm.email"
+                type="email"
+                required
+                class="form-input"
+              />
             </div>
-            <div class="info-item">
-              <label>권한</label>
-              <span class="role-badge" :class="authStore.currentUser?.role?.toLowerCase()">
-                {{ authStore.currentUser?.role }}
-              </span>
-            </div>
-            <div class="info-item">
-              <label>가입일</label>
-              <span>{{ formatDate(authStore.currentUser?.createdAt) }}</span>
-            </div>
-            <div class="info-item">
-              <label>최종 수정일</label>
-              <span>{{ formatDate(authStore.currentUser?.updatedAt) }}</span>
-            </div>
-          </div>
+            <button type="submit" class="btn btn-primary" :disabled="isLoading">
+              {{ isLoading ? '수정 중...' : '프로필 수정' }}
+            </button>
+          </form>
         </div>
+      </div>
+
+      <div v-if="message" class="message" :class="messageType">
+        {{ message }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useUiStore } from '@/stores/ui'
-import authService from '@/services/authService'
+import { authService } from '@/services/authService'
 
-const router = useRouter()
 const authStore = useAuthStore()
-const uiStore = useUiStore()
 
-// 폼 데이터
-const formData = reactive({
-  email: '',
+const passwordForm = ref({
   currentPassword: '',
   newPassword: '',
   confirmPassword: ''
 })
 
-// 상태 관리
-const loading = ref(false)
-const errorMessage = ref('')
-const successMessage = ref('')
-
-// 계산된 속성
-const passwordMismatch = computed(() => {
-  return formData.newPassword && formData.confirmPassword &&
-         formData.newPassword !== formData.confirmPassword
+const profileForm = ref({
+  name: '',
+  email: ''
 })
 
-const isFormValid = computed(() => {
-  // 이메일이나 비밀번호 중 하나는 변경되어야 함
-  const hasEmailChange = formData.email && formData.email !== authStore.currentUser?.email
-  const hasPasswordChange = formData.newPassword
+const isLoading = ref(false)
+const message = ref('')
+const messageType = ref('')
 
-  if (!hasEmailChange && !hasPasswordChange) {
-    return false
+onMounted(() => {
+  if (authStore.currentUser) {
+    profileForm.value.name = authStore.currentUser.name || ''
+    profileForm.value.email = authStore.currentUser.email || ''
   }
-
-  // 변경사항이 있으면 현재 비밀번호는 필수
-  if ((hasEmailChange || hasPasswordChange) && !formData.currentPassword) {
-    return false
-  }
-
-  // 새 비밀번호가 있으면 확인 비밀번호도 일치해야 함
-  if (hasPasswordChange && passwordMismatch.value) {
-    return false
-  }
-
-  return true
 })
 
-// 컴포넌트 마운트 시 현재 사용자 정보로 폼 초기화
-onMounted(async () => {
-  if (!authStore.isAuthenticated) {
-    router.push('/')
+const showMessage = (msg, type = 'success') => {
+  message.value = msg
+  messageType.value = type
+  setTimeout(() => {
+    message.value = ''
+  }, 3000)
+}
+
+const changePassword = async () => {
+  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+    showMessage('새 비밀번호가 일치하지 않습니다.', 'error')
     return
   }
 
-  // 최신 사용자 정보 가져오기
+  isLoading.value = true
   try {
-    await authStore.checkAuth()
-    resetForm()
-  } catch (error) {
-    console.error('Failed to load user info:', error)
-  }
-})
-
-// 폼 초기화
-const resetForm = () => {
-  formData.email = authStore.currentUser?.email || ''
-  formData.currentPassword = ''
-  formData.newPassword = ''
-  formData.confirmPassword = ''
-  errorMessage.value = ''
-  successMessage.value = ''
-}
-
-// 프로필 업데이트 처리
-const handleUpdateProfile = async () => {
-  if (!isFormValid.value) return
-
-  loading.value = true
-  errorMessage.value = ''
-  successMessage.value = ''
-
-  try {
-    const updateData = {
-      currentPassword: formData.currentPassword
-    }
-
-    // 이메일 변경이 있는 경우
-    if (formData.email !== authStore.currentUser?.email) {
-      updateData.email = formData.email
-    }
-
-    // 비밀번호 변경이 있는 경우
-    if (formData.newPassword) {
-      updateData.newPassword = formData.newPassword
-    }
-
-    const result = await authService.updateProfile(updateData)
-
-    if (result.success) {
-      successMessage.value = '프로필이 성공적으로 업데이트되었습니다.'
-      uiStore.showSuccess('프로필이 업데이트되었습니다.', '업데이트 성공')
-
-      // 사용자 정보 새로고침
-      await authStore.checkAuth()
-
-      // 폼 초기화 (비밀번호 필드만 클리어)
-      formData.currentPassword = ''
-      formData.newPassword = ''
-      formData.confirmPassword = ''
-    }
-  } catch (error) {
-    console.error('Profile update failed:', error)
-    errorMessage.value = error.message || '프로필 업데이트에 실패했습니다.'
-    uiStore.showError(error.message || '프로필 업데이트에 실패했습니다.', '업데이트 실패')
-  } finally {
-    loading.value = false
-  }
-}
-
-// 날짜 포맷팅
-const formatDate = (dateString) => {
-  if (!dateString) return '-'
-
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    await authService.changePassword({
+      currentPassword: passwordForm.value.currentPassword,
+      newPassword: passwordForm.value.newPassword
     })
-  } catch {
-    return '-'
+
+    showMessage('비밀번호가 성공적으로 변경되었습니다.')
+    passwordForm.value = {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    }
+  } catch (error) {
+    showMessage(error.message || '비밀번호 변경에 실패했습니다.', 'error')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const updateProfile = async () => {
+  isLoading.value = true
+  try {
+    const response = await authService.updateProfile({
+      name: profileForm.value.name,
+      email: profileForm.value.email
+    })
+
+    // 스토어의 사용자 정보 업데이트
+    if (response.user) {
+      authStore.user = response.user
+    }
+
+    showMessage('프로필이 성공적으로 수정되었습니다.')
+  } catch (error) {
+    showMessage(error.message || '프로필 수정에 실패했습니다.', 'error')
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
 
 <style scoped>
 .profile-page {
-  min-height: 100vh;
-  background-color: #f8f9fa;
-  padding: 80px 20px 40px;
+  min-height: calc(100vh - 56px);
+  padding: 24px;
+  background-color: #f8fafc;
 }
 
 .profile-container {
@@ -290,60 +201,23 @@ const formatDate = (dateString) => {
   margin: 0 auto;
 }
 
-.profile-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px 12px 0 0;
-  padding: 40px;
-  color: white;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.user-avatar-large {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  flex-shrink: 0;
-}
-
-.user-info h1 {
-  margin: 0 0 8px 0;
+.page-title {
   font-size: 28px;
   font-weight: 700;
-}
-
-.user-role {
-  margin: 0 0 4px 0;
-  font-size: 14px;
-  opacity: 0.9;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.user-email {
-  margin: 0;
-  font-size: 16px;
-  opacity: 0.8;
+  color: #1e293b;
+  margin-bottom: 32px;
 }
 
 .profile-content {
   background: white;
-  border-radius: 0 0 12px 12px;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .profile-section {
-  padding: 32px 40px;
-  border-bottom: 1px solid #e9ecef;
+  padding: 24px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .profile-section:last-child {
@@ -351,191 +225,144 @@ const formatDate = (dateString) => {
 }
 
 .profile-section h2 {
-  margin: 0 0 24px 0;
   font-size: 20px;
   font-weight: 600;
-  color: #495057;
-}
-
-.profile-form {
-  max-width: 500px;
-}
-
-.form-group {
-  margin-bottom: 24px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #495057;
-  font-size: 14px;
-}
-
-.form-control {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  font-size: 15px;
-  transition: all 0.2s ease;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.form-text {
-  display: block;
-  margin-top: 6px;
-  font-size: 12px;
-  color: #6c757d;
-}
-
-.error-message {
-  margin-top: 16px;
-  padding: 12px;
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.success-message {
-  margin-top: 16px;
-  padding: 12px;
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.button-group {
-  display: flex;
-  gap: 12px;
-  margin-top: 32px;
-}
-
-.btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background-color: #667eea;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #5a67d8;
-  transform: translateY(-1px);
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #5c636a;
-  transform: translateY(-1px);
+  color: #334155;
+  margin-bottom: 20px;
 }
 
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
 }
 
 .info-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .info-item label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6c757d;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
 }
 
-.info-item span {
-  font-size: 14px;
-  color: #495057;
+.info-item p {
+  font-size: 16px;
+  color: #1e293b;
+  margin: 0;
 }
 
 .role-badge {
   display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  width: fit-content;
 }
 
-.role-badge.admin {
-  background-color: #fef2f2;
-  color: #dc2626;
+.role-badge.ADMIN {
+  background-color: #fef3c7;
+  color: #92400e;
 }
 
-.role-badge.user {
-  background-color: #f0f9ff;
-  color: #2563eb;
+.role-badge.USER {
+  background-color: #dbeafe;
+  color: #1e40af;
 }
 
-/* 모바일 반응형 */
+.password-form,
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 400px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.form-input {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.message {
+  margin-top: 20px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.message.success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.message.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
 @media (max-width: 768px) {
   .profile-page {
-    padding: 70px 16px 20px;
+    padding: 16px;
   }
 
-  .profile-header {
-    padding: 24px;
-  }
-
-  .header-content {
-    flex-direction: column;
-    text-align: center;
-    gap: 16px;
-  }
-
-  .user-avatar-large {
-    width: 60px;
-    height: 60px;
+  .page-title {
     font-size: 24px;
-  }
-
-  .user-info h1 {
-    font-size: 24px;
+    margin-bottom: 24px;
   }
 
   .profile-section {
-    padding: 24px 20px;
-  }
-
-  .button-group {
-    flex-direction: column;
+    padding: 20px;
   }
 
   .info-grid {

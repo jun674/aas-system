@@ -15,18 +15,18 @@
       </div>
       <span class="brand-text">AAS System</span>
     </router-link>
-    
+
     <!-- 모바일 메뉴 토글 버튼 -->
-    <button 
+    <button
       class="mobile-nav-toggle"
       @click="toggleMobileNav"
     >
       <i class="fas" :class="showMobileNav ? 'fa-times' : 'fa-ellipsis-v'"></i>
     </button>
-    
+
     <!-- 데스크톱/모바일 네비게이션 -->
     <nav class="topbar-nav" :class="{ 'mobile-open': showMobileNav }">
-      <router-link 
+      <router-link
         :to="{ path: '/search', query: { category: 'equipment' } }"
         class="nav-link"
         :class="{ active: route.query.category === 'equipment' || (!route.query.category && !route.query.menu && route.path ==='/search') }"
@@ -36,7 +36,7 @@
         <span>Equipment</span>
       </router-link>
 
-      <router-link 
+      <router-link
         :to="{ path: '/search', query: { category: 'material' } }"
         class="nav-link"
         :class="{ active: route.query.category === 'material' }"
@@ -46,7 +46,7 @@
         <span>Material</span>
       </router-link>
 
-      <router-link 
+      <router-link
         :to="{ path: '/search', query: { category: 'process' } }"
         class="nav-link"
         :class="{ active: route.query.category === 'process' }"
@@ -56,7 +56,7 @@
         <span>Process</span>
       </router-link>
 
-      <router-link 
+      <router-link
         :to="{ path: '/search', query: { category: 'operation' } }"
         class="nav-link"
         :class="{ active: route.query.category === 'operation' }"
@@ -66,7 +66,7 @@
         <span>Operation</span>
       </router-link>
 
-      <router-link 
+      <router-link
         :to="{ path: '/search', query: { category: 'quality' } }"
         class="nav-link"
         :class="{ active: route.query.category === 'quality' }"
@@ -76,7 +76,7 @@
         <span>Quality</span>
       </router-link>
 
-      <router-link 
+      <router-link
         :to="{ path: '/search', query: { category: 'production' } }"
         class="nav-link"
         :class="{ active: route.query.category === 'production' }"
@@ -88,7 +88,7 @@
 
       <div class="nav-divider"></div>
 
-      <router-link 
+      <router-link
         :to="{ path: '/search', query: { menu: 'ALL' } }"
         class="nav-link all-view"
         :class="{ active: route.query.menu === 'ALL' }"
@@ -98,7 +98,8 @@
         <span>All AAS Data</span>
       </router-link>
 
-      <router-link 
+      <router-link
+        v-if="authStore.isAuthenticated && authStore.userRole === 'ADMIN'"
         :to="{ path: '/search', query: { menu: 'AASX' } }"
         class="nav-link aasx-menu"
         :class="{ active: route.query.menu === 'AASX' }"
@@ -107,16 +108,30 @@
         <i class="fas fa-exchange-alt"></i>
         <span>AASX Upload</span>
       </router-link>
+
+      <!-- 회원 관리 버튼 (관리자만) -->
+      <router-link
+        v-if="authStore.isAuthenticated && authStore.userRole === 'ADMIN'"
+        to="/users"
+        class="nav-link admin-button"
+        @click="closeMobileNav"
+      >
+        <i class="fas fa-users-cog"></i>
+        <span>회원 관리</span>
+      </router-link>
     </nav>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import { useRoute } from 'vue-router'; 
+import { useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 // 현재 라우트 객체를 가져와서 'active' 클래스 바인딩에 사용
 const route = useRoute();
+const authStore = useAuthStore();
+
 // 모바일 네비게이션 메뉴의 표시 여부를 제어하는 반응형 상태
 const showMobileNav = ref(false);
 
@@ -298,31 +313,42 @@ const closeMobileNav = () => {
   background: #fca5a5;
 }
 
+/* 관리자 버튼 스타일 */
+.admin-button {
+  color: #fbbf24;
+  margin-left: 12px;
+}
+
+.admin-button:hover {
+  background-color: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
 /* 모바일 스타일 */
 @media (max-width: 768px) {
   .topbar {
     padding: 0 16px;
     height: 52px;
   }
-  
+
   .topbar-brand {
     font-size: 16px;
     gap: 10px;
   }
-  
+
   .brand-logo {
     width: 32px;
     height: 32px;
   }
-  
+
   .topbar-brand {
     margin-right: auto;
   }
-  
+
   .mobile-nav-toggle {
     display: block;
   }
-  
+
   .topbar-nav {
     position: fixed;
     top: 52px;
@@ -339,25 +365,25 @@ const closeMobileNav = () => {
     transition: right 0.3s ease;
     box-shadow: -4px 0 12px rgba(0,0,0,0.3);
   }
-  
+
   .topbar-nav.mobile-open {
     right: 0;
   }
-  
+
   .nav-link {
     padding: 12px 16px;
     border-radius: 8px;
     margin-bottom: 4px;
   }
-  
+
   .nav-link.active::after {
     display: none;
   }
-  
+
   .nav-link span {
     display: inline;
   }
-  
+
   .nav-divider {
     width: 100%;
     height: 1px;
@@ -371,7 +397,7 @@ const closeMobileNav = () => {
     padding: 8px 12px;
     font-size: 13px;
   }
-  
+
   .nav-link i {
     display: none;
   }
@@ -383,7 +409,7 @@ const closeMobileNav = () => {
     position: relative;
     overflow: hidden;
   }
-  
+
   .nav-link::before {
     content: '';
     position: absolute;
@@ -395,7 +421,7 @@ const closeMobileNav = () => {
     transform: scale(0);
     transition: transform 0.3s ease;
   }
-  
+
   .nav-link:hover::before {
     transform: scale(1);
   }

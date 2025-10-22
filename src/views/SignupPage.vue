@@ -84,6 +84,19 @@
           />
         </div>
 
+        <div class="form-group">
+          <label for="name">Name <span class="required">*</span></label>
+          <input
+            id="name"
+            v-model="formData.name"
+            type="text"
+            class="form-control"
+            placeholder="Enter your name"
+            required
+            @invalid="setCustomValidity"
+          />
+        </div>
+
         <!-- 버튼 그룹 -->
         <div class="button-group">
           <button type="button" class="btn btn-secondary" @click="goToLogin">Cancel</button>
@@ -111,6 +124,7 @@ const formData = reactive({
   password: '',
   passwordConfirm: '',
   email: '',
+  name: '',
 })
 
 // 상태 관리
@@ -127,6 +141,7 @@ const isFormValid = computed(() => {
     formData.password &&
     formData.passwordConfirm &&
     formData.email &&
+    formData.name &&
     !passwordError.value &&
     !passwordMatchError.value &&
     duplicateChecked.value &&
@@ -198,7 +213,7 @@ const handleSignup = async () => {
       username: formData.userId,  // userId를 username으로 매핑
       password: formData.password,
       email: formData.email,
-      name: formData.userId  // name 필드도 추가
+      name: formData.name  // 사용자가 입력한 이름 사용
     }
 
     await authStore.register(userData)
