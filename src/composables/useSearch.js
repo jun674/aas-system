@@ -99,6 +99,18 @@ export function useSearch() {
     // Press Equipment 필터
     const pressMenus = ['Press_Cutting', 'Press_Hydr', 'Press_Mechanical_Type', 'Press_Servo']
     if (pressMenus.includes(currentMenu.value)) {
+      // Press_Cutting 전용 필터
+      if (currentMenu.value === 'Press_Cutting') {
+        return [
+          { value: 'press/search/cuttinglength', label: 'Cutting Length' },
+          { value: 'press/search/cuttingthickness', label: 'Cutting Thickness' },
+          { value: 'pressforce', label: 'Press Force' },
+          { value: 'strokelength', label: 'Stroke Length' },
+          { value: 'speed', label: 'Speed' },
+          { value: 'bedsize', label: 'Bed Size' },
+        ]
+      }
+      // 다른 Press 메뉴들의 공통 필터
       return [
         { value: 'pressforce', label: 'Press Force' },
         { value: 'strokelength', label: 'Stroke Length' },
@@ -703,24 +715,50 @@ export function useSearch() {
           }
         }
       } else if (currentMenu.value !== MENU_TYPES.SPECIAL.ALL) {
-        // 기타 메뉴들의 기존 검색 로직 (All AAS 메뉴가 아닌 경우에만)
-        const response = await searchAPI.searchByFilter(
-          searchFilters.filterType,
-          searchFilters.filterValue,
-        )
-        if (response && response.code === 200 && response.message && response.message.length > 0) {
-          const firstMessage = response.message[0]
-          const searchedAAS = firstMessage.aas
-            ? Array.isArray(firstMessage.aas)
-              ? firstMessage.aas
-              : [firstMessage.aas]
-            : []
-          submodelsFromAPI = firstMessage.submodels
-            ? Array.isArray(firstMessage.submodels)
-              ? firstMessage.submodels
-              : [firstMessage.submodels]
-            : []
-          results = filterAASByMenuType(searchedAAS, currentMenu.value)
+        // Press의 특별한 엔드포인트 처리 (CuttingLength, CuttingThickness)
+        if (searchFilters.filterType && searchFilters.filterType.includes('press/search/')) {
+          // aasService의 전용 메소드 사용
+          const methodName = searchFilters.filterType.includes('cuttinglength')
+            ? 'searchPressCuttingLength'
+            : 'searchPressCuttingThickness'
+
+          const { aasService } = await import('@/services/aasService')
+          const response = await aasService[methodName](searchFilters.filterValue || null)
+
+          if (response && response.code === 200 && response.message && response.message.length > 0) {
+            const firstMessage = response.message[0]
+            const searchedAAS = firstMessage.aas
+              ? Array.isArray(firstMessage.aas)
+                ? firstMessage.aas
+                : [firstMessage.aas]
+              : []
+            submodelsFromAPI = firstMessage.submodels
+              ? Array.isArray(firstMessage.submodels)
+                ? firstMessage.submodels
+                : [firstMessage.submodels]
+              : []
+            results = filterAASByMenuType(searchedAAS, currentMenu.value)
+          }
+        } else {
+          // 기타 메뉴들의 기존 검색 로직
+          const response = await searchAPI.searchByFilter(
+            searchFilters.filterType,
+            searchFilters.filterValue,
+          )
+          if (response && response.code === 200 && response.message && response.message.length > 0) {
+            const firstMessage = response.message[0]
+            const searchedAAS = firstMessage.aas
+              ? Array.isArray(firstMessage.aas)
+                ? firstMessage.aas
+                : [firstMessage.aas]
+              : []
+            submodelsFromAPI = firstMessage.submodels
+              ? Array.isArray(firstMessage.submodels)
+                ? firstMessage.submodels
+                : [firstMessage.submodels]
+              : []
+            results = filterAASByMenuType(searchedAAS, currentMenu.value)
+          }
         }
       }
 

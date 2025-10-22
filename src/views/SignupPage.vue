@@ -100,8 +100,10 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 // 폼 데이터
 const formData = reactive({
@@ -191,14 +193,21 @@ const handleSignup = async () => {
   loading.value = true
 
   try {
-    // TODO: 실제 회원가입 API 호출
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    // 실제 회원가입 API 호출
+    const userData = {
+      username: formData.userId,  // userId를 username으로 매핑
+      password: formData.password,
+      email: formData.email,
+      name: formData.userId  // name 필드도 추가
+    }
+
+    await authStore.register(userData)
 
     alert('Sign up completed successfully!')
-    router.push('/')
+    router.push('/login')  // 로그인 페이지로 이동
   } catch (error) {
     console.error('Signup failed:', error)
-    alert('Sign up failed. Please try again.')
+    alert(error.message || 'Sign up failed. Please try again.')
   } finally {
     loading.value = false
   }

@@ -23,16 +23,19 @@ export const useAuthStore = defineStore('auth', () => {
       // 실제 API 호출
       const response = await authService.login(credentials)
 
+      // 백엔드 응답이 SuccessResponse로 래핑되어 있는 경우
+      const loginData = response.message || response
+
       // 응답 데이터 구조에 따라 조정 필요
-      if (response.token && response.user) {
+      if (loginData.token && loginData.user) {
         // 상태 업데이트
-        user.value = response.user
-        token.value = response.token
+        user.value = loginData.user
+        token.value = loginData.token
 
         // 로컬 스토리지에 토큰 저장
-        localStorage.setItem('authToken', response.token)
+        localStorage.setItem('authToken', loginData.token)
 
-        return { success: true, user: response.user }
+        return { success: true, user: loginData.user }
       } else {
         // 임시 로그인 처리 (API가 아직 준비되지 않은 경우)
         await new Promise(resolve => setTimeout(resolve, 1000))
@@ -77,8 +80,21 @@ export const useAuthStore = defineStore('auth', () => {
       // 실제 API 호출
       const response = await authService.register(userData)
 
-      if (response.success) {
-        return response
+      // 백엔드 응답이 SuccessResponse로 래핑되어 있는 경우
+      const registerData = response.message || response
+
+      // 회원가입 성공 시 자동 로그인
+      if (registerData.token && registerData.user) {
+        // 상태 업데이트
+        user.value = registerData.user
+        token.value = registerData.token
+
+        // 로컬 스토리지에 토큰 저장
+        localStorage.setItem('authToken', registerData.token)
+
+        return { success: true, user: registerData.user }
+      } else if (response.status === 'success' || response.code === 200) {
+        return { success: true, message: 'Registration successful' }
       } else {
         // 임시 회원가입 처리 (API가 아직 준비되지 않은 경우)
         await new Promise(resolve => setTimeout(resolve, 1000))

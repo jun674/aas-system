@@ -140,6 +140,16 @@ export default {
 
       // Press Quick Search
       if (pressMenus.includes(props.currentMenu)) {
+        // Press_Cutting 전용 Quick Search
+        if (props.currentMenu === 'Press_Cutting') {
+          return [
+            { filterType: 'press/search/cuttinglength', value: '1800', shortLabel: '1800mm', fullLabel: 'Cutting Length 1800mm' },
+            { filterType: 'press/search/cuttingthickness', value: '175', shortLabel: '175mm', fullLabel: 'Cutting Thickness 175mm' },
+            { filterType: 'pressforce', value: '100', shortLabel: '100ton', fullLabel: 'Press Force 100ton' },
+            { filterType: 'speed', value: '50', shortLabel: '50spm', fullLabel: 'Speed 50spm' }
+          ]
+        }
+        // 다른 Press 메뉴들의 Quick Search
         return [
           { filterType: 'pressforce', value: '100', shortLabel: '100ton', fullLabel: 'Press Force 100ton' },
           { filterType: 'strokelength', value: '300', shortLabel: '300mm', fullLabel: 'Stroke Length 300mm' },

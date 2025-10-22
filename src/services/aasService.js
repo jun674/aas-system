@@ -315,6 +315,40 @@ export const aasService = {
   },
 
   /**
+   * Press CuttingLength 범위 검색
+   * @param {string} value - 검색 값 (null이면 모든 데이터)
+   * @returns {Promise<Object>} 검색 결과
+   */
+  async searchPressCuttingLength(value = null) {
+    try {
+      console.log(`>> Press CuttingLength 검색 시작: ${value}`)
+      const params = value ? { value: encodeURIComponent(value) } : {}
+      const response = await apiClient.get('/repository/press/search/cuttinglength', { params })
+      return response.data
+    } catch (error) {
+      console.error('XX Press CuttingLength 검색 실패:', error.message)
+      throw new Error(`Press CuttingLength 검색 실패: ${error.response?.status} ${error.message}`)
+    }
+  },
+
+  /**
+   * Press CuttingThickness 범위 검색
+   * @param {string} value - 검색 값 (null이면 모든 데이터)
+   * @returns {Promise<Object>} 검색 결과
+   */
+  async searchPressCuttingThickness(value = null) {
+    try {
+      console.log(`>> Press CuttingThickness 검색 시작: ${value}`)
+      const params = value ? { value: encodeURIComponent(value) } : {}
+      const response = await apiClient.get('/repository/press/search/cuttingthickness', { params })
+      return response.data
+    } catch (error) {
+      console.error('XX Press CuttingThickness 검색 실패:', error.message)
+      throw new Error(`Press CuttingThickness 검색 실패: ${error.response?.status} ${error.message}`)
+    }
+  },
+
+  /**
    * 키워드 기반 검색
    * @param {string} entityType - 엔티티 타입 (aas, submodel, conceptdescription)
    * @param {string} keyword - 검색 키워드
