@@ -75,24 +75,25 @@ export function useSearch() {
     ]
     if (weldingMenus.includes(currentMenu.value)) {
       return [
-        { value: 'inputpowervoltage', label: 'Input Power Voltage' },
-        { value: 'ratedoutputcurrent', label: 'Rated Output Current' },
-        { value: 'dutycycle', label: 'Duty Cycle' },
-        { value: 'wirefeedspeed', label: 'Wire Feed Speed' },
-        { value: 'weldingspeed', label: 'Welding Speed' },
-        { value: 'gasflowrate', label: 'Gas Flow Rate' },
+        { value: 'welding/search/inputpowervoltage', label: 'Input Power Voltage' },
+        { value: 'welding/search/ratedoutputcurrent', label: 'Rated Output Current' },
+        { value: 'welding/search/dutycycle', label: 'Duty Cycle' },
+        { value: 'welding/search/inputcapacity/kw', label: 'Input Capacity (kW)' },
+        { value: 'welding/search/ratedfrequency', label: 'Rated Frequency' },
+        { value: 'welding/search/numberofphases', label: 'Number of Phases' },
       ]
     }
 
     // CNC Equipment 필터
     if (currentMenu.value === 'CNC') {
       return [
-        { value: 'spindlespeed', label: 'Spindle Speed' },
-        { value: 'feedrate', label: 'Feed Rate' },
-        { value: 'tooldiameter', label: 'Tool Diameter' },
-        { value: 'cuttingdepth', label: 'Cutting Depth' },
-        { value: 'accuracy', label: 'Accuracy' },
-        { value: 'workareasize', label: 'Work Area Size' },
+        { value: 'cnc/search/spindle/max-speedofrotation', label: 'Max Speed of Rotation' },
+        { value: 'cnc/search/spindle/maxtorque', label: 'Max Torque' },
+        { value: 'cnc/search/spindle/maxoutputpower', label: 'Max Output Power' },
+        { value: 'cnc/search/n-postrapidtransferspeed', label: 'Rapid Transfer Speed' },
+        { value: 'cnc/search/allowablevolume/min-allowableload', label: 'Min Allowable Load' },
+        { value: 'cnc/search/allowablevolume/max-allowablematerialdiameter', label: 'Max Material Diameter' },
+        { value: 'cnc/search/automatictoolchanger/numberoftool', label: 'ATC Number of Tools' },
       ]
     }
 
@@ -104,20 +105,21 @@ export function useSearch() {
         return [
           { value: 'press/search/cuttinglength', label: 'Cutting Length' },
           { value: 'press/search/cuttingthickness', label: 'Cutting Thickness' },
-          { value: 'pressforce', label: 'Press Force' },
-          { value: 'strokelength', label: 'Stroke Length' },
-          { value: 'speed', label: 'Speed' },
-          { value: 'bedsize', label: 'Bed Size' },
+          { value: 'press/search/pressurecapacity', label: 'Pressure Capacity' },
+          { value: 'press/search/strokesperminute', label: 'Strokes Per Minute' },
+          { value: 'press/search/slideopening', label: 'Slide Opening' },
+          { value: 'press/search/bolsteropening', label: 'Bolster Opening' },
         ]
       }
       // 다른 Press 메뉴들의 공통 필터
       return [
-        { value: 'pressforce', label: 'Press Force' },
-        { value: 'strokelength', label: 'Stroke Length' },
-        { value: 'speed', label: 'Speed' },
-        { value: 'bedsize', label: 'Bed Size' },
-        { value: 'shutheight', label: 'Shut Height' },
-        { value: 'energyconsumption', label: 'Energy Consumption' },
+        { value: 'press/search/pressurecapacity', label: 'Pressure Capacity' },
+        { value: 'press/search/stroke', label: 'Stroke' },
+        { value: 'press/search/dieheight', label: 'Die Height' },
+        { value: 'press/search/slideadjustment', label: 'Slide Adjustment' },
+        { value: 'press/search/slideopening', label: 'Slide Opening' },
+        { value: 'press/search/bolsteropening', label: 'Bolster Opening' },
+        { value: 'press/search/strokesperminute', label: 'Strokes Per Minute' },
       ]
     }
 
@@ -248,12 +250,31 @@ export function useSearch() {
 
     // 일반 메뉴에서의 플레이스홀더
     const examples = {
-      numberofphases: 'e.g., Three',
-      inputpowervoltage: 'e.g., 380, 220',
-      ratedfrequency: 'e.g., 60',
-      ratedoutputcurrent: 'e.g., 500, 350',
-      'inputcapacity/kw': 'e.g., 6.5',
-      dutycycle: 'e.g., 60, 100',
+      // Welding 필터 예시
+      'welding/search/numberofphases': 'e.g., Single, Three',
+      'welding/search/inputpowervoltage': 'e.g., 380, 220',
+      'welding/search/ratedfrequency': 'e.g., 50, 60',
+      'welding/search/ratedoutputcurrent': 'e.g., 500, 350',
+      'welding/search/inputcapacity/kw': 'e.g., 6.5, 10',
+      'welding/search/dutycycle': 'e.g., 60, 100',
+      // CNC 필터 예시
+      'cnc/search/spindle/max-speedofrotation': 'e.g., 8000, 24000',
+      'cnc/search/spindle/maxtorque': 'e.g., 48, 100',
+      'cnc/search/spindle/maxoutputpower': 'e.g., 3.7, 5.5',
+      'cnc/search/n-postrapidtransferspeed': 'e.g., 60, 100',
+      'cnc/search/allowablevolume/min-allowableload': 'e.g., 8000, 10000',
+      'cnc/search/allowablevolume/max-allowablematerialdiameter': 'e.g., 500, 800',
+      'cnc/search/automatictoolchanger/numberoftool': 'No value needed',
+      // Press 필터 예시
+      'press/search/pressurecapacity': 'e.g., 100, 170',
+      'press/search/stroke': 'e.g., 300, 500',
+      'press/search/dieheight': 'e.g., 180, 200',
+      'press/search/slideadjustment': 'e.g., 25, 40',
+      'press/search/slideopening': 'e.g., 500, 800',
+      'press/search/bolsteropening': 'e.g., 600, 900',
+      'press/search/strokesperminute': 'e.g., 50, 100',
+      'press/search/cuttinglength': 'e.g., 1800, 2000',
+      'press/search/cuttingthickness': 'e.g., 175, 200',
     }
     return examples[searchFilters.filterType] || 'Input a value'
   })
@@ -715,32 +736,143 @@ export function useSearch() {
           }
         }
       } else if (currentMenu.value !== MENU_TYPES.SPECIAL.ALL) {
-        // Press의 특별한 엔드포인트 처리 (CuttingLength, CuttingThickness)
-        if (searchFilters.filterType && searchFilters.filterType.includes('press/search/')) {
-          // aasService의 전용 메소드 사용
-          const methodName = searchFilters.filterType.includes('cuttinglength')
-            ? 'searchPressCuttingLength'
-            : 'searchPressCuttingThickness'
-
+        // 새로운 API 엔드포인트 처리
+        if (searchFilters.filterType && searchFilters.filterType.includes('/')) {
+          // 전체 경로를 포함한 API 호출
           const { aasService } = await import('@/services/aasService')
-          const response = await aasService[methodName](searchFilters.filterValue || null)
 
-          if (response && response.code === 200 && response.message && response.message.length > 0) {
-            const firstMessage = response.message[0]
-            const searchedAAS = firstMessage.aas
-              ? Array.isArray(firstMessage.aas)
-                ? firstMessage.aas
-                : [firstMessage.aas]
-              : []
-            submodelsFromAPI = firstMessage.submodels
-              ? Array.isArray(firstMessage.submodels)
-                ? firstMessage.submodels
-                : [firstMessage.submodels]
-              : []
-            results = filterAASByMenuType(searchedAAS, currentMenu.value)
+          // API 경로에 따른 동적 메소드 호출
+          let response
+          const filterPath = searchFilters.filterType
+
+          console.log('=== API 호출 시작 ===')
+          console.log('Filter Path:', filterPath)
+          console.log('Filter Value:', searchFilters.filterValue)
+
+          // Welding API
+          if (filterPath.startsWith('welding/search/')) {
+            const apiUrl = `/repository/${filterPath}`
+            console.log('Welding API URL:', apiUrl)
+            response = await apiClient.get(apiUrl, {
+              params: { value: searchFilters.filterValue || null }
+            })
           }
+          // CNC API
+          else if (filterPath.startsWith('cnc/search/')) {
+            const apiUrl = `/repository/${filterPath}`
+            console.log('CNC API URL:', apiUrl)
+            // automatictoolchanger/numberoftool은 value 파라미터 없음
+            if (filterPath === 'cnc/search/automatictoolchanger/numberoftool') {
+              response = await apiClient.get(apiUrl)
+            } else {
+              response = await apiClient.get(apiUrl, {
+                params: { value: searchFilters.filterValue || null }
+              })
+            }
+          }
+          // Press API
+          else if (filterPath.startsWith('press/search/')) {
+            const apiUrl = `/repository/${filterPath}`
+            console.log('Press API URL:', apiUrl)
+            const endpoint = filterPath.replace('press/search/', '')
+            // 기존 aasService 메소드 사용 (cuttinglength, cuttingthickness)
+            if (endpoint === 'cuttinglength' || endpoint === 'cuttingthickness') {
+              const methodName = endpoint === 'cuttinglength'
+                ? 'searchPressCuttingLength'
+                : 'searchPressCuttingThickness'
+              response = await aasService[methodName](searchFilters.filterValue || null)
+            } else {
+              response = await apiClient.get(apiUrl, {
+                params: { value: searchFilters.filterValue || null }
+              })
+            }
+          }
+
+          // 디버깅을 위한 로그 추가
+          console.log('=== API 응답 ===')
+          console.log('Full Response:', response)
+
+          if (response && response.data) {
+            console.log('Response Status:', response.status)
+            console.log('Response Data:', JSON.stringify(response.data, null, 2))
+
+            // 서버 응답 구조: { code: 200, message: { totalCount: n, data: [...] } }
+            if (response.data.code === 200 && response.data.message) {
+              // message.data가 배열인 경우 (새로운 API 응답 구조)
+              if (response.data.message.data && Array.isArray(response.data.message.data)) {
+                console.log(`검색 결과: ${response.data.message.totalCount}개`)
+
+                // data 배열의 각 항목에서 AAS 정보 추출
+                const allAAS = []
+                const allSubmodels = []
+
+                response.data.message.data.forEach(item => {
+                  if (item.aas && Array.isArray(item.aas)) {
+                    allAAS.push(...item.aas)
+                  }
+                  if (item.submodels) {
+                    allSubmodels.push(item.submodels)
+                  }
+                })
+
+                results = filterAASByMenuType(allAAS, currentMenu.value)
+                submodelsFromAPI = allSubmodels
+
+                console.log(`필터링된 AAS: ${results.length}개`)
+              }
+              // 기존 응답 구조 처리 (하위 호환성)
+              else if (Array.isArray(response.data.message) && response.data.message.length > 0) {
+                const firstMessage = response.data.message[0]
+
+                if (firstMessage.aas || firstMessage.submodels) {
+                  const searchedAAS = firstMessage.aas
+                    ? Array.isArray(firstMessage.aas)
+                      ? firstMessage.aas
+                      : [firstMessage.aas]
+                    : []
+                  submodelsFromAPI = firstMessage.submodels
+                    ? Array.isArray(firstMessage.submodels)
+                      ? firstMessage.submodels
+                      : [firstMessage.submodels]
+                    : []
+                  results = filterAASByMenuType(searchedAAS, currentMenu.value)
+                }
+                else if (firstMessage.id) {
+                  results = filterAASByMenuType(response.data.message, currentMenu.value)
+                }
+              }
+              // message가 객체인 경우
+              else if (response.data.message && typeof response.data.message === 'object') {
+                if (response.data.message.aas) {
+                  const searchedAAS = Array.isArray(response.data.message.aas)
+                    ? response.data.message.aas
+                    : [response.data.message.aas]
+                  submodelsFromAPI = response.data.message.submodels || []
+                  results = filterAASByMenuType(searchedAAS, currentMenu.value)
+                }
+                else if (response.data.message.content) {
+                  results = filterAASByMenuType(response.data.message.content, currentMenu.value)
+                }
+              }
+            }
+            // code가 없고 바로 데이터가 있는 경우
+            else if (response.data.aas || response.data.submodels) {
+              const searchedAAS = response.data.aas
+                ? Array.isArray(response.data.aas)
+                  ? response.data.aas
+                  : [response.data.aas]
+                : []
+              submodelsFromAPI = response.data.submodels || []
+              results = filterAASByMenuType(searchedAAS, currentMenu.value)
+            }
+          }
+
+          console.log('=== 처리 결과 ===')
+          console.log('Processed results:', results)
+          console.log('Results length:', results.length)
+          console.log('Submodels from API:', submodelsFromAPI)
         } else {
-          // 기타 메뉴들의 기존 검색 로직
+          // 기존 검색 로직 (하위 호환성)
           const response = await searchAPI.searchByFilter(
             searchFilters.filterType,
             searchFilters.filterValue,

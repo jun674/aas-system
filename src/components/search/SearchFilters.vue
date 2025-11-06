@@ -121,20 +121,20 @@ export default {
       // Welding 장비 Quick Search
       if (weldingMenus.includes(props.currentMenu)) {
         return [
-          { filterType: 'inputpowervoltage', value: '380', shortLabel: '380V', fullLabel: 'Input Power Voltage 380V' },
-          { filterType: 'ratedoutputcurrent', value: '500', shortLabel: '500A', fullLabel: 'Rated Output Current 500A' },
-          { filterType: 'dutycycle', value: '60', shortLabel: '60%', fullLabel: 'Duty Cycle 60%' },
-          { filterType: 'wirefeedspeed', value: '10', shortLabel: '10m/min', fullLabel: 'Wire Feed Speed 10m/min' }
+          { filterType: 'welding/search/inputpowervoltage', value: '380', shortLabel: '380V', fullLabel: 'Input Power Voltage 380V' },
+          { filterType: 'welding/search/ratedoutputcurrent', value: '500', shortLabel: '500A', fullLabel: 'Rated Output Current 500A' },
+          { filterType: 'welding/search/dutycycle', value: '60', shortLabel: '60%', fullLabel: 'Duty Cycle 60%' },
+          { filterType: 'welding/search/inputcapacity/kw', value: '6.5', shortLabel: '6.5kW', fullLabel: 'Input Capacity 6.5kW' }
         ]
       }
 
       // CNC Quick Search
       if (props.currentMenu === cncMenu) {
         return [
-          { filterType: 'spindlespeed', value: '8000', shortLabel: '8000rpm', fullLabel: 'Spindle Speed 8000rpm' },
-          { filterType: 'feedrate', value: '5000', shortLabel: '5000mm/min', fullLabel: 'Feed Rate 5000mm/min' },
-          { filterType: 'accuracy', value: '0.01', shortLabel: '±0.01mm', fullLabel: 'Accuracy ±0.01mm' },
-          { filterType: 'workareasize', value: '1000', shortLabel: '1000mm', fullLabel: 'Work Area Size 1000mm' }
+          { filterType: 'cnc/search/spindle/max-speedofrotation', value: '8000', shortLabel: '8000rpm', fullLabel: 'Max Speed 8000rpm' },
+          { filterType: 'cnc/search/spindle/maxtorque', value: '48', shortLabel: '48Nm', fullLabel: 'Max Torque 48Nm' },
+          { filterType: 'cnc/search/spindle/maxoutputpower', value: '3.7', shortLabel: '3.7kW', fullLabel: 'Max Output Power 3.7kW' },
+          { filterType: 'cnc/search/n-postrapidtransferspeed', value: '60', shortLabel: '60m/min', fullLabel: 'Rapid Transfer 60m/min' }
         ]
       }
 
@@ -145,16 +145,16 @@ export default {
           return [
             { filterType: 'press/search/cuttinglength', value: '1800', shortLabel: '1800mm', fullLabel: 'Cutting Length 1800mm' },
             { filterType: 'press/search/cuttingthickness', value: '175', shortLabel: '175mm', fullLabel: 'Cutting Thickness 175mm' },
-            { filterType: 'pressforce', value: '100', shortLabel: '100ton', fullLabel: 'Press Force 100ton' },
-            { filterType: 'speed', value: '50', shortLabel: '50spm', fullLabel: 'Speed 50spm' }
+            { filterType: 'press/search/pressurecapacity', value: '100', shortLabel: '100ton', fullLabel: 'Pressure Capacity 100ton' },
+            { filterType: 'press/search/strokesperminute', value: '50', shortLabel: '50spm', fullLabel: 'Strokes Per Minute 50spm' }
           ]
         }
         // 다른 Press 메뉴들의 Quick Search
         return [
-          { filterType: 'pressforce', value: '100', shortLabel: '100ton', fullLabel: 'Press Force 100ton' },
-          { filterType: 'strokelength', value: '300', shortLabel: '300mm', fullLabel: 'Stroke Length 300mm' },
-          { filterType: 'speed', value: '50', shortLabel: '50spm', fullLabel: 'Speed 50spm' },
-          { filterType: 'bedsize', value: '2000', shortLabel: '2000mm', fullLabel: 'Bed Size 2000mm' }
+          { filterType: 'press/search/pressurecapacity', value: '100', shortLabel: '100ton', fullLabel: 'Pressure Capacity 100ton' },
+          { filterType: 'press/search/stroke', value: '300', shortLabel: '300mm', fullLabel: 'Stroke 300mm' },
+          { filterType: 'press/search/strokesperminute', value: '50', shortLabel: '50spm', fullLabel: 'Strokes Per Minute 50spm' },
+          { filterType: 'press/search/dieheight', value: '200', shortLabel: '200mm', fullLabel: 'Die Height 200mm' }
         ]
       }
 
