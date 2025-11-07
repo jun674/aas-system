@@ -13,8 +13,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        // 로컬 개발 시: kyungnam_aas_server (포트 80)
-        target: 'http://localhost:80',
+        // 로컬 개발 시: kyungnam_aas_server (포트 8080)
+        target: 'http://localhost',
         // 운영 서버 사용 시 아래 주석 해제
         // target: 'http://15.164.151.83',
         changeOrigin: true,

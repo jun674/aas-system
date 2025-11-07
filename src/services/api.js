@@ -14,8 +14,8 @@ const apiClient = axios.create({
   baseURL: BASE_URL,
   timeout: 120000, // 전체 데이터 로딩을 위해 시간 증가
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Content-Type': 'application/json; charset=UTF-8',
+    'Accept': 'application/json; charset=UTF-8'
   }
 })
 

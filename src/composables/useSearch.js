@@ -805,10 +805,17 @@ export function useSearch() {
                 // data 배열의 각 항목에서 AAS 정보 추출
                 const allAAS = []
                 const allSubmodels = []
+                const aasIdSet = new Set() // 중복 제거를 위한 Set
 
                 response.data.message.data.forEach(item => {
                   if (item.aas && Array.isArray(item.aas)) {
-                    allAAS.push(...item.aas)
+                    // 중복 제거하면서 AAS 추가
+                    item.aas.forEach(aas => {
+                      if (aas.id && !aasIdSet.has(aas.id)) {
+                        aasIdSet.add(aas.id)
+                        allAAS.push(aas)
+                      }
+                    })
                   }
                   if (item.submodels) {
                     allSubmodels.push(item.submodels)
