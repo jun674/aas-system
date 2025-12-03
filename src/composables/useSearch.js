@@ -715,18 +715,50 @@ export function useSearch() {
           }
         }
       } else if (currentMenu.value !== MENU_TYPES.SPECIAL.ALL) {
-        // Press의 특별한 엔드포인트 처리 (CuttingLength, CuttingThickness)
-        if (searchFilters.filterType && searchFilters.filterType.includes('press/search/')) {
-          // aasService의 전용 메소드 사용
-          const methodName = searchFilters.filterType.includes('cuttinglength')
-            ? 'searchPressCuttingLength'
-            : 'searchPressCuttingThickness'
-
+        // 새로운 API 엔드포인트 처리
+        if (searchFilters.filterType && searchFilters.filterType.includes('/')) {
+          // 전체 경로를 포함한 API 호출
           const { aasService } = await import('@/services/aasService')
-          const response = await aasService[methodName](searchFilters.filterValue || null)
 
-          if (response && response.code === 200 && response.message && response.message.length > 0) {
-            const firstMessage = response.message[0]
+          // API 경로에 따른 동적 메소드 호출
+          let response
+          const filterPath = searchFilters.filterType
+
+          // Welding API
+          if (filterPath.startsWith('welding/search/')) {
+            response = await apiClient.get(`/repository/${filterPath}`, {
+              params: { value: searchFilters.filterValue || null }
+            })
+          }
+          // CNC API
+          else if (filterPath.startsWith('cnc/search/')) {
+            // automatictoolchanger/numberoftool은 value 파라미터 없음
+            if (filterPath === 'cnc/search/automatictoolchanger/numberoftool') {
+              response = await apiClient.get(`/repository/${filterPath}`)
+            } else {
+              response = await apiClient.get(`/repository/${filterPath}`, {
+                params: { value: searchFilters.filterValue || null }
+              })
+            }
+          }
+          // Press API
+          else if (filterPath.startsWith('press/search/')) {
+            const endpoint = filterPath.replace('press/search/', '')
+            // 기존 aasService 메소드 사용 (cuttinglength, cuttingthickness)
+            if (endpoint === 'cuttinglength' || endpoint === 'cuttingthickness') {
+              const methodName = endpoint === 'cuttinglength'
+                ? 'searchPressCuttingLength'
+                : 'searchPressCuttingThickness'
+              response = await aasService[methodName](searchFilters.filterValue || null)
+            } else {
+              response = await apiClient.get(`/repository/${filterPath}`, {
+                params: { value: searchFilters.filterValue || null }
+              })
+            }
+          }
+
+          if (response && response.data && response.data.code === 200 && response.data.message && response.data.message.length > 0) {
+            const firstMessage = response.data.message[0]
             const searchedAAS = firstMessage.aas
               ? Array.isArray(firstMessage.aas)
                 ? firstMessage.aas
@@ -740,7 +772,7 @@ export function useSearch() {
             results = filterAASByMenuType(searchedAAS, currentMenu.value)
           }
         } else {
-          // 기타 메뉴들의 기존 검색 로직
+          // 기존 검색 로직 (하위 호환성)
           const response = await searchAPI.searchByFilter(
             searchFilters.filterType,
             searchFilters.filterValue,
