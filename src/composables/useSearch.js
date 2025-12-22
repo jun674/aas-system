@@ -507,7 +507,13 @@ export function useSearch() {
               if (page === 1) {
                 treeData.value = newTreeNodes
               } else {
-                treeData.value.push(...newTreeNodes)
+                // 중복 체크를 위해 기존 ID 수집
+                const existingIds = new Set(treeData.value.map(item => item.id))
+                // 중복되지 않은 항목만 추가
+                const uniqueNewNodes = newTreeNodes.filter(node => !existingIds.has(node.id))
+                if (uniqueNewNodes.length > 0) {
+                  treeData.value.push(...uniqueNewNodes)
+                }
               }
               pagination.currentPage = page
             }
@@ -534,7 +540,13 @@ export function useSearch() {
             if (page === 1) {
               treeData.value = newTreeNodes
             } else {
-              treeData.value.push(...newTreeNodes)
+              // 중복 체크를 위해 기존 ID 수집
+              const existingIds = new Set(treeData.value.map(item => item.id))
+              // 중복되지 않은 항목만 추가
+              const uniqueNewNodes = newTreeNodes.filter(node => !existingIds.has(node.id))
+              if (uniqueNewNodes.length > 0) {
+                treeData.value.push(...uniqueNewNodes)
+              }
             }
             pagination.currentPage = page
             pagination.hasMorePages = true
@@ -623,7 +635,13 @@ export function useSearch() {
             if (page === 1) {
               treeData.value = newTreeNodes // 첫 페이지는 데이터 초기화
             } else {
-              treeData.value.push(...newTreeNodes) // 이후 페이지는 추가
+              // 중복 체크를 위해 기존 ID 수집
+              const existingIds = new Set(treeData.value.map(item => item.id))
+              // 중복되지 않은 항목만 추가
+              const uniqueNewNodes = newTreeNodes.filter(node => !existingIds.has(node.id))
+              if (uniqueNewNodes.length > 0) {
+                treeData.value.push(...uniqueNewNodes) // 이후 페이지는 추가
+              }
             }
             pagination.currentPage = page
             // 10개 이상이면 다음 페이지가 있을 가능성이 있음 (페이지 크기가 10이므로)
@@ -806,7 +824,13 @@ export function useSearch() {
         if (page === 1) {
           treeData.value = newTreeNodes // 첫 페이지는 데이터 초기화
         } else {
-          treeData.value.push(...newTreeNodes) // 이후 페이지는 추가
+          // 중복 체크를 위해 기존 ID 수집
+          const existingIds = new Set(treeData.value.map(item => item.id))
+          // 중복되지 않은 항목만 추가
+          const uniqueNewNodes = newTreeNodes.filter(node => !existingIds.has(node.id))
+          if (uniqueNewNodes.length > 0) {
+            treeData.value.push(...uniqueNewNodes) // 이후 페이지는 추가
+          }
         }
         pagination.currentPage = page
         // 검색 결과가 10개 이상이면 다음 페이지가 있을 가능성
