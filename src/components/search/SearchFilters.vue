@@ -47,7 +47,7 @@
     </div>
 
     <div
-      v-if="currentMenu !== 'ALL' && quickSearchButtons.length > 0"
+      v-if="false"
       class="quick-search-section"
       :class="{ 'mobile-quick-search': isMobile }"
     >
@@ -106,99 +106,11 @@ export default {
 
   emits: ['search', 'reset', 'filter-type-change', 'update:filters'],
 
-  setup(props, { emit }) {
+  setup(props) {
     const isMobile = ref(false)
 
     // currentPlaceholder를 props.placeholder를 직접 사용하도록 변경
     const currentPlaceholder = computed(() => props.placeholder)
-
-    // 메뉴별 Quick Search 버튼 정의
-    const quickSearchButtons = computed(() => {
-      const weldingMenus = ['CO2', 'TIG', 'MIG', 'MAG', 'EBW', 'FW', 'OAW', 'PW', 'RSEW', 'RSW', 'SAW', 'SMAW', 'Sold', 'SW', 'UW']
-      const cncMenu = 'CNC'
-      const pressMenus = ['Press_Cutting', 'Press_Hydr', 'Press_Mechanical_Type', 'Press_Servo']
-
-      // Welding 장비 Quick Search
-      if (weldingMenus.includes(props.currentMenu)) {
-        return [
-          { filterType: 'welding/search/inputpowervoltage', value: '380', shortLabel: '380V', fullLabel: 'Input Power Voltage 380V' },
-          { filterType: 'welding/search/ratedoutputcurrent', value: '500', shortLabel: '500A', fullLabel: 'Rated Output Current 500A' },
-          { filterType: 'welding/search/dutycycle', value: '60', shortLabel: '60%', fullLabel: 'Duty Cycle 60%' },
-          { filterType: 'welding/search/inputcapacity/kw', value: '6.5', shortLabel: '6.5kW', fullLabel: 'Input Capacity 6.5kW' }
-        ]
-      }
-
-      // CNC Quick Search
-      if (props.currentMenu === cncMenu) {
-        return [
-          { filterType: 'cnc/search/spindle/max-speedofrotation', value: '8000', shortLabel: '8000rpm', fullLabel: 'Max Speed 8000rpm' },
-          { filterType: 'cnc/search/spindle/maxtorque', value: '48', shortLabel: '48Nm', fullLabel: 'Max Torque 48Nm' },
-          { filterType: 'cnc/search/spindle/maxoutputpower', value: '3.7', shortLabel: '3.7kW', fullLabel: 'Max Output Power 3.7kW' },
-          { filterType: 'cnc/search/n-postrapidtransferspeed', value: '60', shortLabel: '60m/min', fullLabel: 'Rapid Transfer 60m/min' }
-        ]
-      }
-
-      // Press Quick Search
-      if (pressMenus.includes(props.currentMenu)) {
-        // Press_Cutting 전용 Quick Search
-        if (props.currentMenu === 'Press_Cutting') {
-          return [
-            { filterType: 'press/search/cuttinglength', value: '1800', shortLabel: '1800mm', fullLabel: 'Cutting Length 1800mm' },
-            { filterType: 'press/search/cuttingthickness', value: '175', shortLabel: '175mm', fullLabel: 'Cutting Thickness 175mm' },
-            { filterType: 'press/search/pressurecapacity', value: '100', shortLabel: '100ton', fullLabel: 'Pressure Capacity 100ton' },
-            { filterType: 'press/search/strokesperminute', value: '50', shortLabel: '50spm', fullLabel: 'Strokes Per Minute 50spm' }
-          ]
-        }
-        // 다른 Press 메뉴들의 Quick Search
-        return [
-          { filterType: 'press/search/pressurecapacity', value: '100', shortLabel: '100ton', fullLabel: 'Pressure Capacity 100ton' },
-          { filterType: 'press/search/stroke', value: '300', shortLabel: '300mm', fullLabel: 'Stroke 300mm' },
-          { filterType: 'press/search/strokesperminute', value: '50', shortLabel: '50spm', fullLabel: 'Strokes Per Minute 50spm' },
-          { filterType: 'press/search/dieheight', value: '200', shortLabel: '200mm', fullLabel: 'Die Height 200mm' }
-        ]
-      }
-
-      // AMR Quick Search
-      if (props.currentMenu === 'AMR') {
-        return [
-          { filterType: 'loadcapacity', value: '1500', shortLabel: '1500kg', fullLabel: 'Load Capacity 1500kg' },
-          { filterType: 'speed', value: '1.5', shortLabel: '1.5m/s', fullLabel: 'Speed 1.5m/s' },
-          { filterType: 'batterytype', value: 'Lithium', shortLabel: 'Li-ion', fullLabel: 'Battery Type Lithium' },
-          { filterType: 'navigationtype', value: 'SLAM', shortLabel: 'SLAM', fullLabel: 'Navigation Type SLAM' }
-        ]
-      }
-
-      // Boring Quick Search
-      if (props.currentMenu === 'Boring') {
-        return [
-          { filterType: 'boringdiameter', value: '130', shortLabel: '130mm', fullLabel: 'Boring Diameter 130mm' },
-          { filterType: 'spindlespeed', value: '2000', shortLabel: '2000rpm', fullLabel: 'Spindle Speed 2000rpm' },
-          { filterType: 'feedrate', value: '500', shortLabel: '500mm/min', fullLabel: 'Feed Rate 500mm/min' },
-          { filterType: 'accuracy', value: '0.005', shortLabel: '±0.005mm', fullLabel: 'Accuracy ±0.005mm' }
-        ]
-      }
-
-      // Robot Quick Search
-      if (props.currentMenu === 'Robot') {
-        return [
-          { filterType: 'payload', value: '10', shortLabel: '10kg', fullLabel: 'Payload 10kg' },
-          { filterType: 'reach', value: '1000', shortLabel: '1000mm', fullLabel: 'Reach 1000mm' },
-          { filterType: 'repeatability', value: '0.02', shortLabel: '±0.02mm', fullLabel: 'Repeatability ±0.02mm' },
-          { filterType: 'axes', value: '6', shortLabel: '6-Axis', fullLabel: 'Number of Axes 6' }
-        ]
-      }
-
-      // 기본값 (다른 메뉴들)
-      return []
-    })
-
-    const quickSearch = (filterType, value) => {
-      emit('update:filters', {
-        filterType: filterType,
-        filterValue: value
-      })
-      emit('search')
-    }
 
     const checkScreenSize = () => {
       isMobile.value = window.innerWidth <= 768
@@ -214,8 +126,6 @@ export default {
     })
 
     return {
-      quickSearch,
-      quickSearchButtons,
       currentPlaceholder,
       isMobile,
     }
