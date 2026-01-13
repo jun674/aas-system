@@ -17,14 +17,14 @@
       </div>
     </div>
     <!-- 데이터가 없을 때는 빈 상태를 표시하지 않음 (자동 로딩이 있을 수 있으므로) -->
-    <div v-else-if="!treeData || treeData.length === 0" class="empty-state">
+    <div v-else-if="(!treeData || treeData.length === 0) && !loading" class="empty-state">
       <div class="empty-container">
         <i class="fas fa-search empty-icon"></i>
         <h3>No Data Available</h3>
-        <p v-if="!loading">Start searching to explore the AAS system</p>
+        <p>Start searching to explore the AAS system</p>
       </div>
     </div>
-    <div v-else class="tree-container">
+    <div v-else-if="treeData && treeData.length > 0" class="tree-container">
       <div class="tree-content" @scroll="handleScroll">
         <TreeNode
           v-for="node in treeData"
@@ -64,6 +64,14 @@ export default {
   },
   emits: ['node-toggle', 'node-select', 'retry', 'scrolled-to-bottom'],
   setup(props, { emit }) {
+    // 디버깅을 위한 로그
+    console.log('TreeView props:', {
+      treeData: props.treeData,
+      loading: props.loading,
+      error: props.error,
+      treeDataLength: props.treeData?.length || 0
+    })
+
     const onToggle = (nodeId) => {
       console.log('TreeView onToggle 호출:', nodeId) // 디버깅 로그
       // 현재 스크롤 위치 저장

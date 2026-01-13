@@ -37,26 +37,7 @@ export const useAuthStore = defineStore('auth', () => {
 
         return { success: true, user: loginData.user }
       } else {
-        // 임시 로그인 처리 (API가 아직 준비되지 않은 경우)
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
-        const mockUser = {
-          id: 1,
-          username: credentials.username,
-          email: `${credentials.username}@example.com`,
-          role: 'user'
-        }
-
-        const mockToken = 'mock-jwt-token-' + Date.now()
-
-        // 상태 업데이트
-        user.value = mockUser
-        token.value = mockToken
-
-        // 로컬 스토리지에 토큰 저장
-        localStorage.setItem('authToken', mockToken)
-
-        return { success: true, user: mockUser }
+        throw new Error('Invalid login response')
       }
     } catch (err) {
       error.value = err.message || 'Login failed'
@@ -96,10 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
       } else if (response.status === 'success' || response.code === 200) {
         return { success: true, message: 'Registration successful' }
       } else {
-        // 임시 회원가입 처리 (API가 아직 준비되지 않은 경우)
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
-        return { success: true, message: 'Registration successful' }
+        throw new Error('Invalid registration response')
       }
     } catch (err) {
       error.value = err.message || 'Registration failed'
@@ -128,25 +106,8 @@ export const useAuthStore = defineStore('auth', () => {
 
         return true
       } else {
-        // 임시 토큰 검증 (API가 아직 준비되지 않은 경우)
-        const isValid = token.value.startsWith('mock-jwt-token-')
-
-        if (!isValid) {
-          logout()
-          return false
-        }
-
-        // 사용자 정보가 없으면 가져오기
-        if (!user.value) {
-          user.value = {
-            id: 1,
-            username: 'testuser',
-            email: 'testuser@example.com',
-            role: 'user'
-          }
-        }
-
-        return true
+        logout()
+        return false
       }
     } catch {
       logout()

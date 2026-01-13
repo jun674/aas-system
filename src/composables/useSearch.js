@@ -1,5 +1,6 @@
 import { ref, reactive, computed, watch } from 'vue' // Vue의 반응성 시스템에서 필요한 함수들을 import
-import apiClient, { dataAPI, searchAPI } from '@/services/api' // API 클라이언트 및 특정 API 엔드포인트들을 import
+import apiClient from '@/services/api' // API 클라이언트를 import
+import { aasService } from '@/services/aasService' // AAS 서비스를 import
 import {
   transformApiToTree,
   transformSubmodelSearch,
@@ -10,11 +11,10 @@ import {
 import {
   isExcludedComponentAAS,
   filterAASByMenuType,
-  calculateMenuCounts,
   getMenuDisplayName,
   MENU_TYPES,
   EQUIPMENT_KEYWORDS,
-} from '@/utils/menuFilters' // 메뉴 필터링, 카운트 계산 등 메뉴 관련 유틸리티 함수와 상수들을 import
+} from '@/utils/menuFilters' // 메뉴 필터링 등 메뉴 관련 유틸리티 함수와 상수들을 import
 
 /**
  * 검색 관련 로직과 상태를 캡슐화한 Composable 함수를 정의
@@ -25,12 +25,6 @@ export function useSearch() {
   const error = ref(null) // 에러 메시지 저장
   const selectedNode = ref(null) // 트리에서 사용자가 선택한 노드 정보
   const treeData = ref([]) // 화면에 표시될 트리 구조 데이터
-  const allData = reactive({
-    // 대시보드 및 전체 데이터 캐싱용 객체
-    aas: [], // 모든 AAS(Asset Administration Shell) 데이터
-    loaded: false, // 모든 데이터 로딩 완료 여부
-    loadingInProgress: false, // 중복 로딩 방지를 위한 진행 상태 플래그
-  })
   const currentMenu = ref(MENU_TYPES.EQUIPMENT.TIG) // 현재 선택된 메뉴 타입
   const searchFilters = reactive({
     // 검색 필터 조건
@@ -75,24 +69,25 @@ export function useSearch() {
     ]
     if (weldingMenus.includes(currentMenu.value)) {
       return [
-        { value: 'inputpowervoltage', label: 'Input Power Voltage' },
-        { value: 'ratedoutputcurrent', label: 'Rated Output Current' },
-        { value: 'dutycycle', label: 'Duty Cycle' },
-        { value: 'wirefeedspeed', label: 'Wire Feed Speed' },
-        { value: 'weldingspeed', label: 'Welding Speed' },
-        { value: 'gasflowrate', label: 'Gas Flow Rate' },
+        { value: 'welding/search/inputpowervoltage', label: 'Input Power Voltage' },
+        { value: 'welding/search/ratedoutputcurrent', label: 'Rated Output Current' },
+        { value: 'welding/search/dutycycle', label: 'Duty Cycle' },
+        { value: 'welding/search/inputcapacity/kw', label: 'Input Capacity (kW)' },
+        { value: 'welding/search/ratedfrequency', label: 'Rated Frequency' },
+        { value: 'welding/search/numberofphases', label: 'Number of Phases' },
       ]
     }
 
     // CNC Equipment 필터
     if (currentMenu.value === 'CNC') {
       return [
-        { value: 'spindlespeed', label: 'Spindle Speed' },
-        { value: 'feedrate', label: 'Feed Rate' },
-        { value: 'tooldiameter', label: 'Tool Diameter' },
-        { value: 'cuttingdepth', label: 'Cutting Depth' },
-        { value: 'accuracy', label: 'Accuracy' },
-        { value: 'workareasize', label: 'Work Area Size' },
+        { value: 'cnc/search/spindle/max-speedofrotation', label: 'Max Speed of Rotation' },
+        { value: 'cnc/search/spindle/maxtorque', label: 'Max Torque' },
+        { value: 'cnc/search/spindle/maxoutputpower', label: 'Max Output Power' },
+        { value: 'cnc/search/n-postrapidtransferspeed', label: 'Rapid Transfer Speed' },
+        { value: 'cnc/search/allowablevolume/min-allowableload', label: 'Min Allowable Load' },
+        { value: 'cnc/search/allowablevolume/max-allowablematerialdiameter', label: 'Max Material Diameter' },
+        { value: 'cnc/search/automatictoolchanger/numberoftool', label: 'Number of Tool (ATC)' },
       ]
     }
 
@@ -104,20 +99,21 @@ export function useSearch() {
         return [
           { value: 'press/search/cuttinglength', label: 'Cutting Length' },
           { value: 'press/search/cuttingthickness', label: 'Cutting Thickness' },
-          { value: 'pressforce', label: 'Press Force' },
-          { value: 'strokelength', label: 'Stroke Length' },
-          { value: 'speed', label: 'Speed' },
-          { value: 'bedsize', label: 'Bed Size' },
+          { value: 'press/search/pressurecapacity', label: 'Pressure Capacity' },
+          { value: 'press/search/stroke', label: 'Stroke' },
+          { value: 'press/search/strokesperminute', label: 'Strokes Per Minute' },
+          { value: 'press/search/dieheight', label: 'Die Height' },
         ]
       }
       // 다른 Press 메뉴들의 공통 필터
       return [
-        { value: 'pressforce', label: 'Press Force' },
-        { value: 'strokelength', label: 'Stroke Length' },
-        { value: 'speed', label: 'Speed' },
-        { value: 'bedsize', label: 'Bed Size' },
-        { value: 'shutheight', label: 'Shut Height' },
-        { value: 'energyconsumption', label: 'Energy Consumption' },
+        { value: 'press/search/pressurecapacity', label: 'Pressure Capacity' },
+        { value: 'press/search/stroke', label: 'Stroke' },
+        { value: 'press/search/strokesperminute', label: 'Strokes Per Minute' },
+        { value: 'press/search/dieheight', label: 'Die Height' },
+        { value: 'press/search/slideadjustment', label: 'Slide Adjustment' },
+        { value: 'press/search/slideopening', label: 'Slide Opening' },
+        { value: 'press/search/bolsteropening', label: 'Bolster Opening' },
       ]
     }
 
@@ -262,40 +258,6 @@ export function useSearch() {
   const currentMenuDisplayName = computed(() => getMenuDisplayName(currentMenu.value)) // 현재 메뉴의 표시 이름
   const hasResults = computed(() => treeData.value && treeData.value.length > 0) // 검색 결과 존재 여부
   const selectedNodeDetail = computed(() => (selectedNode.value ? selectedNode.value.data : null)) // 선택된 노드의 상세 데이터
-
-  /**
-   * 대시보드용 전체 데이터를 로드
-   */
-  const loadAllDataForDashboard = async () => {
-    // 이미 로드되었거나 로딩 중이면 중복 실행 방지
-    if (allData.loaded || allData.loadingInProgress) return
-    allData.loadingInProgress = true
-    try {
-      let allAasItems = []
-      let currentPage = 1
-      let hasMorePages = true
-
-      // 페이지네이션된 API에서 모든 데이터를 가져올 때까지 반복
-      while (hasMorePages) {
-        const response = await dataAPI.getAllAAS(currentPage)
-        const pageItems = response.message || []
-        if (pageItems.length > 0) {
-          allAasItems = [...allAasItems, ...pageItems]
-          currentPage++
-        } else {
-          hasMorePages = false // 더 이상 데이터가 없으면 반복 종료
-        }
-      }
-      allData.aas = allAasItems // 가져온 모든 데이터를 저장
-      allData.loaded = true // 로딩 완료로 표시
-      menuCounts.value = calculateMenuCounts(allData.aas) // 메뉴별 카운트 계산
-    } catch (err) {
-      console.error('XX 대시보드용 데이터 로딩 실패:', err)
-      allData.loaded = false
-    } finally {
-      allData.loadingInProgress = false // 로딩 진행 상태 해제
-    }
-  }
 
   /**
    * 통합된 검색 함수 - 모든 메뉴에서 일관된 페이징 지원
@@ -474,19 +436,19 @@ export function useSearch() {
             const combinedApiMenus = ['CO2', 'TIG', 'MIG', 'MAG', 'EBW', 'FW', 'OAW', 'PW', 'RSEW', 'RSW', 'SAW', 'SMAW', 'Sold', 'SW', 'UW', 'CNC', 'Press_Cutting', 'Press_Hydr', 'Press_Mechanical_Type', 'Press_Servo']
 
             if (combinedApiMenus.includes(currentMenu.value)) {
-              response = await searchWithKeywords(keywords, '/aas/search/combined', globalAssetIdKeyword, page)
+              response = await searchWithKeywords(keywords, 'aas/search/combined', globalAssetIdKeyword, page)
             } else {
               // globalAssetId API 사용 (AMR, Boring, Robot)
-              response = await searchWithKeywords(keywords, '/aas/search/globalAssetId', null, page)
+              response = await searchWithKeywords(keywords, 'aas/search/globalAssetId', null, page)
             }
           } else {
             // 키워드가 정의되지 않은 경우 기본 검색
-            response = await apiClient.get('/aas/search/globalAssetId', {
+            response = await apiClient.get('aas/search/globalAssetId', {
               params: { keyword: globalAssetIdKeyword, page }
             })
           }
 
-          if (response.data && response.data.message) {
+          if (response && response.data && response.data.message) {
             // 페이징 응답인 경우 content 필드에서 데이터 추출
             let pageItems = []
 
@@ -494,16 +456,20 @@ export function useSearch() {
               // 페이징 응답 구조
               pageItems = response.data.message.content || []
               pagination.hasMorePages = !response.data.message.last
+              console.log(`Page ${page} - content items: ${pageItems.length}`)
             } else if (Array.isArray(response.data.message)) {
               // 배열 응답 구조
               pageItems = response.data.message
               pagination.hasMorePages = pageItems.length >= 10
+              console.log(`Page ${page} - array items: ${pageItems.length}`)
             } else {
               console.error('Unexpected response structure:', response.data.message)
             }
 
             if (pageItems.length > 0) {
               const newTreeNodes = transformApiToTree(pageItems, [])
+              console.log(`Transformed ${pageItems.length} items to ${newTreeNodes.length} tree nodes`)
+
               if (page === 1) {
                 treeData.value = newTreeNodes
               } else {
@@ -516,6 +482,9 @@ export function useSearch() {
                 }
               }
               pagination.currentPage = page
+              console.log(`Total tree nodes after page ${page}: ${treeData.value.length}`)
+            } else {
+              console.log(`Page ${page} - No items found`)
             }
             // 에러 설정 부분을 완전히 제거
             // 자동 페이지 로딩이 있으므로 첫 페이지가 비어있어도 문제없음
@@ -532,7 +501,7 @@ export function useSearch() {
         const keywords = EQUIPMENT_KEYWORDS[currentMenu.value] || []
         if (keywords.length > 0) {
           const keyword = keywords[0]
-          const responseData = await dataAPI.getAASByKeyword(keyword, page)
+          const responseData = await aasService.searchAASByKeyword(keyword, page)
           const pageItems = (responseData.message || []).filter((aas) => !isExcludedComponentAAS(aas))
 
           if (pageItems.length > 0) {
@@ -590,6 +559,7 @@ export function useSearch() {
    * 메뉴를 변경하는 함수
    */
   const changeMenu = async (menuType) => {
+    console.log('changeMenu called with:', menuType)
     if (currentMenu.value === menuType && treeData.value.length > 0) return
     currentMenu.value = menuType
     selectedNode.value = null
@@ -604,6 +574,7 @@ export function useSearch() {
     pagination.currentPage = 1
     pagination.hasMorePages = true
     await displayCurrentMenuData(1)
+    console.log('After changeMenu - treeData length:', treeData.value.length)
   }
 
   /**
@@ -627,7 +598,7 @@ export function useSearch() {
         }
 
         try {
-          const response = await dataAPI.getAllAAS(page)
+          const response = await aasService.getAllAAS(page)
           const pageItems = response.message || []
 
           if (pageItems.length > 0) {
@@ -707,7 +678,7 @@ export function useSearch() {
         const searchValue = searchFilters.filterValue
         console.log(`All AAS 검색 - filterType: ${searchFilters.filterType}, searchValue: ${searchValue}, page: ${page}`)
 
-        const response = await searchAPI.searchByKeyword(
+        const response = await aasService.searchByKeyword(
           searchFilters.filterType,
           searchValue,
           page,
@@ -724,7 +695,7 @@ export function useSearch() {
             searchFilters.filterType === 'conceptdescription' &&
             searchValue.toLowerCase() !== searchValue
           ) {
-            const fallbackResponse = await searchAPI.searchByKeyword(
+            const fallbackResponse = await aasService.searchByKeyword(
               searchFilters.filterType,
               searchValue.toLowerCase(),
               page,
@@ -733,80 +704,62 @@ export function useSearch() {
           }
         }
       } else if (currentMenu.value !== MENU_TYPES.SPECIAL.ALL) {
-        // 새로운 API 엔드포인트 처리
         if (searchFilters.filterType && searchFilters.filterType.includes('/')) {
-          // 전체 경로를 포함한 API 호출
-          const { aasService } = await import('@/services/aasService')
-
-          // API 경로에 따른 동적 메소드 호출
-          let response
           const filterPath = searchFilters.filterType
+          let response
 
-          // Welding API
           if (filterPath.startsWith('welding/search/')) {
-            response = await apiClient.get(`/repository/${filterPath}`, {
-              params: { value: searchFilters.filterValue || null }
-            })
-          }
-          // CNC API
-          else if (filterPath.startsWith('cnc/search/')) {
-            // automatictoolchanger/numberoftool은 value 파라미터 없음
+            response = await apiClient.get(`/repository/${filterPath}`, { params: { value: searchFilters.filterValue || null } })
+          } else if (filterPath.startsWith('cnc/search/')) {
             if (filterPath === 'cnc/search/automatictoolchanger/numberoftool') {
               response = await apiClient.get(`/repository/${filterPath}`)
             } else {
-              response = await apiClient.get(`/repository/${filterPath}`, {
-                params: { value: searchFilters.filterValue || null }
-              })
+              response = await apiClient.get(`/repository/${filterPath}`, { params: { value: searchFilters.filterValue || null } })
             }
-          }
-          // Press API
-          else if (filterPath.startsWith('press/search/')) {
-            const endpoint = filterPath.replace('press/search/', '')
-            // 기존 aasService 메소드 사용 (cuttinglength, cuttingthickness)
-            if (endpoint === 'cuttinglength' || endpoint === 'cuttingthickness') {
-              const methodName = endpoint === 'cuttinglength'
-                ? 'searchPressCuttingLength'
-                : 'searchPressCuttingThickness'
-              response = await aasService[methodName](searchFilters.filterValue || null)
-            } else {
-              response = await apiClient.get(`/repository/${filterPath}`, {
-                params: { value: searchFilters.filterValue || null }
-              })
-            }
+          } else if (filterPath.startsWith('press/search/')) {
+            response = await apiClient.get(`/repository/${filterPath}`, { params: { value: searchFilters.filterValue || null } })
           }
 
-          if (response && response.data && response.data.code === 200 && response.data.message && response.data.message.length > 0) {
-            const firstMessage = response.data.message[0]
-            const searchedAAS = firstMessage.aas
-              ? Array.isArray(firstMessage.aas)
-                ? firstMessage.aas
-                : [firstMessage.aas]
-              : []
-            submodelsFromAPI = firstMessage.submodels
-              ? Array.isArray(firstMessage.submodels)
-                ? firstMessage.submodels
-                : [firstMessage.submodels]
-              : []
-            results = filterAASByMenuType(searchedAAS, currentMenu.value)
+          if (response && response.data && response.data.code === 200 && response.data.message) {
+            let responseData = []
+            const message = response.data.message
+
+            if (Array.isArray(message)) {
+              responseData = message
+            } else if (typeof message === 'object' && message !== null) {
+              if (Array.isArray(message.data)) {
+                responseData = message.data
+              } else if (message.data) {
+                // message.data가 배열이 아닌 경우 (단일 객체) 배열로 감싸줌
+                responseData = [message.data]
+              } else {
+                // aas, submodels를 직접 포함하는 객체일 경우
+                responseData = [message]
+              }
+            }
+
+            if (responseData.length > 0) {
+              const firstItem = responseData[0]
+              if (firstItem && firstItem.aas) {
+                const allAAS = []
+                const allSubmodels = []
+                responseData.forEach(item => {
+                  if (item.aas) allAAS.push(...(Array.isArray(item.aas) ? item.aas : [item.aas]))
+                  if (item.submodels) allSubmodels.push(...(Array.isArray(item.submodels) ? item.submodels : [item.submodels]))
+                })
+                submodelsFromAPI = allSubmodels
+                results = filterAASByMenuType(allAAS, currentMenu.value)
+              } else {
+                results = filterAASByMenuType(responseData, currentMenu.value)
+              }
+            }
           }
         } else {
-          // 기존 검색 로직 (하위 호환성)
-          const response = await searchAPI.searchByFilter(
-            searchFilters.filterType,
-            searchFilters.filterValue,
-          )
+          const response = await aasService.searchByFilter(searchFilters.filterType, searchFilters.filterValue)
           if (response && response.code === 200 && response.message && response.message.length > 0) {
             const firstMessage = response.message[0]
-            const searchedAAS = firstMessage.aas
-              ? Array.isArray(firstMessage.aas)
-                ? firstMessage.aas
-                : [firstMessage.aas]
-              : []
-            submodelsFromAPI = firstMessage.submodels
-              ? Array.isArray(firstMessage.submodels)
-                ? firstMessage.submodels
-                : [firstMessage.submodels]
-              : []
+            const searchedAAS = firstMessage.aas ? (Array.isArray(firstMessage.aas) ? firstMessage.aas : [firstMessage.aas]) : []
+            submodelsFromAPI = firstMessage.submodels ? (Array.isArray(firstMessage.submodels) ? firstMessage.submodels : [firstMessage.submodels]) : []
             results = filterAASByMenuType(searchedAAS, currentMenu.value)
           }
         }
@@ -1015,14 +968,11 @@ export function useSearch() {
     placeholder,
     pagination,
     currentMenu,
-    allData,
     filteredAAS,
     menuCounts,
     currentMenuDisplayName,
     hasResults,
     selectedNodeDetail,
-    loadAllDataForDashboard,
-    loadInitialData: loadAllDataForDashboard,
     changeMenu,
     performSearch,
     clearSearch,

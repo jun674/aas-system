@@ -177,6 +177,7 @@ const mobileView = ref('tree') // 모바일에서 'tree' 뷰를 보여줄지 'de
 // --- 계산된 속성 (Computed Properties) ---
 // currentMenu의 문자열 값을 보장하는 computed
 const currentMenuValue = computed(() => {
+  console.log('currentMenu type:', typeof currentMenu, 'value:', currentMenu.value)
   return typeof currentMenu === 'object' && currentMenu.value !== undefined
     ? currentMenu.value
     : currentMenu
@@ -294,6 +295,7 @@ watch(
  */
 const handleQuery = async (query) => {
   console.log('Handling query:', query)
+  console.log('Current treeData length:', treeData.value?.length || 0)
 
   if (query.filterType && query.value) {
     // 필터 검색 조건이 있을 경우
@@ -334,6 +336,18 @@ const handleQuery = async (query) => {
     await onMenuSelected(MENU_TYPES.EQUIPMENT.TIG)
   }
 }
+
+// treeData 변경 감지를 위한 watch 추가
+watch(
+  () => treeData.value,
+  (newData) => {
+    console.log('TreeData changed:', newData?.length || 0, 'items')
+    if (newData && newData.length > 0) {
+      console.log('First item:', newData[0])
+    }
+  },
+  { deep: true }
+)
 
 // props.query의 변경을 감지하여 handleQuery 함수를 호출
 watch(

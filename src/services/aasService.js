@@ -22,12 +22,9 @@ export const aasService = {
       console.log(`>> 전체 AAS 조회 시작 (page: ${page}, keyword: ${keyword})`)
       const response = await apiClient.get('/aas', { params })
 
-      // Component 필터링
+      // Component 필터링 제거 - All AAS에서는 모든 데이터를 보여줘야 함
       if (response.data.message && Array.isArray(response.data.message)) {
-        response.data.message = response.data.message.filter(aas =>
-          aas.idShort !== 'Component'
-        )
-        console.log(`Component 필터링 후: ${response.data.message.length}개`)
+        console.log(`조회된 AAS: ${response.data.message.length}개`)
       }
 
       return response.data
@@ -190,8 +187,13 @@ export const aasService = {
 
       return { message: submodels }
     } catch (error) {
-      console.error('XX AAS 서브모델 조회 실패:', error)
-      return { message: [] }
+      console.error('XX AAS 서브모델 조회 실패:', error.message)
+      // 404 에러는 정상적인 경우일 수 있으므로 빈 배열 반환
+      if (error.response?.status === 404) {
+        return { message: [] }
+      }
+      // 다른 에러는 throw
+      throw new Error(`AAS 서브모델 조회 실패: ${error.response?.status} ${error.message}`)
     }
   },
 
@@ -418,7 +420,8 @@ export const aasService = {
       return response.data
     } catch (error) {
       console.error('XX 서버 연결 실패:', error.message)
-      return { status: 'unknown' }
+      // 서버 상태 확인은 실패해도 앱이 중단되면 안되므로 기본값 반환
+      return { status: 'unknown', error: error.message }
     }
   }
 }

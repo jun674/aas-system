@@ -15,16 +15,21 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import TopBar from '@/components/layout/TopBar.vue'
 import AppFooter from '@/components/layout/Footer.vue'
 import { RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useUiStore } from '@/stores/ui'
 
 const authStore = useAuthStore()
+const uiStore = useUiStore()
 
-// 앱 시작 시 인증 상태 확인
+// 앱 시작 시 인증 상태 확인 및 UI 초기화
 onMounted(async () => {
+  // UI 초기화 (화면 크기 체크 및 이벤트 리스너 등록)
+  uiStore.initializeUi()
+
   if (authStore.token) {
     try {
       await authStore.checkAuth()
@@ -32,6 +37,12 @@ onMounted(async () => {
       console.error('Auth check failed:', error)
     }
   }
+})
+
+// 앱 종료 시 정리
+onUnmounted(() => {
+  // UI 정리 (이벤트 리스너 제거 및 타이머 정리)
+  uiStore.cleanupUi()
 })
 </script>
 

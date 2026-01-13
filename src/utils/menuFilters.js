@@ -92,13 +92,13 @@ export const EQUIPMENT_KEYWORDS = {
   [MENU_TYPES.EQUIPMENT.UW]: ['UltrasonicWeldingType'],
 
   // CNC 장비 키워드 - globalAssetId API 사용
-  [MENU_TYPES.EQUIPMENT.CNC]: [],
+  [MENU_TYPES.EQUIPMENT.CNC]: ['CNC'],
 
   // Press 장비 키워드 - globalAssetId API 사용
-  [MENU_TYPES.EQUIPMENT.PRESS_CUTTING]: ['Shearing', 'PressMachineShearing', 'PressProcess/Shearing'],
-  [MENU_TYPES.EQUIPMENT.PRESS_HYDR]: [],
-  [MENU_TYPES.EQUIPMENT.PRESS_MECHANICAL_TYPE]: [],
-  [MENU_TYPES.EQUIPMENT.PRESS_SERVO]: [],
+  [MENU_TYPES.EQUIPMENT.PRESS_CUTTING]: ['Shearing', 'PressMachineShearing', 'PressProcess/Shearing', 'Cutting'],
+  [MENU_TYPES.EQUIPMENT.PRESS_HYDR]: ['Hydr'],
+  [MENU_TYPES.EQUIPMENT.PRESS_MECHANICAL_TYPE]: ['Mechanical'],
+  [MENU_TYPES.EQUIPMENT.PRESS_SERVO]: ['Servo'],
 
   // AMR 키워드
   [MENU_TYPES.EQUIPMENT.AMR]: ['HD1500', 'LD90', 'MD650', 'AMR'],
@@ -151,9 +151,9 @@ export const PRODUCTION_KEYWORDS = {
 function hasKeywords(aas, keywords) {
   if (!aas || !keywords || keywords.length === 0) return false
 
-  // ID의 전체 문자열을 검색하도록 변경
+  const idParts = (aas.id || '').split('/')
   const searchFields = [
-    aas.id, // ID 전체를 검색 필드에 포함
+    ...idParts,
     aas.idShort,
     aas.assetInformation?.globalAssetId,
     aas.assetInformation?.assetKind,

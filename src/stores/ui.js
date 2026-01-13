@@ -24,6 +24,7 @@ export const useUiStore = defineStore('ui', () => {
   // Notification state
   const notifications = ref([])
   const notificationIdCounter = ref(0)
+  const notificationTimers = new Map() // 타이머 ID를 저장하기 위한 Map
 
   // Getters
   const showSidebar = computed(() => {
@@ -126,9 +127,10 @@ export const useUiStore = defineStore('ui', () => {
 
     // Auto remove after duration
     if (newNotification.duration > 0) {
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
         removeNotification(id)
       }, newNotification.duration)
+      notificationTimers.set(id, timerId)
     }
 
     return id
@@ -139,9 +141,19 @@ export const useUiStore = defineStore('ui', () => {
     if (index > -1) {
       notifications.value.splice(index, 1)
     }
+    // 타이머 정리
+    if (notificationTimers.has(id)) {
+      clearTimeout(notificationTimers.get(id))
+      notificationTimers.delete(id)
+    }
   }
 
   const clearNotifications = () => {
+    // 모든 타이머 정리
+    notificationTimers.forEach((timerId) => {
+      clearTimeout(timerId)
+    })
+    notificationTimers.clear()
     notifications.value = []
   }
 
@@ -191,6 +203,8 @@ export const useUiStore = defineStore('ui', () => {
   // Cleanup
   const cleanupUi = () => {
     window.removeEventListener('resize', checkScreenSize)
+    // 모든 notification 타이머 정리
+    clearNotifications()
   }
 
   return {
