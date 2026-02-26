@@ -16,7 +16,7 @@
         </button>
       </div>
     </div>
-    <!-- 데이터가 없을 때는 빈 상태를 표시하지 않음 (자동 로딩이 있을 수 있으므로) -->
+    <!-- 데이터가 없을 때는 빈 상태를 표시하지 않음 -->
     <div v-else-if="(!treeData || treeData.length === 0) && !loading" class="empty-state">
       <div class="empty-container">
         <i class="fas fa-search empty-icon"></i>
@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import TreeNode from './TreeNode.vue' // TreeNode 컴포넌트 import
+import TreeNode from './TreeNode.vue'
 import { nextTick } from 'vue'
 
 export default {
@@ -93,7 +93,7 @@ export default {
 
     const handleScroll = (event) => {
       const { scrollTop, scrollHeight, clientHeight } = event.target
-      // 사용자가 스크롤을 거의 끝까지 내렸을 때 이벤트를 발생시킵니다.
+      // 사용자가 스크롤을 거의 끝까지 내렸을 때 이벤트를 발생
       if (scrollHeight > clientHeight && scrollHeight - scrollTop <= clientHeight + 200) {
         emit('scrolled-to-bottom')
       }

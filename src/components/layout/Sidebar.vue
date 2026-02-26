@@ -3,7 +3,7 @@
     <div class="sidebar-header">
       AAS System
     </div>
-   
+
     <nav class="nav flex-column">
       <a
         class="nav-link d-flex align-items-center"
@@ -17,7 +17,7 @@
           Equipment
         </span>
         <i class="fas fa-chevron-down ms-auto"></i> </a>
-      
+
       <div class="collapse show" id="equipmentSubmenu">
         <nav class="nav flex-column">
           <a
@@ -111,7 +111,7 @@
         </span>
         <i class="fas fa-chevron-down ms-auto"></i>
       </a>
-      
+
       <div class="collapse" id="materialSubmenu">
         <nav class="nav flex-column">
           <a
@@ -166,7 +166,7 @@
         </span>
         <i class="fas fa-chevron-down ms-auto"></i>
       </a>
-      
+
       <div class="collapse" id="processSubmenu">
         <nav class="nav flex-column">
           <a
@@ -293,18 +293,18 @@ import { ref } from 'vue'
 export default {
   // 컴포넌트의 이름 정의
   name: 'Sidebar',
-  
+
   // 부모 컴포넌트로부터 전달받는 데이터(속성)를 정의
-  props: {   
+  props: {
     menuCounts: { // 각 메뉴 항목 옆에 표시될 숫자 카운트 데이터를 담는 객체
       type: Object,
       default: () => ({}) // 기본값은 빈 객체
     }
   },
-  
+
   // 부모 컴포넌트로 이벤트를 전달하기 위해 'emits'를 정의
   emits: ['menu-selected'],
-  
+
   setup(props, { emit }) {
     // 현재 활성화(선택)된 메뉴 항목을 저장하는 반응형 상태 변수
     // 페이지 로드 시 CO2 메뉴가 활성화
@@ -314,13 +314,13 @@ export default {
      * 메뉴 항목을 클릭했을 때 호출되는 함수
      */
     const selectMenu = (menuName) => {
-      
+
       activeMenu.value = menuName // activeMenu의 값을 클릭된 메뉴 이름으로 변경하여 UI를 업데이트
-      
+
       // 'menu-selected'라는 이름의 이벤트를 부모 컴포넌트로 전달(emit)
       // 부모 컴포넌트는 이 이벤트를 수신하여 어떤 메뉴가 선택되었는지 알 수 있음
       emit('menu-selected', menuName)
-      
+
       console.log('>> 선택된 메뉴:', menuName)
     }
 
@@ -361,7 +361,6 @@ export default {
   text-decoration: none;
   display: flex;
   align-items: center;
-  /* justify-content: space-between; 제거하여 왼쪽 정렬 기본 */
   font-size: 13px;
   transition: all 0.2s;
   border-radius: 0;
@@ -384,14 +383,14 @@ export default {
 }
 
 .sidebar .collapse .nav-link {
-  padding-left: 35px; /* 기본 들여쓰기 */
+  padding-left: 35px;
   font-size: 12px;
   background-color: rgba(44, 62, 80, 0.7);
 }
 
 /* Equipment > Welding 하위 메뉴 들여쓰기 조정 */
 .sidebar .collapse #weldingSubmenu .nav-link {
-  padding-left: 50px; /* 더 깊은 들여쓰기 */
+  padding-left: 50px;
 }
 
 .sidebar .collapse .nav-link.active {
@@ -411,7 +410,7 @@ export default {
 .menu-count {
   font-size: 10px;
   color: #95a5a6;
-  margin-left: auto; /* 항상 오른쪽으로 정렬 */
+  margin-left: auto;
   font-weight: normal;
 }
 

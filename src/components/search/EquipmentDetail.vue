@@ -513,7 +513,6 @@ export default {
       type: Object,
       default: null,
     },
-    // (현재 코드에서는 사용되지 않음) 상세 데이터를 별도로 받을 경우를 위한 prop
     detailData: {
       type: Object,
       default: null,
@@ -1104,7 +1103,6 @@ export default {
   border: 1px solid #fcd34d;
 }
 
-/* Spec section styles */
 .spec-section {
   margin-top: 20px;
 }
@@ -1171,7 +1169,6 @@ export default {
   line-height: 1.5;
 }
 
-/* JSON 섹션 */
 .json-section {
   margin-top: 30px;
 }

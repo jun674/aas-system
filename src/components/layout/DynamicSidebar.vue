@@ -207,7 +207,7 @@ export default {
 
   // 부모 컴포넌트로부터 전달받는 데이터(속성) 정의
   props: {
-    // 현재 활성화된 주 카테고리 (예: 'equipment', 'material')
+    // 현재 활성화된 주 카테고리
     activeCategory: {
       type: String,
       default: 'equipment',
@@ -412,7 +412,7 @@ export default {
   position: fixed;
   left: 0;
   top: 56px;
-  bottom: 56px; /* 푸터 높이만큼 여백 추가 */
+  bottom: 56px;
   width: 260px;
   background-color: #ffffff;
   border-right: 1px solid #e1e4e8;
@@ -433,7 +433,7 @@ export default {
 @media (max-width: 768px) {
   .dynamic-sidebar {
     top: 52px;
-    bottom: 56px; /* 모바일에서도 푸터 높이만큼 여백 추가 */
+    bottom: 56px;
     transform: translateX(-100%);
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
   }
@@ -602,7 +602,7 @@ export default {
 .submenu.show {
   max-height: 600px;
   overflow-y: auto;
-  padding-bottom: 8px; /* 마지막 아이템이 잘리지 않도록 여백 추가 */
+  padding-bottom: 8px;
 }
 
 /* 서브메뉴 아이템 */
